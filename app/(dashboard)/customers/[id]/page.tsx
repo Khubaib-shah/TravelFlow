@@ -1,19 +1,25 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { ArrowLeft, User, Phone, Mail, MapPin, Briefcase, CalendarDays, Edit } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, MapPin, Briefcase, CalendarDays, Edit, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MockAPI } from "@/lib/mock-api";
-import { Customer } from "@/types";
+import { Customer, Booking } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
+import { DataTable } from "@/components/tables/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
+import { formatCurrencyPKR } from "@/lib/utils";
+import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
+import { toast } from "sonner";
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,10 +27,83 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       setIsLoading(true);
       const data = await MockAPI.getCustomer(id);
       setCustomer(data);
+      if (data) {
+        // Fetch all bookings and filter by this customer
+        const allBookings = await MockAPI.getBookings();
+        setBookings(allBookings.filter(b => b.customerId === id));
+      }
       setIsLoading(false);
     }
     load();
   }, [id]);
+
+  const handleEditProfile = () => {
+    toast.success("Edit Profile modal opened");
+  };
+
+  const handleAddNote = () => {
+    toast.success("Note added successfully");
+  };
+
+  const columns: ColumnDef<Booking>[] = [
+    {
+      accessorKey: "bookingRef",
+      header: "Reference",
+      cell: ({ row }) => (
+        <button
+          onClick={() => router.push(`/bookings/${row.original.id}`)}
+          className="font-mono text-xs font-medium text-[var(--tf-primary)] hover:underline"
+        >
+          {row.original.bookingRef}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "pnr",
+      header: "PNR",
+      cell: ({ row }) => <div className="font-mono text-xs">{row.original.pnr}</div>,
+    },
+    {
+      accessorKey: "airline",
+      header: "Route",
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-[var(--tf-text-primary)]">{row.original.airline}</span>
+          <span className="text-xs text-[var(--tf-text-muted)]">{row.original.departureCity} → {row.original.arrivalCity}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "departureDate",
+      header: "Date",
+      cell: ({ row }) => (
+        <span className="text-xs">{new Date(row.original.departureDate).toLocaleDateString('en-GB')}</span>
+      ),
+    },
+    {
+      accessorKey: "salePrice",
+      header: "Amount",
+      cell: ({ row }) => (
+        <div className="font-semibold text-sm">
+          {formatCurrencyPKR(row.original.salePrice)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "bookingStatus",
+      header: "Status",
+      cell: ({ row }) => <StatusBadge status={row.original.bookingStatus as any} />,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DataTableRowActions
+          row={row}
+          onView={() => router.push(`/bookings/${row.original.id}`)}
+        />
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -57,7 +136,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+          <Button onClick={handleEditProfile} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
             <Edit className="w-4 h-4 mr-2" /> Edit Profile
           </Button>
         </div>
@@ -134,11 +213,22 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         </TabsList>
         
         <TabsContent value="bookings" className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6">
-          <h3 className="text-lg font-semibold text-[var(--tf-text-primary)] mb-4">Recent Bookings</h3>
-          <div className="text-center py-12 border-2 border-dashed border-[var(--tf-border)] rounded-lg">
-            <p className="text-[var(--tf-text-secondary)]">Booking history table will render here.</p>
-            <Button variant="outline" className="mt-4" onClick={() => router.push('/bookings')}>View All Bookings</Button>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-[var(--tf-text-primary)]">Recent Bookings</h3>
+            <Button variant="outline" size="sm" onClick={() => router.push('/bookings')}>View All Bookings <ArrowRight className="ml-2 w-4 h-4" /></Button>
           </div>
+          {bookings.length === 0 ? (
+            <div className="text-center py-12 border border-[var(--tf-border)] rounded-lg">
+              <p className="text-[var(--tf-text-secondary)]">No bookings found for this customer.</p>
+              <Button variant="outline" className="mt-4" onClick={() => router.push('/bookings/new')}>Create Booking</Button>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={bookings}
+              isLoading={isLoading}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="documents" className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6">
@@ -155,6 +245,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 </div>
               </div>
             </div>
+            <div className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-[var(--tf-border)] hover:border-[var(--tf-primary)] cursor-pointer transition-colors text-[var(--tf-text-muted)] hover:text-[var(--tf-primary)] h-full">
+              + Upload Document
+            </div>
           </div>
         </TabsContent>
         
@@ -164,7 +257,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <p className="text-sm text-[var(--tf-text-primary)]">Prefers window seats on long-haul flights. Often travels to DXB for business.</p>
               <p className="text-xs text-[var(--tf-text-muted)] mt-2">Added by Agent Umer on 10 Feb 2024</p>
             </div>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full" onClick={handleAddNote}>
               + Add Note
             </Button>
           </div>

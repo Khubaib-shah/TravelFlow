@@ -123,7 +123,7 @@ export default function BookingsPage() {
       cell: ({ row }) => (
         <DataTableRowActions 
           row={row} 
-          onView={() => router.push(`/bookings/${row.original.pnr}`)} 
+          onView={() => router.push(`/bookings/${row.original.id}`)} 
           onEdit={() => {
             setIsDrawerOpen(true);
             toast.success(`Editing booking ${row.original.pnr}`);

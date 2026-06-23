@@ -1,6 +1,8 @@
 "use client";
 
 import { GitBranch } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { formatCurrencyPKR } from "@/lib/utils";
 
 const branches = [
   { id: "br-1", name: "Karachi Main", code: "KHI-HQ", city: "Karachi", isHeadOffice: true, status: "active", revenue: 4820000, bookings: 54 },
@@ -10,6 +12,8 @@ const branches = [
 ];
 
 export default function BranchesPage() {
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
       <div className="bg-[var(--tf-surface)] p-6 rounded-xl border border-[var(--tf-border)] shadow-sm">
@@ -21,6 +25,7 @@ export default function BranchesPage() {
         {branches.map((branch) => (
           <div
             key={branch.id}
+            onClick={() => router.push(`/branches/${branch.id}`)}
             className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex items-start justify-between mb-4">
@@ -45,7 +50,7 @@ export default function BranchesPage() {
             <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--tf-border)]">
               <div>
                 <p className="tf-caption text-[var(--tf-text-muted)]">Revenue</p>
-                <p className="tf-h4 text-[var(--tf-text-primary)]">₨ {(branch.revenue / 100000).toFixed(1)}L</p>
+                <p className="font-semibold text-sm text-[var(--tf-text-primary)]">{formatCurrencyPKR(branch.revenue, true)}</p>
               </div>
               <div>
                 <p className="tf-caption text-[var(--tf-text-muted)]">Bookings</p>

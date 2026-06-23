@@ -43,7 +43,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
       <KpiCard
         label="Monthly Revenue"
         value={data.monthlyRevenue}
-        prefix="₨"
+        isCurrency={true}
         trend={data.trends.revenue}
         trendLabel="vs last month"
         icon={TrendingUp}
@@ -53,7 +53,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
       <KpiCard
         label="Monthly Profit"
         value={data.monthlyProfit}
-        prefix="₨"
+        isCurrency={true}
         trend={data.trends.profit}
         trendLabel="vs last month"
         icon={DollarSign}
@@ -63,7 +63,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
       <KpiCard
         label="Total Expenses"
         value={data.totalExpenses}
-        prefix="₨"
+        isCurrency={true}
         trend={data.trends.expenses}
         trendLabel="vs last month"
         icon={CreditCard}

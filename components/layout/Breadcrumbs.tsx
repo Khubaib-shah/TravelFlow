@@ -4,9 +4,16 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+function formatPathSegment(segment: string): string {
+  // Check if it's an ID like bk-1, cust-1, LD-2024
+  if (segment.includes('-') && (/\d/.test(segment))) {
+    return `Ref ${segment.toUpperCase()}`;
+  }
+  return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+}
+
 export function Breadcrumbs() {
   const pathname = usePathname();
-  // Very basic breadcrumb derivation for phase 1
   const paths = pathname.split('/').filter(Boolean);
   
   if (paths.length === 0) return null;
@@ -23,7 +30,7 @@ export function Breadcrumbs() {
         
         const href = `/${paths.slice(0, index + 1).join('/')}`;
         const isLast = index === paths.length - 1;
-        const formattedPath = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+        const formattedPath = formatPathSegment(path);
 
         return (
           <div key={path} className="flex items-center">

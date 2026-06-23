@@ -1,60 +1,160 @@
 "use client";
 
-import { CheckCircle2, Ticket, Users, FileText } from "lucide-react";
+import { CheckCircle2, Ticket, Users, FileText, UserPlus, CreditCard, ArrowRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { formatTimeAgo } from "@/lib/utils";
+
+type ActivityType = "booking" | "invoice" | "lead" | "expense" | "customer";
+type FilterPeriod = "today" | "yesterday" | "week" | "all";
+
+interface Activity {
+  id: number;
+  type: ActivityType;
+  icon: React.ElementType;
+  color: string;
+  title: string;
+  detail: string;
+  time: Date;
+  href?: string;
+}
+
+const ALL_ACTIVITIES: Activity[] = [
+  { id: 1, type: "booking", icon: Ticket, color: "var(--tf-primary)", title: "Ali Ahmed created booking", detail: "KHI → DXB (Emirates)", time: new Date(Date.now() - 1000 * 60 * 10), href: "/bookings/bk-1" },
+  { id: 2, type: "invoice", icon: CheckCircle2, color: "var(--tf-success)", title: "Sara confirmed invoice", detail: "#INV-2024-441", time: new Date(Date.now() - 1000 * 60 * 60), href: "/bookings" },
+  { id: 3, type: "lead", icon: UserPlus, color: "var(--tf-warning)", title: "Usman added a new lead", detail: "Umrah Package Inquiry", time: new Date(Date.now() - 1000 * 60 * 60 * 3), href: "/leads/LD-2024-003" },
+  { id: 4, type: "expense", icon: CreditCard, color: "var(--tf-danger)", title: "Expense logged", detail: "Office Rent — Rs 85,000", time: new Date(Date.now() - 1000 * 60 * 60 * 5), href: "/expenses" },
+  { id: 5, type: "customer", icon: Users, color: "var(--tf-info)", title: "New customer registered", detail: "Ahmed Raza (Individual)", time: new Date(Date.now() - 1000 * 60 * 60 * 8), href: "/customers/cust-1" },
+  { id: 6, type: "booking", icon: Ticket, color: "var(--tf-primary)", title: "Payment received", detail: "BK-2024-002 — Rs 1,00,000", time: new Date(Date.now() - 1000 * 60 * 60 * 12), href: "/bookings/bk-2" },
+  { id: 7, type: "lead", icon: UserPlus, color: "var(--tf-warning)", title: "Lead status updated", detail: "Sara Khan — Interested", time: new Date(Date.now() - 1000 * 60 * 60 * 22), href: "/leads/LD-2024-002" },
+  { id: 8, type: "booking", icon: Ticket, color: "var(--tf-primary)", title: "Booking completed", detail: "BK-2024-003 Jeddah trip", time: new Date(Date.now() - 1000 * 60 * 60 * 26), href: "/bookings/bk-3" },
+  { id: 9, type: "customer", icon: Users, color: "var(--tf-info)", title: "Customer profile updated", detail: "Usman Ali — passport renewed", time: new Date(Date.now() - 1000 * 60 * 60 * 30), href: "/customers/cust-3" },
+  { id: 10, type: "expense", icon: FileText, color: "var(--tf-danger)", title: "Expense approved", detail: "Internet & Utilities", time: new Date(Date.now() - 1000 * 60 * 60 * 48), href: "/expenses" },
+];
+
+const PERIOD_CUTOFFS: Record<FilterPeriod, number> = {
+  today: Date.now() - 1000 * 60 * 60 * 24,
+  yesterday: Date.now() - 1000 * 60 * 60 * 48,
+  week: Date.now() - 1000 * 60 * 60 * 24 * 7,
+  all: 0,
+};
 
 export function ActivityFeed({ isLoading }: { isLoading: boolean }) {
-  const activities = [
-    { id: 1, icon: Ticket, color: "var(--tf-primary)", title: "Ali Ahmed created booking", detail: "KHI → DXB (Emirates)", time: "10 mins ago" },
-    { id: 2, icon: CheckCircle2, color: "var(--tf-success)", title: "Sara confirmed invoice", detail: "#INV-2024-441", time: "1 hour ago" },
-    { id: 3, icon: Users, color: "var(--tf-warning)", title: "Usman added a new lead", detail: "Umrah Package Inquiry", time: "3 hours ago" },
-    { id: 4, icon: FileText, color: "var(--tf-info)", title: "Expense logged", detail: "Office Rent - May 2024", time: "5 hours ago" },
-  ];
+  const [period, setPeriod] = useState<FilterPeriod>("week");
+  const [showAll, setShowAll] = useState(false);
+  const router = useRouter();
+
+  const filtered = useMemo(() => {
+    const cutoff = PERIOD_CUTOFFS[period];
+    return ALL_ACTIVITIES.filter(a => a.time.getTime() >= cutoff);
+  }, [period]);
+
+  const displayed = showAll ? filtered : filtered.slice(0, 5);
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 h-full shadow-sm flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 shadow-sm flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
         <div>
           <h3 className="tf-h3 text-[var(--tf-text-primary)]">Recent Activity</h3>
           <p className="text-sm text-[var(--tf-text-secondary)]">Latest actions across branches</p>
         </div>
-        <select className="bg-[var(--tf-surface-2)] border-[var(--tf-border)] text-sm rounded-md px-3 py-1.5 outline-none">
-          <option>Today</option>
-          <option>Yesterday</option>
+        <select
+          value={period}
+          onChange={(e) => { setPeriod(e.target.value as FilterPeriod); setShowAll(false); }}
+          className="bg-[var(--tf-surface-2)] border border-[var(--tf-border)] text-[var(--tf-text-secondary)] text-sm rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-[var(--tf-primary)] transition-colors cursor-pointer"
+        >
+          <option value="today">Today</option>
+          <option value="yesterday">Last 48h</option>
+          <option value="week">This Week</option>
+          <option value="all">All Time</option>
         </select>
       </div>
 
       {isLoading ? (
-        <div className="flex-1 space-y-4">
+        <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex gap-4">
+            <div key={i} className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-[var(--tf-surface-2)] animate-pulse flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 bg-[var(--tf-surface-2)] animate-pulse rounded" />
+              <div className="flex-1 space-y-2 pt-1">
+                <div className="h-3.5 w-3/4 bg-[var(--tf-surface-2)] animate-pulse rounded" />
                 <div className="h-3 w-1/2 bg-[var(--tf-surface-2)] animate-pulse rounded" />
               </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className="flex-1 space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-[var(--tf-border)] before:to-transparent">
-          {activities.map((activity, index) => {
-            const Icon = activity.icon;
-            return (
-              <div key={activity.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-[var(--tf-surface)] bg-[var(--tf-surface-2)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10" style={{ color: activity.color }}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-[var(--tf-surface-2)] p-3 rounded-lg border border-[var(--tf-border)] shadow-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-sm text-[var(--tf-text-primary)]">{activity.title}</span>
-                  </div>
-                  <div className="text-xs text-[var(--tf-text-secondary)] mb-2">{activity.detail}</div>
-                  <div className="text-xs text-[var(--tf-text-muted)]">{activity.time}</div>
-                </div>
-              </div>
-            );
-          })}
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <CheckCircle2 className="h-10 w-10 text-[var(--tf-text-muted)] mb-3 opacity-40" />
+          <p className="text-[var(--tf-text-secondary)] text-sm">No activity in this period</p>
         </div>
+      ) : (
+        <>
+          {/* Scrollable activity list */}
+          <div className="overflow-y-auto max-h-[340px] space-y-1 pr-1 scrollbar-thin">
+            {displayed.map((activity, index) => {
+              const Icon = activity.icon;
+              const isLast = index === displayed.length - 1;
+              return (
+                <div
+                  key={activity.id}
+                  onClick={() => activity.href && router.push(activity.href)}
+                  className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors ${
+                    activity.href ? "cursor-pointer hover:bg-[var(--tf-surface-2)]" : ""
+                  }`}
+                >
+                  {/* Timeline dot + line */}
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--tf-surface)] shadow-sm"
+                      style={{ backgroundColor: `${activity.color}22`, color: activity.color }}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                    </div>
+                    {!isLast && (
+                      <div className="w-px h-full min-h-[12px] mt-1 bg-[var(--tf-border)]" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <p className="text-sm font-medium text-[var(--tf-text-primary)] truncate leading-tight">
+                      {activity.title}
+                    </p>
+                    <p className="text-xs text-[var(--tf-text-secondary)] truncate mt-0.5">
+                      {activity.detail}
+                    </p>
+                    <p className="text-[10px] text-[var(--tf-text-muted)] mt-1">
+                      {formatTimeAgo(activity.time)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Show more / View all */}
+          {filtered.length > 5 && (
+            <div className="mt-3 pt-3 border-t border-[var(--tf-border)]">
+              {!showAll ? (
+                <button
+                  onClick={() => setShowAll(true)}
+                  className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-[var(--tf-primary)] hover:text-[var(--tf-primary-hover)] transition-colors py-1 group"
+                >
+                  Show all {filtered.length} activities
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowAll(false)}
+                  className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-[var(--tf-text-muted)] hover:text-[var(--tf-text-primary)] transition-colors py-1"
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

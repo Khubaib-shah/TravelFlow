@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { BranchPerformance } from "@/components/dashboard/BranchPerformance";
 
 export default function BranchReportPage() {
   const router = useRouter();
@@ -19,10 +20,8 @@ export default function BranchReportPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-8 min-h-[400px] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[var(--tf-text-muted)]">Leaderboards, branch vs branch comparison, and regional statistics will go here.</p>
-        </div>
+      <div className="grid grid-cols-1 gap-6">
+        <BranchPerformance data={[]} isLoading={false} />
       </div>
     </div>
   );

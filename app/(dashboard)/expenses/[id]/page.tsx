@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { ArrowLeft, CreditCard, Tag, Calendar, Banknote, FileText, CheckCircle, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MockAPI } from "@/lib/mock-api";
@@ -58,11 +59,11 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex items-center gap-2">
           {expense.status !== 'approved' && (
-            <Button className="bg-[var(--tf-success)] text-white hover:bg-[var(--tf-success)]/90">
+            <Button onClick={() => toast.success("Expense approved")} className="bg-[var(--tf-success)] text-white hover:bg-[var(--tf-success)]/90">
               <CheckCircle className="w-4 h-4 mr-2" /> Approve
             </Button>
           )}
-          <Button variant="outline" className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)]">
+          <Button variant="outline" onClick={() => { toast.success("Downloading receipt PDF..."); window.print() }} className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)] print:hidden">
             <Download className="w-4 h-4 mr-2" /> Receipt
           </Button>
         </div>
@@ -129,7 +130,7 @@ export default function ExpenseDetailPage({ params }: { params: Promise<{ id: st
         <TabsContent value="receipts" className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6">
           <div className="text-center py-12 border-2 border-dashed border-[var(--tf-border)] rounded-lg">
             <p className="text-[var(--tf-text-secondary)]">No receipt attachments found.</p>
-            <Button variant="outline" className="mt-4">Upload Receipt</Button>
+            <Button variant="outline" onClick={() => toast.success("File upload dialog opened")} className="mt-4">Upload Receipt</Button>
           </div>
         </TabsContent>
       </Tabs>

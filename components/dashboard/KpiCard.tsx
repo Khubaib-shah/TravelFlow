@@ -2,16 +2,17 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CurrencyDisplay } from "../shared/CurrencyDisplay";
 import { TrendBadge } from "../shared/TrendBadge";
+import { formatShort } from "@/lib/utils";
 
 export interface KpiCardProps {
   label: string;
   value: number | string;
-  prefix?: string;            // "₨" for currency
-  trend?: number;             // +12.5 or -3.2
-  trendLabel?: string;        // "vs last month"
+  isCurrency?: boolean;      // true for PKR values
+  trend?: number;            // +12.5 or -3.2
+  trendLabel?: string;       // "vs last month"
   icon: LucideIcon;
   cardColor: 'blue' | 'teal' | 'amber' | 'violet' | 'slate' | 'coral';
-  sparklineData?: number[];   // 7 values (mocking chart for now)
+  sparklineData?: number[];  // 7 values
   isLoading?: boolean;
   onClick?: () => void;
 }
@@ -28,7 +29,7 @@ const colorMap = {
 export function KpiCard({
   label,
   value,
-  prefix,
+  isCurrency = false,
   trend,
   trendLabel,
   icon: Icon,
@@ -38,8 +39,33 @@ export function KpiCard({
 }: KpiCardProps) {
   const styles = colorMap[cardColor];
 
+  const renderValue = () => {
+    if (isCurrency && typeof value === 'number') {
+      // Show compact for large numbers: Rs 4.8 Lac
+      return (
+        <CurrencyDisplay
+          amount={value}
+          short={value >= 100_000}
+          className="tf-kpi-value text-[var(--tf-text-primary)] truncate"
+        />
+      );
+    }
+    if (typeof value === 'number') {
+      return (
+        <span className="tf-kpi-value text-[var(--tf-text-primary)] truncate">
+          {value.toLocaleString()}
+        </span>
+      );
+    }
+    return (
+      <span className="tf-kpi-value text-[var(--tf-text-primary)] truncate">
+        {value}
+      </span>
+    );
+  };
+
   return (
-    <div 
+    <div
       onClick={onClick}
       className={cn(
         "relative overflow-hidden rounded-[14px] border border-[var(--tf-border)] p-5 transition-shadow",
@@ -53,34 +79,26 @@ export function KpiCard({
           <Icon className={cn("h-5 w-5", styles.iconColor)} />
         </div>
       </div>
-      
+
       <div className="mb-4">
         <div className="flex items-baseline gap-1 min-w-0 overflow-hidden">
-          {prefix && <span className="tf-h3 text-[var(--tf-text-secondary)] shrink-0">{prefix}</span>}
-          {typeof value === 'number' && prefix === '₨' ? (
-             <CurrencyDisplay amount={value} className="tf-kpi-value text-[var(--tf-text-primary)] truncate" />
-          ) : (
-            <span className="tf-kpi-value text-[var(--tf-text-primary)] truncate">
-              {typeof value === 'number' ? value.toLocaleString() : value}
-            </span>
-          )}
+          {renderValue()}
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between">
         {trend !== undefined && (
           <TrendBadge value={trend} label={trendLabel} />
         )}
-        
-        {/* Sparkline placeholder for now */}
+
         {sparklineData && sparklineData.length > 0 && (
           <div className="h-4 w-16 opacity-50 flex items-end justify-between gap-[2px]">
             {sparklineData.map((val, i) => {
               const max = Math.max(...sparklineData);
               const height = Math.max((val / max) * 100, 10);
               return (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={cn("w-1 rounded-t-sm", styles.iconBg)}
                   style={{ height: `${height}%` }}
                 />

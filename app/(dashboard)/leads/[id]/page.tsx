@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { ArrowLeft, UserPlus, Phone, MapPin, CalendarDays, Wallet, Clock, Tag } from "lucide-react";
+import { ArrowLeft, UserPlus, Phone, MapPin, CalendarDays, Wallet, Clock, Tag, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +9,8 @@ import { MockAPI } from "@/lib/mock-api";
 import { Lead } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
+import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -25,6 +27,23 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     }
     load();
   }, [id]);
+
+  const handleStatusChange = (newStatus: string) => {
+    if (!lead) return;
+    setLead({ ...lead, status: newStatus as any });
+    toast.success(`Status updated to ${newStatus}`);
+  };
+
+  const handleAddFollowUp = () => {
+    toast.info("Add Follow-up modal opening...");
+  };
+
+  const handleConvertToBooking = () => {
+    if (lead?.status !== 'converted') {
+      handleStatusChange('converted');
+    }
+    router.push(`/bookings/new?leadId=${lead?.id}`);
+  };
 
   if (isLoading) {
     return (
@@ -49,7 +68,23 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           <div>
             <div className="flex items-center gap-3">
               <h1 className="tf-h2 text-[var(--tf-text-primary)]">{lead.name}</h1>
-              <StatusBadge status={lead.status as any} />
+              <DropdownMenu>
+                <DropdownMenuTrigger className="focus:outline-none flex items-center gap-1 group">
+                  <StatusBadge status={lead.status as any} />
+                  <ChevronDown className="h-4 w-4 text-[var(--tf-text-muted)] group-hover:text-[var(--tf-text-primary)] transition-colors" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[180px] bg-[var(--tf-surface)] border-[var(--tf-border)]">
+                  {['new', 'contacted', 'follow_up', 'interested', 'negotiation', 'converted', 'lost'].map(s => (
+                    <DropdownMenuItem 
+                      key={s} 
+                      onClick={() => handleStatusChange(s)}
+                      className="capitalize text-sm cursor-pointer"
+                    >
+                      {s.replace('_', ' ')}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <p className="tf-body text-[var(--tf-text-secondary)] mt-1 flex items-center gap-2">
               <UserPlus className="w-4 h-4" /> Ref: <span className="font-mono font-medium text-[var(--tf-text-primary)]">{lead.leadRef}</span>
@@ -57,10 +92,10 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)]">
+          <Button variant="outline" className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)]" onClick={handleAddFollowUp}>
             Add Follow-up
           </Button>
-          <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+          <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]" onClick={handleConvertToBooking}>
             Convert to Booking
           </Button>
         </div>
@@ -145,31 +180,50 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 <div className="w-3 h-3 rounded-full bg-[var(--tf-primary)]"></div>
                 <div className="w-0.5 h-full bg-[var(--tf-border)] my-1"></div>
               </div>
-              <div className="pb-4">
-                <p className="font-medium text-[var(--tf-text-primary)]">Called Customer</p>
+              <div className="pb-4 flex-1">
+                <div className="flex justify-between items-start">
+                  <p className="font-medium text-[var(--tf-text-primary)]">Called Customer</p>
+                  <p className="text-xs text-[var(--tf-text-muted)] flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {new Date(lead.updatedAt).toLocaleString()}
+                  </p>
+                </div>
                 <p className="text-sm text-[var(--tf-text-muted)] mt-1">Customer did not pick up. Will try again tomorrow.</p>
-                <p className="text-xs text-[var(--tf-text-muted)] mt-2 flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {new Date(lead.updatedAt).toLocaleString()}
-                </p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="flex flex-col items-center">
                 <div className="w-3 h-3 rounded-full bg-[var(--tf-border)]"></div>
               </div>
-              <div>
-                <p className="font-medium text-[var(--tf-text-primary)]">Lead Captured</p>
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <p className="font-medium text-[var(--tf-text-primary)]">Lead Captured</p>
+                  <p className="text-xs text-[var(--tf-text-muted)] flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {new Date(lead.createdAt).toLocaleString()}
+                  </p>
+                </div>
                 <p className="text-sm text-[var(--tf-text-muted)] mt-1">Lead generated via {lead.source.replace('_', ' ')} campaign.</p>
-                <p className="text-xs text-[var(--tf-text-muted)] mt-2 flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {new Date(lead.createdAt).toLocaleString()}
-                </p>
               </div>
             </div>
           </div>
         </TabsContent>
         
-        <TabsContent value="requirements" className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6 text-center py-12">
-           <p className="text-[var(--tf-text-muted)]">Custom form for detailed lead requirements (e.g., Number of Adults, Children, Flight Preferences) will go here.</p>
+        <TabsContent value="requirements" className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6">
+           <div className="max-w-2xl mx-auto space-y-6">
+             <div className="grid grid-cols-2 gap-4">
+               <div className="p-4 bg-[var(--tf-surface-2)] rounded-lg">
+                 <p className="text-xs text-[var(--tf-text-muted)] uppercase mb-1">Adults</p>
+                 <p className="font-semibold text-lg text-[var(--tf-text-primary)]">2</p>
+               </div>
+               <div className="p-4 bg-[var(--tf-surface-2)] rounded-lg">
+                 <p className="text-xs text-[var(--tf-text-muted)] uppercase mb-1">Children</p>
+                 <p className="font-semibold text-lg text-[var(--tf-text-primary)]">1</p>
+               </div>
+             </div>
+             <div>
+               <p className="text-sm font-medium text-[var(--tf-text-secondary)] mb-2">Special Requirements</p>
+               <p className="text-sm text-[var(--tf-text-primary)]">Customer wants a sea-facing room and a direct flight if possible. Needs halal food options.</p>
+             </div>
+           </div>
         </TabsContent>
       </Tabs>
     </div>

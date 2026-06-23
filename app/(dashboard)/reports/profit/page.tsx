@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ProfitChart } from "@/components/dashboard/ProfitChart";
 
 export default function ProfitReportPage() {
   const router = useRouter();
@@ -19,10 +20,8 @@ export default function ProfitReportPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-8 min-h-[400px] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[var(--tf-text-muted)]">P&L tables, expense tracking vs revenue, and margin analysis will go here.</p>
-        </div>
+      <div className="grid grid-cols-1 gap-6">
+        <ProfitChart data={[]} isLoading={false} />
       </div>
     </div>
   );

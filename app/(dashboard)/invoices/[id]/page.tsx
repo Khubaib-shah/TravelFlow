@@ -3,6 +3,7 @@
 import { use } from "react";
 import { ArrowLeft, Printer, Send, FileText, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 
@@ -24,13 +25,13 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)]">
+          <Button variant="outline" onClick={() => window.print()} className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)] print:hidden">
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
-          <Button variant="outline" className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)]">
+          <Button variant="outline" onClick={() => toast.success("Invoice emailed successfully")} className="bg-[var(--tf-surface)] text-[var(--tf-text-primary)] print:hidden">
             <Send className="w-4 h-4 mr-2" /> Email
           </Button>
-          <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+          <Button onClick={() => { toast.success("Generating PDF..."); window.print() }} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] print:hidden">
             <Download className="w-4 h-4 mr-2" /> Download PDF
           </Button>
         </div>

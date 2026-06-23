@@ -1,28 +1,93 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Bell, Mail, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function NotificationsSettingsPage() {
   const router = useRouter();
 
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Notification preferences updated");
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Notifications</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Configure your alerts and emails.</p>
+    <div className="space-y-6 pb-12">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-[var(--tf-surface)] border border-[var(--tf-border)]">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="tf-h2 text-[var(--tf-text-primary)]">Notifications</h1>
+            <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Configure your alerts and emails.</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-8 min-h-[400px] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[var(--tf-text-muted)]">Email toggles, SMS alerts, and in-app notification preferences will go here.</p>
-        </div>
+      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm overflow-hidden">
+        <form onSubmit={handleSave} className="p-8 space-y-8 max-w-3xl">
+          
+          <div className="space-y-6">
+            
+            <div className="flex items-start justify-between border-b border-[var(--tf-border)] pb-6">
+              <div className="flex gap-3">
+                <div className="mt-1">
+                  <Mail className="w-5 h-5 text-[var(--tf-text-muted)]" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-[var(--tf-text-primary)]">Email Notifications</h4>
+                  <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Receive daily summaries and critical alerts via email.</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
+              </label>
+            </div>
+
+            <div className="flex items-start justify-between border-b border-[var(--tf-border)] pb-6">
+              <div className="flex gap-3">
+                <div className="mt-1">
+                  <Bell className="w-5 h-5 text-[var(--tf-text-muted)]" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-[var(--tf-text-primary)]">In-App Alerts</h4>
+                  <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Show toast notifications when you are active in the dashboard.</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
+              </label>
+            </div>
+
+            <div className="flex items-start justify-between pb-2">
+              <div className="flex gap-3">
+                <div className="mt-1">
+                  <Smartphone className="w-5 h-5 text-[var(--tf-text-muted)]" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-[var(--tf-text-primary)]">SMS Notifications</h4>
+                  <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Get text messages for urgent payment reminders.</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
+              </label>
+            </div>
+
+          </div>
+
+          <div className="pt-4 flex justify-end">
+            <Button type="submit" className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+              <Save className="w-4 h-4 mr-2" /> Save Preferences
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

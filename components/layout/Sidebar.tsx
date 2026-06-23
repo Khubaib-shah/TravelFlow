@@ -5,10 +5,24 @@ import { SidebarNav } from "./SidebarNav";
 import { Plane, PanelLeftClose, PanelRightClose, Building, ChevronDown, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAuthStore } from "@/store/auth.store";
 
 export function Sidebar() {
   const { isOpen, toggle } = useSidebarStore();
   const [isAgencyOpen, setIsAgencyOpen] = useState(false);
+  const router = useRouter();
+  const { logout, user } = useAuthStore();
+
+  const displayName = user?.name ?? "Ahmad Khan";
+  const initials = user?.initials ?? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Signed out successfully");
+    router.push("/login");
+  };
 
   return (
     <aside
@@ -35,7 +49,6 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* When Collapsed, show expand button here occasionally, or just rely on Topbar hamburger */}
       {!isOpen && (
         <div className="flex justify-center p-2 border-b border-[var(--tf-border)]">
            <button
@@ -50,7 +63,7 @@ export function Sidebar() {
 
       {/* Agency Switcher */}
       <div className={`border-b border-[var(--tf-border)] ${isOpen ? "p-4" : "p-2"}`}>
-        <button 
+        <button
           onClick={() => setIsAgencyOpen(!isAgencyOpen)}
           className={`flex w-full items-center gap-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] p-2 hover:bg-[var(--tf-surface-2)] transition-colors ${!isOpen && "justify-center"}`}
         >
@@ -63,7 +76,7 @@ export function Sidebar() {
                 <span className="tf-body-sm w-full truncate font-semibold text-[var(--tf-text-primary)]">Prestige Travel HQ</span>
                 <span className="tf-caption w-full truncate text-[var(--tf-text-muted)]">Karachi</span>
               </div>
-              <ChevronDown className="h-4 w-4 text-[var(--tf-text-muted)] shrink-0" />
+              <ChevronDown className={`h-4 w-4 text-[var(--tf-text-muted)] shrink-0 transition-transform ${isAgencyOpen ? 'rotate-180' : ''}`} />
             </>
           )}
         </button>
@@ -78,16 +91,21 @@ export function Sidebar() {
       <div className="border-t border-[var(--tf-border)] p-4">
         <div className={`flex items-center gap-3 ${!isOpen && "justify-center"}`}>
           <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[var(--tf-surface-2)] border border-[var(--tf-border)] flex items-center justify-center font-semibold text-[var(--tf-text-secondary)]">
-            AK
+            {initials}
           </div>
           {isOpen && (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <span className="tf-body-sm truncate font-semibold text-[var(--tf-text-primary)]">Ahmad Khan</span>
+              <span className="tf-body-sm truncate font-semibold text-[var(--tf-text-primary)]">{displayName}</span>
               <span className="tf-caption truncate text-[var(--tf-text-muted)]">Agency Owner</span>
             </div>
           )}
           {isOpen && (
-            <button className="shrink-0 rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-danger-soft)] hover:text-[var(--tf-danger)] transition-colors" aria-label="Sign Out">
+            <button
+              onClick={handleLogout}
+              className="shrink-0 rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-danger-soft)] hover:text-[var(--tf-danger)] transition-colors"
+              aria-label="Sign Out"
+              title="Sign out"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           )}

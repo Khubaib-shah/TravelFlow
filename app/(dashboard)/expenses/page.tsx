@@ -102,7 +102,7 @@ export default function ExpensesPage() {
       cell: ({ row }) => (
         <DataTableRowActions 
           row={row} 
-          onView={() => router.push(`/expenses/${row.original.expenseRef}`)} 
+          onView={() => router.push(`/expenses/${row.original.id}`)} 
           onEdit={() => {
             setIsDrawerOpen(true);
             toast.success(`Editing expense`);

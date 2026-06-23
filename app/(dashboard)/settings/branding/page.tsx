@@ -1,28 +1,80 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Upload, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function BrandingSettingsPage() {
   const router = useRouter();
 
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Branding preferences saved successfully");
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Branding</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Customize your platform's appearance.</p>
+    <div className="space-y-6 pb-12">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-[var(--tf-surface)] border border-[var(--tf-border)]">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="tf-h2 text-[var(--tf-text-primary)]">Branding</h1>
+            <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Customize your platform's appearance.</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-8 min-h-[400px] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-[var(--tf-text-muted)]">Logo upload, color palette picker, and theme selection will go here.</p>
-        </div>
+      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm overflow-hidden">
+        <form onSubmit={handleSave} className="p-8 space-y-8 max-w-3xl">
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-[var(--tf-text-primary)] border-b border-[var(--tf-border)] pb-2">Logo & Icons</h3>
+            <div className="flex items-center gap-6">
+              <div className="w-24 h-24 rounded-lg bg-[var(--tf-primary)]/10 flex items-center justify-center border-2 border-dashed border-[var(--tf-primary)]/30">
+                <span className="text-[var(--tf-primary)] font-bold text-2xl">TF</span>
+              </div>
+              <div className="space-y-2">
+                <Button type="button" variant="outline" className="bg-[var(--tf-surface-2)] text-[var(--tf-text-primary)] border-[var(--tf-border)]">
+                  <Upload className="w-4 h-4 mr-2" /> Upload New Logo
+                </Button>
+                <p className="text-xs text-[var(--tf-text-muted)]">Recommended size: 256x256px. Formats: PNG, JPG, SVG.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-[var(--tf-text-primary)] border-b border-[var(--tf-border)] pb-2">Color Theme</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { name: "Ocean Blue", color: "bg-blue-600", active: true },
+                { name: "Emerald", color: "bg-emerald-600", active: false },
+                { name: "Violet", color: "bg-violet-600", active: false },
+                { name: "Crimson", color: "bg-rose-600", active: false },
+              ].map((theme) => (
+                <div 
+                  key={theme.name} 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    theme.active 
+                      ? 'border-[var(--tf-primary)] ring-1 ring-[var(--tf-primary)] bg-[var(--tf-primary)]/5' 
+                      : 'border-[var(--tf-border)] hover:border-[var(--tf-text-muted)]'
+                  }`}
+                >
+                  <div className={`w-full h-8 rounded-md mb-2 ${theme.color}`}></div>
+                  <p className="text-sm font-medium text-center text-[var(--tf-text-primary)]">{theme.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 flex justify-end">
+            <Button type="submit" className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+              <Save className="w-4 h-4 mr-2" /> Save Branding
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
