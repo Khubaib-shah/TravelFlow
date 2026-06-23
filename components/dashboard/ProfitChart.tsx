@@ -1,0 +1,48 @@
+"use client";
+
+import { DonutChart } from "@/components/charts/DonutChart";
+import { DashboardStats } from "@/types";
+import { formatShort } from "@/lib/utils";
+
+export function ProfitChart({ data, isLoading }: { data: DashboardStats | null, isLoading: boolean }) {
+  const chartData = [
+    { name: "Flight Tickets", value: 380000, color: "var(--tf-primary)" },
+    { name: "Umrah Packages", value: 150000, color: "var(--tf-success)" },
+    { name: "Visas", value: 90000, color: "var(--tf-warning)" },
+    { name: "Hotels", value: 60000, color: "var(--tf-info)" },
+  ];
+
+  const total = data?.monthlyProfit || 680000;
+
+  return (
+    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 h-full shadow-sm flex flex-col">
+      <h3 className="tf-h3 text-[var(--tf-text-primary)] mb-2">Profit Breakdown</h3>
+      <p className="text-sm text-[var(--tf-text-secondary)] mb-6">By service category</p>
+
+      {isLoading ? (
+        <div className="flex-1 bg-[var(--tf-surface-2)] animate-pulse rounded-full aspect-square max-h-[250px] mx-auto mt-4" />
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <DonutChart 
+            data={chartData} 
+            height={240} 
+            centerLabel="Total Profit" 
+            centerValue={`₨ ${formatShort(total)}`} 
+          />
+          
+          <div className="grid grid-cols-2 gap-4 w-full mt-6">
+            {chartData.map((item) => (
+              <div key={item.name} className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                <div className="flex-1">
+                  <p className="text-xs text-[var(--tf-text-secondary)] truncate">{item.name}</p>
+                  <p className="text-sm font-semibold text-[var(--tf-text-primary)]">₨ {formatShort(item.value)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
