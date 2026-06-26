@@ -4,6 +4,8 @@ import { CheckCircle2, Ticket, Users, FileText, UserPlus, CreditCard, ArrowRight
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/lib/utils";
+import { FilterSelect } from "@/components/shared/FilterSelect";
+import { Button } from "@/components/ui/button";
 
 type ActivityType = "booking" | "invoice" | "lead" | "expense" | "customer";
 type FilterPeriod = "today" | "yesterday" | "week" | "all";
@@ -59,16 +61,17 @@ export function ActivityFeed({ isLoading }: { isLoading: boolean }) {
           <h3 className="tf-h3 text-[var(--tf-text-primary)]">Recent Activity</h3>
           <p className="text-sm text-[var(--tf-text-secondary)]">Latest actions across branches</p>
         </div>
-        <select
+        <FilterSelect
           value={period}
-          onChange={(e) => { setPeriod(e.target.value as FilterPeriod); setShowAll(false); }}
-          className="bg-[var(--tf-surface-2)] border border-[var(--tf-border)] text-[var(--tf-text-secondary)] text-sm rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-[var(--tf-primary)] transition-colors cursor-pointer"
-        >
-          <option value="today">Today</option>
-          <option value="yesterday">Last 48h</option>
-          <option value="week">This Week</option>
-          <option value="all">All Time</option>
-        </select>
+          onValueChange={(v) => { setPeriod(v as FilterPeriod); setShowAll(false); }}
+          options={[
+            { value: "today", label: "Today" },
+            { value: "yesterday", label: "Last 48h" },
+            { value: "week", label: "This Week" },
+            { value: "all", label: "All Time" },
+          ]}
+          triggerClassName="bg-[var(--tf-surface-2)] rounded-lg"
+        />
       </div>
 
       {isLoading ? (
@@ -137,20 +140,22 @@ export function ActivityFeed({ isLoading }: { isLoading: boolean }) {
           {filtered.length > 5 && (
             <div className="mt-3 pt-3 border-t border-[var(--tf-border)]">
               {!showAll ? (
-                <button
+                <Button
+                  variant="link"
                   onClick={() => setShowAll(true)}
-                  className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-[var(--tf-primary)] hover:text-[var(--tf-primary-hover)] transition-colors py-1 group"
+                  className="flex w-full items-center justify-center gap-1.5 py-1 normal-case tracking-normal group"
                 >
                   Show all {filtered.length} activities
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                </button>
+                </Button>
               ) : (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setShowAll(false)}
-                  className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-[var(--tf-text-muted)] hover:text-[var(--tf-text-primary)] transition-colors py-1"
+                  className="flex w-full items-center justify-center gap-1.5 py-1 normal-case tracking-normal"
                 >
                   Show less
-                </button>
+                </Button>
               )}
             </div>
           )}

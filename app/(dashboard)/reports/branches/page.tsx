@@ -21,7 +21,7 @@ export default function BranchReportPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <BranchPerformance data={[]} isLoading={false} />
+        <BranchPerformance isLoading={false} />
       </div>
     </div>
   );

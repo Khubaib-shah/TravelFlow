@@ -3,6 +3,7 @@
 import { ArrowLeft, Save, Bell, Mail, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 export default function NotificationsSettingsPage() {
@@ -42,10 +43,7 @@ export default function NotificationsSettingsPage() {
                   <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Receive daily summaries and critical alerts via email.</p>
                 </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
-              </label>
+              <Switch id="email-notifications" defaultChecked />
             </div>
 
             <div className="flex items-start justify-between border-b border-[var(--tf-border)] pb-6">
@@ -58,10 +56,7 @@ export default function NotificationsSettingsPage() {
                   <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Show toast notifications when you are active in the dashboard.</p>
                 </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
-              </label>
+              <Switch id="in-app-alerts" defaultChecked />
             </div>
 
             <div className="flex items-start justify-between pb-2">
@@ -74,10 +69,7 @@ export default function NotificationsSettingsPage() {
                   <p className="text-sm text-[var(--tf-text-secondary)] mt-1">Get text messages for urgent payment reminders.</p>
                 </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--tf-primary)]"></div>
-              </label>
+              <Switch id="sms-notifications" />
             </div>
 
           </div>

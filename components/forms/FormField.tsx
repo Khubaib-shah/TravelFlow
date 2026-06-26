@@ -10,6 +10,7 @@ import {
 import { FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FilterSelect } from "@/components/shared/FilterSelect";
 
 interface BaseFieldProps<T extends FieldValues = FieldValues> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,16 +133,12 @@ export function FormSelect<T extends FieldValues = FieldValues>({
             {label}
           </FormLabel>
           <FormControl>
-            <select
-              className="flex h-10 w-full rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--tf-primary)] focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 text-[var(--tf-text-primary)] shadow-sm"
-              {...field}
-            >
-              {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <FilterSelect
+              value={field.value ?? ""}
+              onValueChange={field.onChange}
+              options={options}
+              placeholder={`Select ${label.toLowerCase()}`}
+            />
           </FormControl>
           {description && (
             <FormDescription className="text-xs text-[var(--tf-text-muted)]">

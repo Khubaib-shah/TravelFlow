@@ -19,12 +19,13 @@ import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { customerSchema, CustomerFormValues } from "@/features/customers/schemas/customer.schema";
+import { useCreateDrawer } from "@/hooks/use-create-drawer";
 
 export default function CustomersPage() {
   const router = useRouter();
   const [data, setData] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
 
   useEffect(() => {
     async function loadData() {
@@ -55,7 +56,7 @@ export default function CustomersPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("New Customer:", values);
     toast.success("Customer added successfully");
-    setIsDrawerOpen(false);
+    closeDrawer();
     form.reset();
   };
 
@@ -111,7 +112,7 @@ export default function CustomersPage() {
           row={row}
           onView={() => router.push(`/customers/${row.original.id}`)}
           onEdit={() => {
-            setIsDrawerOpen(true);
+            openDrawer();
             toast.success(`Editing customer ${row.original.firstName}`);
           }}
         />
@@ -127,7 +128,7 @@ export default function CustomersPage() {
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage your customer database and booking history.</p>
         </div>
         <Button
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={openDrawer}
           className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Customer
@@ -139,7 +140,7 @@ export default function CustomersPage() {
           icon={Users}
           title="No customers yet"
           description="Your customer database is empty. Add a customer to start managing their profiles and bookings."
-          action={{ label: "Add Customer", onClick: () => setIsDrawerOpen(true) }}
+          action={{ label: "Add Customer", onClick: openDrawer }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
@@ -157,7 +158,7 @@ export default function CustomersPage() {
         title="Add Customer"
         description="Add a new individual or corporate customer to your database."
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={closeDrawer}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="md"

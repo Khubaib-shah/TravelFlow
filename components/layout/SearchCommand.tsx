@@ -3,6 +3,10 @@
 import { Search, LayoutDashboard, UserPlus, Users, Plane, Building2, CreditCard, BarChart3, GitBranch, UserCog, Settings, Plus, ArrowRight } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { withCreateDrawer } from "@/constants/create-drawer";
+import { useCreateDrawerStore } from "@/store/create-drawer.store";
 
 interface CommandItem {
   id: string;
@@ -19,6 +23,7 @@ export function SearchCommand() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
+  const requestCreateDrawer = useCreateDrawerStore((state) => state.requestOpen);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +32,13 @@ export function SearchCommand() {
     setSearchQuery("");
     router.push(href);
   }, [router]);
+
+  const navigateAndCreate = useCallback((href: string) => {
+    setIsOpen(false);
+    setSearchQuery("");
+    requestCreateDrawer();
+    router.push(withCreateDrawer(href));
+  }, [router, requestCreateDrawer]);
 
   const allItems: CommandItem[] = [
     // Navigation
@@ -41,11 +53,11 @@ export function SearchCommand() {
     { id: "nav-users", label: "Users", description: "Staff management", icon: UserCog, action: () => navigate("/users"), group: "Navigate", keywords: ["agents", "staff"] },
     { id: "nav-settings", label: "Settings", description: "System configuration", icon: Settings, action: () => navigate("/settings"), group: "Navigate", keywords: ["config", "preferences"] },
     // Quick Actions
-    { id: "act-new-lead", label: "Add New Lead", description: "Create a lead inquiry", icon: Plus, action: () => navigate("/leads"), group: "Quick Actions", keywords: ["create lead", "new lead"] },
-    { id: "act-new-customer", label: "Add Customer", description: "Register a new customer", icon: Plus, action: () => navigate("/customers"), group: "Quick Actions", keywords: ["create customer", "new customer"] },
-    { id: "act-new-booking", label: "Create Booking", description: "New flight/package booking", icon: Plus, action: () => navigate("/bookings"), group: "Quick Actions", keywords: ["new booking", "flight"] },
-    { id: "act-new-supplier", label: "Add Supplier", description: "Register a B2B partner", icon: Plus, action: () => navigate("/suppliers"), group: "Quick Actions", keywords: ["new supplier", "vendor"] },
-    { id: "act-new-expense", label: "Log Expense", description: "Record an operational cost", icon: Plus, action: () => navigate("/expenses"), group: "Quick Actions", keywords: ["add expense", "new expense"] },
+    { id: "act-new-lead", label: "Add New Lead", description: "Create a lead inquiry", icon: Plus, action: () => navigateAndCreate("/leads"), group: "Quick Actions", keywords: ["create lead", "new lead"] },
+    { id: "act-new-customer", label: "Add Customer", description: "Register a new customer", icon: Plus, action: () => navigateAndCreate("/customers"), group: "Quick Actions", keywords: ["create customer", "new customer"] },
+    { id: "act-new-booking", label: "Create Booking", description: "New flight/package booking", icon: Plus, action: () => navigateAndCreate("/bookings"), group: "Quick Actions", keywords: ["new booking", "flight"] },
+    { id: "act-new-supplier", label: "Add Supplier", description: "Register a B2B partner", icon: Plus, action: () => navigateAndCreate("/suppliers"), group: "Quick Actions", keywords: ["new supplier", "vendor"] },
+    { id: "act-new-expense", label: "Log Expense", description: "Record an operational cost", icon: Plus, action: () => navigateAndCreate("/expenses"), group: "Quick Actions", keywords: ["add expense", "new expense"] },
   ];
 
   const filtered = searchQuery.trim()
@@ -116,9 +128,10 @@ export function SearchCommand() {
 
   return (
     <>
-      <button
+      <Button
+        variant="outline"
         onClick={() => setIsOpen(true)}
-        className="flex h-10 w-full max-w-[320px] items-center gap-2 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface-2)] px-3 text-sm text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface)] transition-colors hover:border-[var(--tf-border-strong)]"
+        className="flex h-10 w-full max-w-[320px] items-center gap-2 rounded-lg border-[var(--tf-border)] bg-[var(--tf-surface-2)] px-3 text-sm font-normal text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface)] hover:border-[var(--tf-border-strong)] normal-case tracking-normal justify-start"
         aria-label="Open command palette"
       >
         <Search className="h-4 w-4 shrink-0" />
@@ -126,7 +139,7 @@ export function SearchCommand() {
         <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-[var(--tf-border-strong)] bg-[var(--tf-surface)] px-1.5 font-mono text-[10px] font-medium text-[var(--tf-text-secondary)]">
           <span className="text-xs">⌘</span>K
         </kbd>
-      </button>
+      </Button>
 
       {isOpen && (
         <div
@@ -140,13 +153,13 @@ export function SearchCommand() {
             {/* Search Input */}
             <div className="flex items-center border-b border-[var(--tf-border)] px-4 py-3">
               <Search className="h-5 w-5 text-[var(--tf-text-muted)] mr-3 shrink-0" />
-              <input
+              <Input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search or type a command..."
-                className="flex-1 bg-transparent text-[var(--tf-text-primary)] outline-none placeholder-[var(--tf-text-muted)] text-sm"
+                className="flex-1 border-0 bg-transparent shadow-none text-[var(--tf-text-primary)] placeholder:text-[var(--tf-text-muted)] text-sm focus-visible:ring-0"
                 aria-label="Command search"
               />
               <kbd

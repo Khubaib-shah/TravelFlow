@@ -4,6 +4,8 @@ import { Bell, Ticket, UserPlus, Users, CreditCard, CheckCircle, X } from "lucid
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/lib/utils";
+import { IconButton } from "@/components/shared/IconButton";
+import { Button } from "@/components/ui/button";
 
 interface Notification {
   id: string;
@@ -107,9 +109,9 @@ export function NotificationsDropdown() {
 
   return (
     <div className="relative">
-      <button
+      <IconButton
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)] transition-colors"
+        className="relative"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <Bell className="h-5 w-5" />
@@ -118,7 +120,7 @@ export function NotificationsDropdown() {
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </button>
+      </IconButton>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-[var(--tf-border)] bg-[var(--tf-surface)] shadow-xl overflow-hidden z-50">
@@ -133,12 +135,14 @@ export function NotificationsDropdown() {
               )}
             </div>
             {unreadCount > 0 && (
-              <button
+              <Button
+                variant="link"
+                size="sm"
                 onClick={markAllRead}
-                className="text-xs text-[var(--tf-primary)] hover:underline font-medium transition-colors"
+                className="h-auto p-0 text-xs font-medium normal-case tracking-normal"
               >
                 Mark all read
-              </button>
+              </Button>
             )}
           </div>
 
@@ -180,13 +184,14 @@ export function NotificationsDropdown() {
                       </p>
                     </div>
 
-                    <button
+                    <IconButton
                       onClick={(e) => dismissNotification(e, notification.id)}
-                      className="opacity-0 group-hover:opacity-100 shrink-0 rounded p-0.5 hover:bg-[var(--tf-border)] transition-all"
+                      size="icon-xs"
+                      className="opacity-0 group-hover:opacity-100 shrink-0"
                       aria-label="Dismiss notification"
                     >
-                      <X className="h-3 w-3 text-[var(--tf-text-muted)]" />
-                    </button>
+                      <X className="h-3 w-3" />
+                    </IconButton>
                   </div>
                 );
               })
@@ -195,12 +200,14 @@ export function NotificationsDropdown() {
 
           {/* Footer */}
           <div className="border-t border-[var(--tf-border)] px-4 py-2.5">
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={() => { setIsOpen(false); router.push("/reports"); }}
-              className="w-full text-center text-xs font-medium text-[var(--tf-primary)] hover:underline transition-colors"
+              className="w-full h-auto p-0 text-xs font-medium normal-case tracking-normal"
             >
               View all activity →
-            </button>
+            </Button>
           </div>
         </div>
       )}

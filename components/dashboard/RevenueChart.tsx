@@ -1,8 +1,11 @@
 "use client";
 
 import { AreaChart } from "@/components/charts/AreaChart";
+import { FilterSelect } from "@/components/shared/FilterSelect";
+import { useState } from "react";
 
 export function RevenueChart({ data, isLoading }: { data: any, isLoading: boolean }) {
+  const [period, setPeriod] = useState("6m");
   // Generate dummy monthly data from sparklines for demonstration
   const chartData = [
     { name: "Jan", revenue: 2400000, profit: 400000 },
@@ -20,10 +23,15 @@ export function RevenueChart({ data, isLoading }: { data: any, isLoading: boolea
           <h3 className="tf-h3 text-[var(--tf-text-primary)]">Revenue vs Profit</h3>
           <p className="text-sm text-[var(--tf-text-secondary)]">Last 6 months performance</p>
         </div>
-        <select className="bg-[var(--tf-surface-2)] border-[var(--tf-border)] text-sm rounded-md px-3 py-1.5 outline-none">
-          <option>Last 6 Months</option>
-          <option>This Year</option>
-        </select>
+        <FilterSelect
+          value={period}
+          onValueChange={setPeriod}
+          options={[
+            { value: "6m", label: "Last 6 Months" },
+            { value: "year", label: "This Year" },
+          ]}
+          triggerClassName="bg-[var(--tf-surface-2)] rounded-md"
+        />
       </div>
 
       {isLoading ? (

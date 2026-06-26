@@ -20,12 +20,13 @@ import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { expenseSchema, ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import { useCreateDrawer } from "@/hooks/use-create-drawer";
 
 export default function ExpensesPage() {
   const router = useRouter();
   const [data, setData] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
 
   useEffect(() => {
     async function loadData() {
@@ -53,7 +54,7 @@ export default function ExpensesPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("New Expense:", values);
     toast.success("Expense logged successfully");
-    setIsDrawerOpen(false);
+    closeDrawer();
     form.reset();
   };
 
@@ -104,7 +105,7 @@ export default function ExpensesPage() {
           row={row} 
           onView={() => router.push(`/expenses/${row.original.id}`)} 
           onEdit={() => {
-            setIsDrawerOpen(true);
+            openDrawer();
             toast.success(`Editing expense`);
           }} 
         />
@@ -120,7 +121,7 @@ export default function ExpensesPage() {
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Log and track operational costs.</p>
         </div>
         <Button 
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={openDrawer}
           className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Log Expense
@@ -132,7 +133,7 @@ export default function ExpensesPage() {
           icon={CreditCard} 
           title="No expenses recorded" 
           description="Log your first operational expense to keep your profit calculations accurate."
-          action={{ label: "Log Expense", onClick: () => setIsDrawerOpen(true) }}
+          action={{ label: "Log Expense", onClick: openDrawer }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
@@ -161,7 +162,7 @@ export default function ExpensesPage() {
         title="Log Expense"
         description="Record a new operational expense."
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={closeDrawer}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="md"

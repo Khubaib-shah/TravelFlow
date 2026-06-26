@@ -21,7 +21,7 @@ export default function ProfitReportPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <ProfitChart data={[]} isLoading={false} />
+        <ProfitChart data={null} isLoading={false} />
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import { DataTable } from "@/components/tables/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrencyPKR } from "@/lib/utils";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
+import { TableEntityLink } from "@/components/shared/TableEntityLink";
 
 export default function SupplierDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -49,12 +50,9 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
       accessorKey: "bookingRef",
       header: "Reference",
       cell: ({ row }) => (
-        <button
-          onClick={() => router.push(`/bookings/${row.original.id}`)}
-          className="font-mono text-xs font-medium text-[var(--tf-primary)] hover:underline"
-        >
+        <TableEntityLink onClick={() => router.push(`/bookings/${row.original.id}`)}>
           {row.original.bookingRef}
-        </button>
+        </TableEntityLink>
       ),
     },
     {

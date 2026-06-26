@@ -20,12 +20,13 @@ import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { supplierSchema, SupplierFormValues } from "@/features/suppliers/schemas/supplier.schema";
+import { useCreateDrawer } from "@/hooks/use-create-drawer";
 
 export default function SuppliersPage() {
   const router = useRouter();
   const [data, setData] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
 
   useEffect(() => {
     async function loadData() {
@@ -54,7 +55,7 @@ export default function SuppliersPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("New Supplier:", values);
     toast.success("Supplier added successfully");
-    setIsDrawerOpen(false);
+    closeDrawer();
     form.reset();
   };
 
@@ -105,7 +106,7 @@ export default function SuppliersPage() {
           row={row}
           onView={() => router.push(`/suppliers/${row.original.id}`)} 
           onEdit={() => {
-            setIsDrawerOpen(true);
+            openDrawer();
             toast.success(`Editing supplier ${row.original.name}`);
           }}
         />
@@ -121,7 +122,7 @@ export default function SuppliersPage() {
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage B2B partners, airlines, and consolidators.</p>
         </div>
         <Button 
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={openDrawer}
           className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Supplier
@@ -133,7 +134,7 @@ export default function SuppliersPage() {
           icon={Building2} 
           title="No suppliers found" 
           description="Add your first supplier to track payables and booking sources."
-          action={{ label: "Add Supplier", onClick: () => setIsDrawerOpen(true) }}
+          action={{ label: "Add Supplier", onClick: openDrawer }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
@@ -151,7 +152,7 @@ export default function SuppliersPage() {
         title="Add Supplier"
         description="Register a new B2B partner or service provider."
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={closeDrawer}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="md"

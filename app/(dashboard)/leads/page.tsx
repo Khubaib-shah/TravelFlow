@@ -20,12 +20,13 @@ import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormTextArea } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { leadSchema, LeadFormValues } from "@/features/leads/schemas/lead.schema";
+import { useCreateDrawer } from "@/hooks/use-create-drawer";
 
 export default function LeadsPage() {
   const router = useRouter();
   const [data, setData] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
 
   useEffect(() => {
     async function loadData() {
@@ -55,7 +56,7 @@ export default function LeadsPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("New Lead:", values);
     toast.success("Lead created successfully");
-    setIsDrawerOpen(false);
+    closeDrawer();
     form.reset();
   };
 
@@ -106,7 +107,7 @@ export default function LeadsPage() {
           row={row} 
           onView={() => router.push(`/leads/${row.original.leadRef}`)} 
           onEdit={() => {
-            setIsDrawerOpen(true);
+            openDrawer();
             toast.success(`Editing lead ${row.original.name}`);
           }}
           onDelete={() => console.log("Delete", row.original.id)}
@@ -123,7 +124,7 @@ export default function LeadsPage() {
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage and track your prospective customers.</p>
         </div>
         <Button 
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={openDrawer}
           className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add New Lead
@@ -135,7 +136,7 @@ export default function LeadsPage() {
           icon={UserPlus} 
           title="No leads found" 
           description="You haven't added any leads yet. Create your first lead to start tracking your sales pipeline."
-          action={{ label: "Add New Lead", onClick: () => setIsDrawerOpen(true) }}
+          action={{ label: "Add New Lead", onClick: openDrawer }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
@@ -167,7 +168,7 @@ export default function LeadsPage() {
         title="Add New Lead"
         description="Create a new lead inquiry to start tracking them in your pipeline."
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={closeDrawer}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="md"

@@ -8,6 +8,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
+import { IconButton } from "@/components/shared/IconButton";
+import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
   const { isOpen, toggle } = useSidebarStore();
@@ -39,33 +41,33 @@ export function Sidebar() {
           {isOpen && <span className="tf-h4 text-[var(--tf-text-primary)]">TravelFlow</span>}
         </Link>
         {isOpen && (
-          <button
+          <IconButton
             onClick={toggle}
-            className="rounded-md p-1.5 text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)] transition-colors"
+            size="icon-xs"
             aria-label="Collapse Sidebar"
           >
             <PanelLeftClose className="h-5 w-5" />
-          </button>
+          </IconButton>
         )}
       </div>
 
       {!isOpen && (
         <div className="flex justify-center p-2 border-b border-[var(--tf-border)]">
-           <button
+           <IconButton
             onClick={toggle}
-            className="rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)] transition-colors"
             aria-label="Expand Sidebar"
           >
             <PanelRightClose className="h-5 w-5" />
-          </button>
+          </IconButton>
         </div>
       )}
 
       {/* Agency Switcher */}
       <div className={`border-b border-[var(--tf-border)] ${isOpen ? "p-4" : "p-2"}`}>
-        <button
+        <Button
+          variant="outline"
           onClick={() => setIsAgencyOpen(!isAgencyOpen)}
-          className={`flex w-full items-center gap-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] p-2 hover:bg-[var(--tf-surface-2)] transition-colors ${!isOpen && "justify-center"}`}
+          className={`flex h-auto w-full items-center gap-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] p-2 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal ${!isOpen && "justify-center"}`}
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--tf-primary-soft)] text-[var(--tf-primary)]">
             <Building className="h-4 w-4" />
@@ -79,7 +81,7 @@ export function Sidebar() {
               <ChevronDown className={`h-4 w-4 text-[var(--tf-text-muted)] shrink-0 transition-transform ${isAgencyOpen ? 'rotate-180' : ''}`} />
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Navigation */}
@@ -100,14 +102,14 @@ export function Sidebar() {
             </div>
           )}
           {isOpen && (
-            <button
+            <IconButton
               onClick={handleLogout}
-              className="shrink-0 rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-danger-soft)] hover:text-[var(--tf-danger)] transition-colors"
+              tone="danger"
               aria-label="Sign Out"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
-            </button>
+            </IconButton>
           )}
         </div>
       </div>

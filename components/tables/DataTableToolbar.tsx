@@ -4,6 +4,7 @@ import { Table } from "@tanstack/react-table";
 import { Search, SlidersHorizontal, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FilterSelect } from "@/components/shared/FilterSelect";
 import { toast } from "sonner";
 
 interface DataTableToolbarProps<TData> {
@@ -72,17 +73,15 @@ export function DataTableToolbar<TData>({
           const column = table.getColumn(filter.column);
           if (!column) return null;
           return (
-            <select
+            <FilterSelect
               key={filter.column}
               value={(column.getFilterValue() as string) ?? ""}
-              onChange={(e) => column.setFilterValue(e.target.value || undefined)}
-              className="h-9 rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 text-sm text-[var(--tf-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--tf-primary)]"
-            >
-              <option value="">{filter.title} (All)</option>
-              {filter.options.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
+              onValueChange={(v) => column.setFilterValue(v || undefined)}
+              options={filter.options}
+              placeholder={filter.title}
+              allowAll
+              allLabel={`${filter.title} (All)`}
+            />
           );
         })}
       </div>

@@ -3,6 +3,16 @@
 import { Eye, EyeOff, Plane } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,61 +38,59 @@ export default function SignInPage() {
         {/* Form */}
         <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
           <div className="flex flex-col gap-1.5">
-            <label className="tf-caption font-semibold text-[var(--tf-text-primary)]" htmlFor="email">
+            <Label htmlFor="email" className="tf-caption font-semibold text-[var(--tf-text-primary)] normal-case tracking-normal">
               Email address
-            </label>
-            <input
+            </Label>
+            <Input
               id="email"
               type="email"
               placeholder="name@agency.com"
-              className="w-full rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 py-2.5 text-sm outline-none transition-colors focus:border-[var(--tf-primary)] focus:ring-1 focus:ring-[var(--tf-primary)] placeholder:text-[var(--tf-text-muted)]"
+              className="rounded-md border-[var(--tf-border)] bg-[var(--tf-surface)] focus-visible:ring-[var(--tf-primary)] placeholder:text-[var(--tf-text-muted)] normal-case tracking-normal"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="tf-caption font-semibold text-[var(--tf-text-primary)]" htmlFor="password">
+              <Label htmlFor="password" className="tf-caption font-semibold text-[var(--tf-text-primary)] normal-case tracking-normal">
                 Password
-              </label>
+              </Label>
               <Link href="#" className="tf-caption text-[var(--tf-primary)] hover:text-[var(--tf-primary-hover)]">
                 Forgot password?
               </Link>
             </div>
-            <div className="relative">
-              <input
+            <InputGroup className="rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] focus-within:ring-1 focus-within:ring-[var(--tf-primary)]">
+              <InputGroupInput
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="w-full rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 py-2.5 text-sm outline-none transition-colors focus:border-[var(--tf-primary)] focus:ring-1 focus:ring-[var(--tf-primary)] placeholder:text-[var(--tf-text-muted)] pr-10"
+                className="normal-case tracking-normal placeholder:text-[var(--tf-text-muted)]"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tf-text-muted)] hover:text-[var(--tf-text-primary)]"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  size="icon-xs"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           <div className="flex items-center gap-2 mt-1">
-            <input 
-              type="checkbox" 
-              id="remember" 
-              className="h-4 w-4 rounded border-[var(--tf-border)] text-[var(--tf-primary)] focus:ring-[var(--tf-primary)]"
-            />
-            <label htmlFor="remember" className="tf-body-sm text-[var(--tf-text-secondary)]">
+            <Checkbox id="remember" />
+            <Label htmlFor="remember" className="tf-body-sm text-[var(--tf-text-secondary)] font-normal normal-case tracking-normal">
               Remember me for 30 days
-            </label>
+            </Label>
           </div>
 
-          <button
+          <Button
             type="submit"
-            className="mt-2 w-full rounded-md bg-[var(--tf-primary)] py-3 font-semibold text-white transition-colors hover:bg-[var(--tf-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--tf-primary)] focus:ring-offset-2"
+            className="mt-2 w-full bg-[var(--tf-primary)] py-3 text-white hover:bg-[var(--tf-primary-hover)] normal-case tracking-normal"
           >
             Sign In
-          </button>
+          </Button>
         </form>
 
         <div className="mt-8 text-center">

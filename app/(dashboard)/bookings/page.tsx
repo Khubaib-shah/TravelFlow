@@ -20,12 +20,13 @@ import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormTextArea } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { bookingSchema, BookingFormValues } from "@/features/bookings/schemas/booking.schema";
+import { useCreateDrawer } from "@/hooks/use-create-drawer";
 
 export default function BookingsPage() {
   const router = useRouter();
   const [data, setData] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
 
   useEffect(() => {
     async function loadData() {
@@ -59,7 +60,7 @@ export default function BookingsPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log("New Booking:", values);
     toast.success("Booking created successfully");
-    setIsDrawerOpen(false);
+    closeDrawer();
     form.reset();
   };
 
@@ -125,7 +126,7 @@ export default function BookingsPage() {
           row={row} 
           onView={() => router.push(`/bookings/${row.original.id}`)} 
           onEdit={() => {
-            setIsDrawerOpen(true);
+            openDrawer();
             toast.success(`Editing booking ${row.original.pnr}`);
           }}
         />
@@ -141,7 +142,7 @@ export default function BookingsPage() {
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage flight and package bookings, tracking revenue and margins.</p>
         </div>
         <Button 
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={openDrawer}
           className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Create Booking
@@ -153,7 +154,7 @@ export default function BookingsPage() {
           icon={Plane} 
           title="No bookings found" 
           description="Create your first booking to start tracking revenue and profit."
-          action={{ label: "Create Booking", onClick: () => setIsDrawerOpen(true) }}
+          action={{ label: "Create Booking", onClick: openDrawer }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
@@ -184,7 +185,7 @@ export default function BookingsPage() {
         title="Create Booking"
         description="Enter new booking details for a flight or package."
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={closeDrawer}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="lg"

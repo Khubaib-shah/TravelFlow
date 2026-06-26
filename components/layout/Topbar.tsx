@@ -5,6 +5,7 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { SearchCommand } from "./SearchCommand";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { UserMenu } from "./UserMenu";
+import { IconButton } from "@/components/shared/IconButton";
 import { Focus, Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -34,13 +35,13 @@ export function Topbar() {
     <header className="sticky top-0 z-30 flex h-[var(--tf-topbar-height)] shrink-0 items-center gap-4 border-b border-[var(--tf-border)] bg-[var(--tf-header-bg)] px-4 sm:px-6 shadow-sm">
       {/* Left side */}
       <div className="flex items-center gap-4">
-        <button
+        <IconButton
           onClick={toggle}
-          className="lg:hidden rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)] transition-colors"
+          className="lg:hidden"
           aria-label="Toggle Menu"
         >
           <Menu className="h-5 w-5" />
-        </button>
+        </IconButton>
         <div className="hidden sm:block">
           <Breadcrumbs />
         </div>
@@ -54,29 +55,28 @@ export function Topbar() {
       {/* Right side */}
       <div className="flex items-center gap-1 sm:gap-2">
         {/* Focus Mode */}
-        <button
+        <IconButton
           onClick={handleFocusMode}
-          className={`hidden sm:flex rounded-md p-2 transition-colors ${
+          className={`hidden sm:flex ${
             isFocusMode
-              ? "bg-[var(--tf-primary-soft)] text-[var(--tf-primary)]"
-              : "text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)]"
+              ? "bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] hover:bg-[var(--tf-primary-soft)] hover:text-[var(--tf-primary)]"
+              : ""
           }`}
           aria-label="Toggle Focus Mode"
           title="Focus Mode — collapses sidebar"
         >
           <Focus className="h-5 w-5" />
-        </button>
+        </IconButton>
 
         <NotificationsDropdown />
 
         {mounted && (
-          <button
+          <IconButton
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="rounded-md p-2 text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)] transition-colors"
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
+          </IconButton>
         )}
 
         <div className="ml-2">

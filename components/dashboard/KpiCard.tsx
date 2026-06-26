@@ -2,29 +2,69 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CurrencyDisplay } from "../shared/CurrencyDisplay";
 import { TrendBadge } from "../shared/TrendBadge";
-import { formatShort } from "@/lib/utils";
+import { SparklineChart } from "../charts/SparklineChart";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 
 export interface KpiCardProps {
   label: string;
   value: number | string;
-  isCurrency?: boolean;      // true for PKR values
-  trend?: number;            // +12.5 or -3.2
-  trendLabel?: string;       // "vs last month"
+  isCurrency?: boolean;
+  trend?: number;
+  trendLabel?: string;
   icon: LucideIcon;
-  cardColor: 'blue' | 'teal' | 'amber' | 'violet' | 'slate' | 'coral';
-  sparklineData?: number[];  // 7 values
+  cardColor: "blue" | "teal" | "amber" | "violet" | "slate" | "coral";
+  sparklineData?: number[];
   isLoading?: boolean;
   onClick?: () => void;
 }
 
 const colorMap = {
-  blue:   { bg: "bg-[var(--tf-card-blue)]",   iconBg: "bg-blue-100 dark:bg-blue-900/30",       iconColor: "text-blue-600 dark:text-blue-400" },
-  teal:   { bg: "bg-[var(--tf-card-teal)]",   iconBg: "bg-teal-100 dark:bg-teal-900/30",       iconColor: "text-teal-600 dark:text-teal-400" },
-  amber:  { bg: "bg-[var(--tf-card-amber)]",  iconBg: "bg-amber-100 dark:bg-amber-900/30",     iconColor: "text-amber-600 dark:text-amber-400" },
-  violet: { bg: "bg-[var(--tf-card-violet)]", iconBg: "bg-violet-100 dark:bg-violet-900/30",   iconColor: "text-violet-600 dark:text-violet-400" },
-  slate:  { bg: "bg-[var(--tf-card-slate)]",  iconBg: "bg-slate-200 dark:bg-slate-800",        iconColor: "text-slate-600 dark:text-slate-400" },
-  coral:  { bg: "bg-[var(--tf-card-coral)]",  iconBg: "bg-rose-100 dark:bg-rose-900/30",       iconColor: "text-rose-600 dark:text-rose-400" },
+  blue: {
+    bg: "bg-[var(--tf-card-blue)]",
+    iconBg: "bg-blue-100 dark:bg-blue-900/30",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    sparkline: "#2563eb",
+  },
+  teal: {
+    bg: "bg-[var(--tf-card-teal)]",
+    iconBg: "bg-teal-100 dark:bg-teal-900/30",
+    iconColor: "text-teal-600 dark:text-teal-400",
+    sparkline: "#0d9488",
+  },
+  amber: {
+    bg: "bg-[var(--tf-card-amber)]",
+    iconBg: "bg-amber-100 dark:bg-amber-900/30",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    sparkline: "#d97706",
+  },
+  violet: {
+    bg: "bg-[var(--tf-card-violet)]",
+    iconBg: "bg-violet-100 dark:bg-violet-900/30",
+    iconColor: "text-violet-600 dark:text-violet-400",
+    sparkline: "#7c3aed",
+  },
+  slate: {
+    bg: "bg-[var(--tf-card-slate)]",
+    iconBg: "bg-slate-200 dark:bg-slate-800",
+    iconColor: "text-slate-600 dark:text-slate-400",
+    sparkline: "#64748b",
+  },
+  coral: {
+    bg: "bg-[var(--tf-card-coral)]",
+    iconBg: "bg-rose-100 dark:bg-rose-900/30",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    sparkline: "#e11d48",
+  },
 };
+
+const valueClassName =
+  "text-[1.625rem] font-extrabold leading-none tracking-tight text-[var(--tf-text-primary)] sm:text-[1.75rem] xl:text-[1.875rem]";
 
 export function KpiCard({
   label,
@@ -35,78 +75,79 @@ export function KpiCard({
   icon: Icon,
   cardColor,
   sparklineData,
-  onClick
+  onClick,
 }: KpiCardProps) {
   const styles = colorMap[cardColor];
 
   const renderValue = () => {
-    if (isCurrency && typeof value === 'number') {
-      // Show compact for large numbers: Rs 4.8 Lac
+    if (isCurrency && typeof value === "number") {
       return (
         <CurrencyDisplay
           amount={value}
           short={value >= 100_000}
-          className="tf-kpi-value text-[var(--tf-text-primary)] truncate"
+          className={cn(valueClassName, "block truncate")}
         />
       );
     }
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       return (
-        <span className="tf-kpi-value text-[var(--tf-text-primary)] truncate">
+        <span className={cn(valueClassName, "block truncate")}>
           {value.toLocaleString()}
         </span>
       );
     }
     return (
-      <span className="tf-kpi-value text-[var(--tf-text-primary)] truncate">
-        {value}
-      </span>
+      <span className={cn(valueClassName, "block truncate")}>{value}</span>
     );
   };
 
   return (
-    <div
+    <Card
+      size="sm"
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-[14px] border border-[var(--tf-border)] p-5 transition-shadow",
+        "gap-0 overflow-hidden rounded-[14px] border-[var(--tf-border)] py-3 shadow-none ring-0 [--card-spacing:--spacing(4)]",
         styles.bg,
-        onClick && "cursor-pointer hover:shadow-md"
+        onClick && "cursor-pointer transition-shadow hover:shadow-md",
       )}
     >
-      <div className="flex justify-between items-start mb-4">
-        <span className="tf-body-sm font-semibold text-[var(--tf-text-secondary)]">{label}</span>
-        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", styles.iconBg)}>
-          <Icon className={cn("h-5 w-5", styles.iconColor)} />
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex items-baseline gap-1 min-w-0 overflow-hidden">
-          {renderValue()}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        {trend !== undefined && (
-          <TrendBadge value={trend} label={trendLabel} />
-        )}
-
-        {sparklineData && sparklineData.length > 0 && (
-          <div className="h-4 w-16 opacity-50 flex items-end justify-between gap-[2px]">
-            {sparklineData.map((val, i) => {
-              const max = Math.max(...sparklineData);
-              const height = Math.max((val / max) * 100, 10);
-              return (
-                <div
-                  key={i}
-                  className={cn("w-1 rounded-t-sm", styles.iconBg)}
-                  style={{ height: `${height}%` }}
-                />
-              )
-            })}
+      <CardHeader className="grid-cols-[1fr_auto] items-center gap-2 pb-2">
+        <p className="truncate text-xs font-medium text-[var(--tf-text-secondary)]">
+          {label}
+        </p>
+        <CardAction>
+          <div
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+              styles.iconBg,
+            )}
+          >
+            <Icon className={cn("h-4 w-4", styles.iconColor)} />
           </div>
-        )}
-      </div>
-    </div>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="pb-2">
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0 flex-1">{renderValue()}</div>
+          {sparklineData && sparklineData.length > 0 && (
+            <div className="hidden h-8 w-[4.5rem] shrink-0 opacity-90 sm:block">
+              <SparklineChart
+                data={sparklineData}
+                color={styles.sparkline}
+                width={72}
+                height={32}
+              />
+            </div>
+          )}
+        </div>
+      </CardContent>
+
+      {trend !== undefined && (
+        <CardFooter className="border-t border-[var(--tf-border)]/60 pt-2">
+          <TrendBadge value={trend} label={trendLabel} className="w-full" />
+        </CardFooter>
+      )}
+    </Card>
   );
 }

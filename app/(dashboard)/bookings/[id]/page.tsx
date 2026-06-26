@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailHeader } from "@/components/shared/DetailHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MockAPI } from "@/lib/mock-api";
 import { Booking } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";

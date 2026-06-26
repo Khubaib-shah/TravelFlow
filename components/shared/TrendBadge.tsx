@@ -11,10 +11,10 @@ export function TrendBadge({ value, label, className }: TrendBadgeProps) {
   const isPositive = value >= 0;
 
   return (
-    <div className={cn("flex items-center gap-1.5", className)}>
+    <div className={cn("flex min-w-0 items-center gap-1.5", className)}>
       <span
         className={cn(
-          "inline-flex items-center justify-center font-bold px-1.5 py-0.5 rounded-[var(--radius-sm)] text-[11px]",
+          "inline-flex shrink-0 items-center justify-center rounded-[var(--radius-sm)] px-1.5 py-0.5 text-[11px] font-bold",
           isPositive
             ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]"
             : "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)]"
@@ -25,10 +25,13 @@ export function TrendBadge({ value, label, className }: TrendBadgeProps) {
         ) : (
           <ArrowDownRight className="mr-0.5 h-3 w-3" />
         )}
-        {isPositive ? "+" : ""}{value}%
+        {isPositive ? "+" : ""}
+        {value}%
       </span>
       {label && (
-        <span className="tf-caption text-[var(--tf-text-muted)]">{label}</span>
+        <span className="truncate text-[11px] text-[var(--tf-text-muted)] whitespace-nowrap">
+          {label}
+        </span>
       )}
     </div>
   );

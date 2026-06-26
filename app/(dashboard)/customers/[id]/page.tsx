@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailHeader } from "@/components/shared/DetailHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MockAPI } from "@/lib/mock-api";
 import { Customer, Booking } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -16,8 +15,8 @@ import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 import { DataTable } from "@/components/tables/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrencyPKR } from "@/lib/utils";
+import { TableEntityLink } from "@/components/shared/TableEntityLink";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
-import { toast } from "sonner";
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -54,12 +53,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       accessorKey: "bookingRef",
       header: "Reference",
       cell: ({ row }) => (
-        <button
-          onClick={() => router.push(`/bookings/${row.original.id}`)}
-          className="font-mono text-xs font-medium text-[var(--tf-primary)] hover:underline"
-        >
+        <TableEntityLink onClick={() => router.push(`/bookings/${row.original.id}`)}>
           {row.original.bookingRef}
-        </button>
+        </TableEntityLink>
       ),
     },
     {

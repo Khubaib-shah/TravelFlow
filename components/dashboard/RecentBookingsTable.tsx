@@ -12,6 +12,7 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader
 import { formatCurrencyPKR } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { TableEntityLink } from "@/components/shared/TableEntityLink";
 
 export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: boolean }) {
   const [data, setData] = useState<Booking[]>([]);
@@ -33,12 +34,9 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
       accessorKey: "bookingRef",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Reference" />,
       cell: ({ row }) => (
-        <button
-          onClick={() => router.push(`/bookings/${row.original.id}`)}
-          className="font-mono text-xs font-medium text-[var(--tf-primary)] hover:underline"
-        >
+        <TableEntityLink onClick={() => router.push(`/bookings/${row.original.id}`)}>
           {row.original.bookingRef}
-        </button>
+        </TableEntityLink>
       ),
     },
     {
