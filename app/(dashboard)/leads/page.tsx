@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { Plus, UserPlus } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { Lead } from "@/types";
+import { Lead, Branch, User } from "@/types";
 import { MockAPI } from "@/lib/mock-api";
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
@@ -17,47 +17,59 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { DrawerForm } from "@/components/forms/DrawerForm";
-import { FormField, FormTextArea } from "@/components/forms/FormField";
+import { FormField, FormTextArea, FormSelect } from "@/components/forms/FormField";
+import { LeadSourceSelector } from "@/components/forms/LeadSourceSelector";
 import { Form } from "@/components/ui/form";
 import { leadSchema, LeadFormValues } from "@/features/leads/schemas/lead.schema";
-import { useCreateDrawer } from "@/hooks/use-create-drawer";
+import { useEntityDrawer } from "@/hooks/use-entity-drawer";
+import { leadDefaultValues, mapLeadToForm } from "@/features/leads/utils/mapLeadToForm";
 
 export default function LeadsPage() {
   const router = useRouter();
   const [data, setData] = useState<Lead[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [agents, setAgents] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
+
+  const loadData = async () => {
+    setIsLoading(true);
+    const [leads, branchList, agentList] = await Promise.all([
+      MockAPI.getLeads(),
+      MockAPI.getBranches(),
+      MockAPI.getAgents(),
+    ]);
+    setData(leads);
+    setBranches(branchList);
+    setAgents(agentList);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const leads = await MockAPI.getLeads();
-      setData(leads);
-      setIsLoading(false);
-    }
     loadData();
   }, []);
 
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
-    defaultValues: {
-      name: "",
-      phone: "",
-      destination: "",
-      source: "whatsapp",
-      status: "new",
-      budget: undefined,
-      notes: "",
-    },
+    defaultValues: leadDefaultValues,
   });
 
+  const handleOpenCreate = () => {
+    form.reset(leadDefaultValues);
+    openCreate();
+  };
+
   const onSubmit = async (values: LeadFormValues) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("New Lead:", values);
-    toast.success("Lead created successfully");
-    closeDrawer();
-    form.reset();
+    if (isEditing && editingId) {
+      await MockAPI.updateLead(editingId, values);
+      toast.success("Lead updated successfully");
+    } else {
+      const lead = await MockAPI.createLead(values);
+      toast.success("Lead created successfully", { description: `Reference: ${lead.leadRef}` });
+    }
+    close();
+    form.reset(leadDefaultValues);
+    await loadData();
   };
 
   const columns: ColumnDef<Lead>[] = [
@@ -79,21 +91,11 @@ export default function LeadsPage() {
     {
       accessorKey: "destination",
       header: "Destination",
-      cell: ({ row }) => <span className="font-medium text-[var(--tf-text-secondary)]">{row.original.destination}</span>,
-    },
-    {
-      accessorKey: "budget",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Budget" />,
-      cell: ({ row }) => (
-        <div className="text-[var(--tf-text-primary)]">
-          {row.original.budget ? `₨ ${row.original.budget.toLocaleString()}` : "-"}
-        </div>
-      ),
     },
     {
       accessorKey: "source",
       header: "Source",
-      cell: ({ row }) => <span className="capitalize text-[var(--tf-text-secondary)]">{row.original.source.replace('_', ' ')}</span>,
+      cell: ({ row }) => <span className="capitalize text-sm">{row.original.source.replace("_", " ")}</span>,
     },
     {
       accessorKey: "status",
@@ -103,14 +105,13 @@ export default function LeadsPage() {
     {
       id: "actions",
       cell: ({ row }) => (
-        <DataTableRowActions 
-          row={row} 
-          onView={() => router.push(`/leads/${row.original.leadRef}`)} 
+        <DataTableRowActions
+          row={row}
+          onView={() => router.push(`/leads/${row.original.id}`)}
           onEdit={() => {
-            openDrawer();
-            toast.success(`Editing lead ${row.original.name}`);
+            form.reset(mapLeadToForm(row.original));
+            openEdit(row.original.id);
           }}
-          onDelete={() => console.log("Delete", row.original.id)}
         />
       ),
     },
@@ -123,29 +124,26 @@ export default function LeadsPage() {
           <h1 className="tf-h2 text-[var(--tf-text-primary)]">Leads</h1>
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage and track your prospective customers.</p>
         </div>
-        <Button 
-          onClick={openDrawer}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
-        >
+        <Button onClick={handleOpenCreate} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm">
           <Plus className="mr-2 h-4 w-4" /> Add New Lead
         </Button>
       </div>
 
       {(!isLoading && data.length === 0) ? (
-        <EmptyState 
-          icon={UserPlus} 
-          title="No leads found" 
+        <EmptyState
+          icon={UserPlus}
+          title="No leads found"
           description="You haven't added any leads yet. Create your first lead to start tracking your sales pipeline."
-          action={{ label: "Add New Lead", onClick: openDrawer }}
+          action={{ label: "Add New Lead", onClick: handleOpenCreate }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
-          <DataTable 
-            columns={columns} 
-            data={data} 
-            searchKey="name" 
+          <DataTable
+            columns={columns}
+            data={data}
+            searchKey="name"
             searchPlaceholder="Search leads by name..."
-            isLoading={isLoading} 
+            isLoading={isLoading}
             filters={[
               {
                 column: "status",
@@ -157,36 +155,78 @@ export default function LeadsPage() {
                   { label: "Interested", value: "interested" },
                   { label: "Converted", value: "converted" },
                   { label: "Lost", value: "lost" },
-                ]
-              }
+                ],
+              },
             ]}
           />
         </div>
       )}
 
       <DrawerForm
-        title="Add New Lead"
-        description="Create a new lead inquiry to start tracking them in your pipeline."
+        title={isEditing ? "Edit Lead" : "Add New Lead"}
+        description={isEditing ? "Update lead details and pipeline status." : "Create a new lead inquiry to start tracking them in your pipeline."}
         isOpen={isDrawerOpen}
-        onClose={closeDrawer}
+        onClose={close}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
-        size="md"
-        submitLabel="Create Lead"
+        size="lg"
+        submitLabel={isEditing ? "Save Changes" : "Create Lead"}
       >
         <Form {...form}>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="name" label="Full Name" placeholder="e.g. Ahmed Raza" />
-              <FormField control={form.control} name="phone" label="Phone Number" type="tel" placeholder="e.g. 0300 1234567" />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="destination" label="Destination" placeholder="e.g. Dubai, Umrah" />
-              <FormField control={form.control} name="budget" label="Budget (PKR)" type="number" placeholder="e.g. 150000" />
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--tf-text-primary)]">Basic Information</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="name" label="Full Name" placeholder="e.g. Ahmed Raza" required />
+                <FormField control={form.control} name="phone" label="Phone" type="tel" placeholder="03XX-XXXXXXX" required />
+                <FormField control={form.control} name="whatsapp" label="WhatsApp" type="tel" />
+                <FormField control={form.control} name="email" label="Email" type="email" />
+              </div>
             </div>
 
-            <FormTextArea control={form.control} name="notes" label="Notes / Requirements" placeholder="Enter any specific requirements or notes..." />
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--tf-text-primary)]">Trip Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="destination" label="Destination" placeholder="e.g. Dubai, Umrah" required />
+                <FormField control={form.control} name="travelDate" label="Travel Date" type="date" />
+                <FormField control={form.control} name="budget" label="Budget (PKR)" type="number" placeholder="0 = Unspecified" />
+                <FormField control={form.control} name="adults" label="Adults" type="number" required />
+                <FormField control={form.control} name="children" label="Children" type="number" />
+              </div>
+              <FormTextArea control={form.control} name="specialRequirements" label="Special Requirements" placeholder="Max 500 chars" />
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-[var(--tf-text-primary)]">Classification</h4>
+              <Controller
+                control={form.control}
+                name="source"
+                render={({ field }) => (
+                  <LeadSourceSelector value={field.value} onChange={field.onChange} required />
+                )}
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormSelect control={form.control} name="status" label="Lead Status" required options={[
+                  { label: "New", value: "new" },
+                  { label: "Contacted", value: "contacted" },
+                  { label: "Follow Up", value: "follow_up" },
+                  { label: "Interested", value: "interested" },
+                  { label: "Negotiation", value: "negotiation" },
+                  { label: "Converted", value: "converted" },
+                  { label: "Lost", value: "lost" },
+                ]} />
+                <FormSelect control={form.control} name="assignedAgentId" label="Assigned Agent" options={agents.map((a) => ({
+                  label: `${a.firstName} ${a.lastName}`,
+                  value: a.id,
+                }))} />
+                <FormSelect control={form.control} name="branchId" label="Branch" options={branches.map((b) => ({
+                  label: b.name,
+                  value: b.id,
+                }))} />
+              </div>
+            </div>
+
+            <FormTextArea control={form.control} name="notes" label="Initial Notes" placeholder="Optional notes..." />
           </div>
         </Form>
       </DrawerForm>

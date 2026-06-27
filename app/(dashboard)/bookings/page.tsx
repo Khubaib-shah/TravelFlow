@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { Plus, Plane } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { Booking } from "@/types";
+import { Booking, Customer, Supplier } from "@/types";
 import { MockAPI } from "@/lib/mock-api";
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
@@ -17,51 +17,65 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { DrawerForm } from "@/components/forms/DrawerForm";
-import { FormField, FormTextArea } from "@/components/forms/FormField";
+import { FormField, FormSelect, FormTextArea } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { bookingSchema, BookingFormValues } from "@/features/bookings/schemas/booking.schema";
-import { useCreateDrawer } from "@/hooks/use-create-drawer";
+import { useEntityDrawer } from "@/hooks/use-entity-drawer";
+import { bookingDefaultValues, mapBookingToForm } from "@/features/bookings/utils/mapBookingToForm";
 
 export default function BookingsPage() {
   const router = useRouter();
   const [data, setData] = useState<Booking[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
+
+  const loadData = async () => {
+    setIsLoading(true);
+    const [bookings, customerList, supplierList] = await Promise.all([
+      MockAPI.getBookings(),
+      MockAPI.getCustomers(),
+      MockAPI.getSuppliers(),
+    ]);
+    setData(bookings);
+    setCustomers(customerList);
+    setSuppliers(supplierList);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const bookings = await MockAPI.getBookings();
-      setData(bookings);
-      setIsLoading(false);
-    }
     loadData();
   }, []);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      customerId: "cust-1", // mock default
-      supplierId: "sup-1",  // mock default
-      airline: "",
-      departureCity: "",
-      arrivalCity: "",
-      pnr: "",
-      ticketNumber: "",
-      costPrice: undefined,
-      salePrice: undefined,
-      paymentStatus: "unpaid",
-      amountReceived: 0,
-      notes: "",
-    },
+    defaultValues: bookingDefaultValues,
   });
 
+  const handleOpenCreate = () => {
+    form.reset({
+      ...bookingDefaultValues,
+      customerId: customers[0]?.id ?? "",
+      supplierId: suppliers[0]?.id ?? "",
+      departureDate: new Date(),
+    });
+    openCreate();
+  };
+
   const onSubmit = async (values: BookingFormValues) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("New Booking:", values);
-    toast.success("Booking created successfully");
-    closeDrawer();
-    form.reset();
+    if (isEditing && editingId) {
+      await MockAPI.updateBooking(editingId, values);
+      toast.success("Booking updated successfully");
+    } else {
+      const booking = await MockAPI.createBookingFromForm(values);
+      toast.success("Booking created successfully", { description: `Reference: ${booking.bookingRef}` });
+    }
+    close();
+    form.reset(bookingDefaultValues);
+    await loadData();
   };
 
   const columns: ColumnDef<Booking>[] = [
@@ -122,12 +136,12 @@ export default function BookingsPage() {
     {
       id: "actions",
       cell: ({ row }) => (
-        <DataTableRowActions 
-          row={row} 
-          onView={() => router.push(`/bookings/${row.original.id}`)} 
+        <DataTableRowActions
+          row={row}
+          onView={() => router.push(`/bookings/${row.original.id}`)}
           onEdit={() => {
-            openDrawer();
-            toast.success(`Editing booking ${row.original.pnr}`);
+            form.reset(mapBookingToForm(row.original));
+            openEdit(row.original.id);
           }}
         />
       ),
@@ -141,29 +155,26 @@ export default function BookingsPage() {
           <h1 className="tf-h2 text-[var(--tf-text-primary)]">Bookings</h1>
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage flight and package bookings, tracking revenue and margins.</p>
         </div>
-        <Button 
-          onClick={openDrawer}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
-        >
+        <Button onClick={handleOpenCreate} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm">
           <Plus className="mr-2 h-4 w-4" /> Create Booking
         </Button>
       </div>
 
       {(!isLoading && data.length === 0) ? (
-        <EmptyState 
-          icon={Plane} 
-          title="No bookings found" 
+        <EmptyState
+          icon={Plane}
+          title="No bookings found"
           description="Create your first booking to start tracking revenue and profit."
-          action={{ label: "Create Booking", onClick: openDrawer }}
+          action={{ label: "Create Booking", onClick: handleOpenCreate }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
-          <DataTable 
-            columns={columns} 
-            data={data} 
-            searchKey="pnr" 
+          <DataTable
+            columns={columns}
+            data={data}
+            searchKey="pnr"
             searchPlaceholder="Search by PNR..."
-            isLoading={isLoading} 
+            isLoading={isLoading}
             filters={[
               {
                 column: "bookingStatus",
@@ -173,8 +184,8 @@ export default function BookingsPage() {
                   { label: "Pending", value: "pending" },
                   { label: "Cancelled", value: "cancelled" },
                   { label: "Completed", value: "completed" },
-                ]
-              }
+                ],
+              },
             ]}
             enableExport
           />
@@ -182,32 +193,64 @@ export default function BookingsPage() {
       )}
 
       <DrawerForm
-        title="Create Booking"
-        description="Enter new booking details for a flight or package."
+        title={isEditing ? "Edit Booking" : "Create Booking"}
+        description={isEditing ? "Update booking details and pricing." : "Enter new booking details for a flight or package."}
         isOpen={isDrawerOpen}
-        onClose={closeDrawer}
+        onClose={close}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="lg"
+        submitLabel={isEditing ? "Save Changes" : "Create Booking"}
       >
         <Form {...form}>
           <div className="space-y-8">
-            {/* Note: In a real app, customer and supplier would use a searchable combobox */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="airline" label="Airline" placeholder="e.g. Emirates" />
-              <FormField control={form.control} name="pnr" label="PNR" placeholder="6-char alphanumeric" />
+              <FormSelect control={form.control} name="customerId" label="Customer" required options={customers.map((c) => ({
+                label: `${c.firstName} ${c.lastName}`,
+                value: c.id,
+              }))} />
+              <FormSelect control={form.control} name="supplierId" label="Supplier" required options={suppliers.map((s) => ({
+                label: s.name,
+                value: s.id,
+              }))} />
             </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="departureCity" label="From (City/Airport)" placeholder="e.g. KHI" />
-              <FormField control={form.control} name="arrivalCity" label="To (City/Airport)" placeholder="e.g. DXB" />
+              <FormField control={form.control} name="airline" label="Airline" placeholder="e.g. Emirates" required />
+              <FormField control={form.control} name="pnr" label="PNR" placeholder="6-char alphanumeric" required />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="costPrice" label="Cost Price (PKR)" type="number" />
-              <FormField control={form.control} name="salePrice" label="Sale Price (PKR)" type="number" />
+              <FormField control={form.control} name="departureCity" label="From (City/Airport)" placeholder="e.g. KHI" required />
+              <FormField control={form.control} name="arrivalCity" label="To (City/Airport)" placeholder="e.g. DXB" required />
             </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-[var(--tf-text-secondary)]">
+                  Departure Date<span className="text-[var(--tf-danger)] ml-0.5">*</span>
+                </Label>
+                <Controller
+                  control={form.control}
+                  name="departureDate"
+                  render={({ field }) => (
+                    <Input
+                      type="date"
+                      className="rounded-lg bg-[var(--tf-surface)] border-[var(--tf-border)]"
+                      value={field.value ? new Date(field.value).toISOString().slice(0, 10) : ""}
+                      onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                    />
+                  )}
+                />
+              </div>
+              <FormField control={form.control} name="ticketNumber" label="Ticket Number" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="costPrice" label="Cost Price (PKR)" type="number" required />
+              <FormField control={form.control} name="salePrice" label="Sale Price (PKR)" type="number" required />
+            </div>
+            <FormSelect control={form.control} name="paymentStatus" label="Payment Status" required options={[
+              { label: "Unpaid", value: "unpaid" },
+              { label: "Partial", value: "partial" },
+              { label: "Paid", value: "paid" },
+            ]} />
             <FormTextArea control={form.control} name="notes" label="Additional Notes" />
           </div>
         </Form>

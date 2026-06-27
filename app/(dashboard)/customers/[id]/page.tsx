@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DetailHeader } from "@/components/shared/DetailHeader";
 import { MockAPI } from "@/lib/mock-api";
-import { Customer, Booking } from "@/types";
+import { Customer, Booking, CustomerNote, CustomerDocument } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 import { DataTable } from "@/components/tables/DataTable";
@@ -17,36 +17,69 @@ import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrencyPKR } from "@/lib/utils";
 import { TableEntityLink } from "@/components/shared/TableEntityLink";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
+import { CustomerNotesPanel } from "@/components/customers/CustomerNotesPanel";
+import { CustomerDocumentsPanel } from "@/components/customers/CustomerDocumentsPanel";
+import { DrawerForm } from "@/components/forms/DrawerForm";
+import { FormField, FormSelect } from "@/components/forms/FormField";
+import { Form } from "@/components/ui/form";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@/lib/zod-resolver";
+import { customerSchema, CustomerFormValues, PAKISTAN_CITIES, countryForCity } from "@/features/customers/schemas/customer.schema";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { mapCustomerToForm } from "@/features/customers/utils/mapCustomerToForm";
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [notes, setNotes] = useState<CustomerNote[]>([]);
+  const [documents, setDocuments] = useState<CustomerDocument[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      setIsLoading(true);
-      const data = await MockAPI.getCustomer(id);
-      setCustomer(data);
-      if (data) {
-        // Fetch all bookings and filter by this customer
-        const allBookings = await MockAPI.getBookings();
-        setBookings(allBookings.filter(b => b.customerId === id));
-      }
-      setIsLoading(false);
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
+  });
+
+  const loadAll = async () => {
+    setIsLoading(true);
+    const data = await MockAPI.getCustomer(id);
+    setCustomer(data);
+    if (data) {
+      const allBookings = await MockAPI.getBookings();
+      setBookings(allBookings.filter((b) => b.customerId === id));
+      setNotes(await MockAPI.getCustomerNotes(id));
+      setDocuments(await MockAPI.getCustomerDocuments(id));
+      form.reset({
+        type: data.type,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        companyName: data.companyName ?? "",
+        businessType: data.businessType ?? "",
+        taxNumber: data.taxNumber ?? "",
+        email: data.email ?? "",
+        phone: data.phone,
+        whatsapp: data.whatsapp ?? "",
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().slice(0, 10) : "",
+        gender: data.gender,
+        cnic: data.cnic ?? "",
+        passportNumber: data.passportNumber ?? "",
+        city: data.city ?? "Karachi",
+        country: data.country ?? "Pakistan",
+        address: data.address ?? "",
+        emergencyContactName: data.emergencyContactName ?? "",
+        emergencyContactPhone: data.emergencyContactPhone ?? "",
+        internalNotes: data.internalNotes ?? "",
+      });
     }
-    load();
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    loadAll();
   }, [id]);
-
-  const handleEditProfile = () => {
-    toast.success("Edit Profile modal opened");
-  };
-
-  const handleAddNote = () => {
-    toast.success("Note added successfully");
-  };
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -133,8 +166,11 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </>
         }
         actions={
-          <Button onClick={handleEditProfile} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
-            <Edit className="w-4 h-4 mr-2" /> Edit Profile
+          <Button onClick={() => {
+            if (customer) form.reset(mapCustomerToForm(customer));
+            setEditOpen(true);
+          }} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+            <Edit className="w-4 h-4 mr-2" /> Edit Customer
           </Button>
         }
       />
@@ -241,43 +277,72 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         <TabsContent value="documents" className="mt-4">
           <Card className="border-[var(--tf-border)] bg-[var(--tf-surface)] shadow-sm">
             <CardHeader>
-               <CardTitle className="text-lg">Uploaded Documents</CardTitle>
+              <CardTitle className="text-lg">Uploaded Documents</CardTitle>
             </CardHeader>
             <CardContent>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--tf-border)] hover:bg-[var(--tf-surface-2)] cursor-pointer transition-colors">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 rounded bg-[var(--tf-primary)]/10 flex items-center justify-center text-[var(--tf-primary)] shrink-0">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="font-medium text-sm text-[var(--tf-text-primary)] truncate">Passport_Front.jpg</p>
-                      <p className="text-xs text-[var(--tf-text-muted)]">Expiry: 2029-05-12</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-[var(--tf-border)] hover:border-[var(--tf-primary)] cursor-pointer transition-colors text-[var(--tf-text-muted)] hover:text-[var(--tf-primary)] h-full">
-                  + Upload Document
-                </div>
-              </div>
+              <CustomerDocumentsPanel customerId={id} documents={documents} onUpdate={loadAll} />
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="notes" className="mt-4">
           <Card className="border-[var(--tf-border)] bg-[var(--tf-surface)] shadow-sm">
-            <CardContent className="pt-6 space-y-4">
-              <div className="bg-[var(--tf-surface-2)] p-4 rounded-lg border border-[var(--tf-border)]">
-                <p className="text-sm text-[var(--tf-text-primary)]">Prefers window seats on long-haul flights. Often travels to DXB for business.</p>
-                <p className="text-xs text-[var(--tf-text-muted)] mt-2">Added by Agent Umer on 10 Feb 2024</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full" onClick={handleAddNote}>
-                + Add Note
-              </Button>
+            <CardContent className="pt-6">
+              <CustomerNotesPanel customerId={id} notes={notes} onUpdate={loadAll} />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <DrawerForm
+        title="Edit Customer"
+        description="Update customer profile information."
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSubmit={form.handleSubmit(async (values) => {
+          if (!customer) return;
+          await MockAPI.updateCustomer(customer.id, values);
+          toast.success("Customer updated successfully");
+          setEditOpen(false);
+          loadAll();
+        })}
+        isSubmitting={form.formState.isSubmitting}
+        size="lg"
+      >
+        <Form {...form}>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="firstName" label="First Name" />
+              <FormField control={form.control} name="lastName" label="Last Name" />
+              <FormField control={form.control} name="email" label="Email" type="email" />
+              <FormField control={form.control} name="phone" label="Phone" type="tel" />
+              <FormField control={form.control} name="whatsapp" label="WhatsApp" type="tel" />
+              <FormSelect control={form.control} name="city" label="City" options={PAKISTAN_CITIES.map((c) => ({ label: c, value: c }))} />
+              <FormField control={form.control} name="country" label="Country" />
+              <FormField control={form.control} name="cnic" label="CNIC" />
+              <FormField control={form.control} name="passportNumber" label="Passport" />
+            </div>
+            <div className="flex items-center gap-3">
+              <Label className="normal-case tracking-normal">Individual</Label>
+              <Controller
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value === "corporate"}
+                    onCheckedChange={(checked) => field.onChange(checked ? "corporate" : "individual")}
+                  />
+                )}
+              />
+              <Label className="normal-case tracking-normal">Corporate</Label>
+            </div>
+            {form.watch("type") === "corporate" && (
+              <FormField control={form.control} name="companyName" label="Company Name" />
+            )}
+            <FormField control={form.control} name="internalNotes" label="Internal Notes" />
+          </div>
+        </Form>
+      </DrawerForm>
     </div>
   );
 }

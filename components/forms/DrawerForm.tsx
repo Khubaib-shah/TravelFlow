@@ -43,9 +43,18 @@ export function DrawerForm({
   size = "md",
   submitLabel = "Save Changes",
 }: DrawerFormProps) {
+  const preventCloseOnSelect = (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-slot="select-content"]')) {
+      e.preventDefault();
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <SheetContent
+        onPointerDownOutside={preventCloseOnSelect}
+        onInteractOutside={preventCloseOnSelect}
         className={cn("flex flex-col gap-0 p-0 sm:max-w-none bg-[var(--tf-surface)] border-l-[var(--tf-border)]", sizeClasses[size])}
       >
         <SheetHeader className="px-6 py-4 border-b border-[var(--tf-border)] space-y-1 bg-[var(--tf-surface)] text-left">

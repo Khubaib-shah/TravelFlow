@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, CreditCard } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -19,43 +19,50 @@ import { Button } from "@/components/ui/button";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { expenseSchema, ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
-import { useCreateDrawer } from "@/hooks/use-create-drawer";
+import { useEntityDrawer } from "@/hooks/use-entity-drawer";
+import { expenseDefaultValues, mapExpenseToForm } from "@/features/expenses/utils/mapExpenseToForm";
 
 export default function ExpensesPage() {
   const router = useRouter();
   const [data, setData] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDrawerOpen, openDrawer, closeDrawer } = useCreateDrawer();
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
+
+  const loadData = async () => {
+    setIsLoading(true);
+    const expenses = await MockAPI.getExpenses();
+    setData(expenses);
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const expenses = await MockAPI.getExpenses();
-      setData(expenses);
-      setIsLoading(false);
-    }
     loadData();
   }, []);
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: {
-      title: "",
-      category: "office_supplies",
-      amount: undefined,
-      paymentMethod: "bank_transfer",
-      paidTo: "",
-      notes: "",
-    },
+    defaultValues: expenseDefaultValues,
   });
 
+  const handleOpenCreate = () => {
+    form.reset({ ...expenseDefaultValues, date: new Date() });
+    openCreate();
+  };
+
   const onSubmit = async (values: ExpenseFormValues) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("New Expense:", values);
-    toast.success("Expense logged successfully");
-    closeDrawer();
-    form.reset();
+    if (isEditing && editingId) {
+      await MockAPI.updateExpense(editingId, values);
+      toast.success("Expense updated successfully");
+    } else {
+      await MockAPI.createExpense(values);
+      toast.success("Expense logged successfully");
+    }
+    close();
+    form.reset(expenseDefaultValues);
+    await loadData();
   };
 
   const columns: ColumnDef<Expense>[] = [
@@ -70,14 +77,14 @@ export default function ExpensesPage() {
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium text-[var(--tf-text-primary)]">{row.original.title}</span>
-          <span className="text-xs text-[var(--tf-text-secondary)] capitalize">{row.original.category.replace('_', ' ')}</span>
+          <span className="text-xs text-[var(--tf-text-secondary)] capitalize">{row.original.category.replace("_", " ")}</span>
         </div>
       ),
     },
     {
       accessorKey: "date",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
-      cell: ({ row }) => <span className="text-[var(--tf-text-secondary)]">{format(new Date(row.original.date), 'dd MMM yyyy')}</span>,
+      cell: ({ row }) => <span className="text-[var(--tf-text-secondary)]">{format(new Date(row.original.date), "dd MMM yyyy")}</span>,
     },
     {
       accessorKey: "amount",
@@ -87,13 +94,13 @@ export default function ExpensesPage() {
     {
       accessorKey: "paymentMethod",
       header: "Payment Method",
-      cell: ({ row }) => <span className="capitalize text-[var(--tf-text-secondary)]">{row.original.paymentMethod.replace('_', ' ')}</span>,
+      cell: ({ row }) => <span className="capitalize text-[var(--tf-text-secondary)]">{row.original.paymentMethod.replace("_", " ")}</span>,
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === 'approved' ? 'bg-[var(--tf-success-soft)] text-[var(--tf-success)]' : 'bg-[var(--tf-warning-soft)] text-[var(--tf-warning)]'}`}>
+        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === "approved" ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]" : "bg-[var(--tf-warning-soft)] text-[var(--tf-warning)]"}`}>
           {row.original.status}
         </span>
       ),
@@ -101,13 +108,13 @@ export default function ExpensesPage() {
     {
       id: "actions",
       cell: ({ row }) => (
-        <DataTableRowActions 
-          row={row} 
-          onView={() => router.push(`/expenses/${row.original.id}`)} 
+        <DataTableRowActions
+          row={row}
+          onView={() => router.push(`/expenses/${row.original.id}`)}
           onEdit={() => {
-            openDrawer();
-            toast.success(`Editing expense`);
-          }} 
+            form.reset(mapExpenseToForm(row.original));
+            openEdit(row.original.id);
+          }}
         />
       ),
     },
@@ -120,29 +127,26 @@ export default function ExpensesPage() {
           <h1 className="tf-h2 text-[var(--tf-text-primary)]">Expenses</h1>
           <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Log and track operational costs.</p>
         </div>
-        <Button 
-          onClick={openDrawer}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
-        >
+        <Button onClick={handleOpenCreate} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm">
           <Plus className="mr-2 h-4 w-4" /> Log Expense
         </Button>
       </div>
 
       {(!isLoading && data.length === 0) ? (
-        <EmptyState 
-          icon={CreditCard} 
-          title="No expenses recorded" 
+        <EmptyState
+          icon={CreditCard}
+          title="No expenses recorded"
           description="Log your first operational expense to keep your profit calculations accurate."
-          action={{ label: "Log Expense", onClick: openDrawer }}
+          action={{ label: "Log Expense", onClick: handleOpenCreate }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
-          <DataTable 
-            columns={columns} 
-            data={data} 
-            searchKey="title" 
+          <DataTable
+            columns={columns}
+            data={data}
+            searchKey="title"
             searchPlaceholder="Search expenses..."
-            isLoading={isLoading} 
+            isLoading={isLoading}
             filters={[
               {
                 column: "status",
@@ -151,31 +155,33 @@ export default function ExpensesPage() {
                   { label: "Pending", value: "pending" },
                   { label: "Approved", value: "approved" },
                   { label: "Rejected", value: "rejected" },
-                ]
-              }
+                ],
+              },
             ]}
           />
         </div>
       )}
 
       <DrawerForm
-        title="Log Expense"
-        description="Record a new operational expense."
+        title={isEditing ? "Edit Expense" : "Log Expense"}
+        description={isEditing ? "Update expense details." : "Record a new operational expense."}
         isOpen={isDrawerOpen}
-        onClose={closeDrawer}
+        onClose={close}
         onSubmit={form.handleSubmit(onSubmit)}
         isSubmitting={form.formState.isSubmitting}
         size="md"
+        submitLabel={isEditing ? "Save Changes" : "Log Expense"}
       >
         <Form {...form}>
           <div className="space-y-6">
-            <FormField control={form.control} name="title" label="Expense Description" placeholder="e.g. Office Rent" />
+            <FormField control={form.control} name="title" label="Expense Description" placeholder="e.g. Office Rent" required />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="amount" label="Amount (PKR)" type="number" />
-              <FormSelect 
-                control={form.control} 
-                name="category" 
-                label="Category" 
+              <FormField control={form.control} name="amount" label="Amount (PKR)" type="number" required />
+              <FormSelect
+                control={form.control}
+                name="category"
+                label="Category"
+                required
                 options={[
                   { label: "Salary", value: "salary" },
                   { label: "Rent", value: "rent" },
@@ -185,23 +191,42 @@ export default function ExpensesPage() {
                   { label: "Software", value: "software" },
                   { label: "Travel", value: "travel" },
                   { label: "Other", value: "other" },
-                ]} 
+                ]}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-[var(--tf-text-secondary)]">
+                Date<span className="text-[var(--tf-danger)] ml-0.5">*</span>
+              </Label>
+              <Controller
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    className="rounded-lg bg-[var(--tf-surface)] border-[var(--tf-border)]"
+                    value={field.value ? new Date(field.value).toISOString().slice(0, 10) : ""}
+                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                  />
+                )}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="paidTo" label="Paid To" />
-              <FormSelect 
-                control={form.control} 
-                name="paymentMethod" 
-                label="Payment Method" 
+              <FormSelect
+                control={form.control}
+                name="paymentMethod"
+                label="Payment Method"
+                required
                 options={[
                   { label: "Cash", value: "cash" },
                   { label: "Bank Transfer", value: "bank_transfer" },
                   { label: "Credit Card", value: "credit_card" },
-                  { label: "Check", value: "check" },
-                ]} 
+                  { label: "Cheque", value: "cheque" },
+                ]}
               />
             </div>
+            <FormField control={form.control} name="notes" label="Notes" />
           </div>
         </Form>
       </DrawerForm>

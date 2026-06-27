@@ -23,11 +23,11 @@ export const formatShort = (amount: number): string => {
 
   if (abs >= 10_000_000) {
     const val = abs / 10_000_000;
-    return `${sign}${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)} Cr`;
+    return `${sign}${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}Cr`;
   }
   if (abs >= 100_000) {
     const val = abs / 100_000;
-    return `${sign}${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)} Lac`;
+    return `${sign}${val % 1 === 0 ? val.toFixed(0) : val.toFixed(1)}Lac`;
   }
   if (abs >= 1_000) {
     const val = abs / 1_000;

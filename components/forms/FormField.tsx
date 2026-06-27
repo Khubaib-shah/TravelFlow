@@ -19,10 +19,20 @@ interface BaseFieldProps<T extends FieldValues = FieldValues> {
   label: string;
   description?: string;
   placeholder?: string;
+  required?: boolean;
+}
+
+function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+  return (
+    <FormLabel className="text-sm font-medium text-[var(--tf-text-secondary)]">
+      {label}
+      {required && <span className="text-[var(--tf-danger)] ml-0.5">*</span>}
+    </FormLabel>
+  );
 }
 
 interface TextFieldProps<T extends FieldValues = FieldValues> extends BaseFieldProps<T> {
-  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "date" | "datetime-local";
 }
 
 export function FormField<T extends FieldValues = FieldValues>({
@@ -32,6 +42,7 @@ export function FormField<T extends FieldValues = FieldValues>({
   description,
   placeholder,
   type = "text",
+  required,
 }: TextFieldProps<T>) {
   return (
     <Controller
@@ -39,9 +50,7 @@ export function FormField<T extends FieldValues = FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <FormItem>
-          <FormLabel className="text-sm font-medium text-[var(--tf-text-secondary)]">
-            {label}
-          </FormLabel>
+          <FieldLabel label={label} required={required} />
           <FormControl>
             <Input
               type={type}
@@ -73,6 +82,7 @@ export function FormTextArea<T extends FieldValues = FieldValues>({
   label,
   description,
   placeholder,
+  required,
 }: BaseFieldProps<T>) {
   return (
     <Controller
@@ -80,9 +90,7 @@ export function FormTextArea<T extends FieldValues = FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <FormItem>
-          <FormLabel className="text-sm font-medium text-[var(--tf-text-secondary)]">
-            {label}
-          </FormLabel>
+          <FieldLabel label={label} required={required} />
           <FormControl>
             <Textarea
               placeholder={placeholder}
@@ -122,6 +130,7 @@ export function FormSelect<T extends FieldValues = FieldValues>({
   label,
   description,
   options,
+  required,
 }: SelectFieldProps<T>) {
   return (
     <Controller
@@ -129,9 +138,7 @@ export function FormSelect<T extends FieldValues = FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <FormItem>
-          <FormLabel className="text-sm font-medium text-[var(--tf-text-secondary)]">
-            {label}
-          </FormLabel>
+          <FieldLabel label={label} required={required} />
           <FormControl>
             <FilterSelect
               value={field.value ?? ""}

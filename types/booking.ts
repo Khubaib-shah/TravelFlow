@@ -15,6 +15,7 @@ export interface Booking {
   supplier?: Supplier;
   branchId: string;
   agentId: string;
+  leadId?: string;
   airline: string;
   departureCity: string;     // IATA code
   arrivalCity: string;

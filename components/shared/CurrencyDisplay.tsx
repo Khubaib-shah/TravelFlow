@@ -12,10 +12,21 @@ interface CurrencyDisplayProps {
  * short=false → "Rs 4,820,000"
  * short=true  → "Rs 4.8 Lac"
  */
-export function CurrencyDisplay({ amount, short = false, className }: CurrencyDisplayProps) {
+export function CurrencyDisplay({
+  amount,
+  short = false,
+  className,
+}: CurrencyDisplayProps) {
+  const formatted = formatCurrencyPKR(amount, short);
+
+  // "Rs 125,000" -> ["Rs", "125,000"]
+  const [currency, ...rest] = formatted.split(" ");
+  const value = rest.join(" ");
+
   return (
     <span className={cn("font-mono font-medium tabular-nums", className)}>
-      {formatCurrencyPKR(amount, short)}
+      <span className="text-sm font-semibold pr-1">{currency}</span>
+      <span className="font-mono tabular-nums">{value}</span>
     </span>
   );
 }

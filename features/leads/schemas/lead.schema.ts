@@ -1,19 +1,26 @@
 import { z } from "zod";
 
+const phoneRegex = /^(\+92|0)3[0-9]{2}[-\s]?[0-9]{7}$/;
+
 export const leadSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().min(10, "Valid phone number is required"),
-  whatsapp: z.string().optional(),
+  name: z.string().min(2, "Name must be at least 2 characters").max(60),
+  phone: z.string().regex(phoneRegex, "Enter a valid Pakistani number (03XX-XXXXXXX)"),
+  whatsapp: z.string().regex(phoneRegex, "Enter a valid Pakistani number").optional().or(z.literal("")),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   destination: z.string().min(2, "Destination is required"),
-  travelDate: z.date().optional(),
+  travelDate: z.string().optional(),
   budget: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
     z.number().min(0).optional()
   ),
+  adults: z.coerce.number().int().min(1, "Minimum 1 adult").max(20).default(1),
+  children: z.coerce.number().int().min(0).max(10).default(0),
+  specialRequirements: z.string().max(500).optional().or(z.literal("")),
   source: z.enum(["walk_in", "whatsapp", "facebook", "instagram", "website", "referral", "google_ads"]),
   status: z.enum(["new", "contacted", "follow_up", "interested", "negotiation", "converted", "lost"]),
-  notes: z.string().optional(),
+  assignedAgentId: z.string().optional(),
+  branchId: z.string().optional(),
+  notes: z.string().max(1000).optional().or(z.literal("")),
 });
 
 export type LeadFormValues = z.infer<typeof leadSchema>;

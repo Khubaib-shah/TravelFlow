@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { SeedProvider } from "@/providers/SeedProvider";
 import { Toaster } from "sonner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -34,7 +35,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SidebarProvider>
             <QueryProvider>
-              {children}
+              <SeedProvider>
+                {children}
+              </SeedProvider>
               <Toaster position="top-right" richColors />
             </QueryProvider>
           </SidebarProvider>
