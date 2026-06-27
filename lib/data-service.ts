@@ -152,7 +152,9 @@ export function getLead(id: string): Lead | null {
 
 export function createLead(values: LeadFormValues): Lead {
   const id = crypto.randomUUID();
-  const leadRef = generateRef("LD");
+  const leadRef = generateRef("LD", (ref) =>
+    leadsStore.getAll().some((lead) => lead.leadRef === ref)
+  );
   const timestamp = now();
 
   const leadData = serializeForStorage({
@@ -256,7 +258,9 @@ export function getCustomer(id: string): Customer | null {
 
 export function createCustomer(values: CustomerFormValues): Customer {
   const id = crypto.randomUUID();
-  const customerRef = generateRef("CUS");
+  const customerRef = generateRef("CUS", (ref) =>
+    customersStore.getAll().some((customer) => customer.customerRef === ref)
+  );
   const timestamp = now();
   const isCorporate = values.type === "corporate";
 
@@ -364,7 +368,9 @@ export interface CreateBookingInput {
 
 export function createBooking(input: CreateBookingInput): Booking {
   const id = crypto.randomUUID();
-  const bookingRef = generateRef("BK");
+  const bookingRef = generateRef("BK", (ref) =>
+    bookingsStore.getAll().some((booking) => booking.bookingRef === ref)
+  );
   const timestamp = now();
   const profit = input.salePrice - input.costPrice;
   const profitMargin = input.salePrice > 0 ? (profit / input.salePrice) * 100 : 0;
@@ -650,7 +656,9 @@ export function getExpenses(): Expense[] {
 
 export function createExpense(values: ExpenseFormValues): Expense {
   const timestamp = now();
-  const expenseRef = generateRef("EXP");
+  const expenseRef = generateRef("EXP", (ref) =>
+    expensesStore.getAll().some((expense) => expense.expenseRef === ref)
+  );
   const data = serializeForStorage({
     id: crypto.randomUUID(),
     agencyId: "ag-1",
