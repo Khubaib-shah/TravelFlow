@@ -6,74 +6,136 @@ import { formatCurrencyPKR } from "@/lib/utils";
 
 export function BranchPerformance({ isLoading }: { isLoading: boolean }) {
   const branchData = [
-    { name: "KHI Main", code: "KHI-HQ", revenue: 4820000, profit: 820000, expenses: 320000, staff: 15, growth: 12.5 },
-    { name: "DXB Office", code: "DXB-01", revenue: 3100000, profit: 540000, expenses: 210000, staff: 8, growth: 8.2 },
-    { name: "ISB Branch", code: "ISB-01", revenue: 2340000, profit: 380000, expenses: 180000, staff: 6, growth: -2.4 },
-    { name: "LHE Branch", code: "LHE-01", revenue: 1980000, profit: 290000, expenses: 160000, staff: 5, growth: 5.0 },
+    {
+      name: "KHI Main",
+      code: "KHI-HQ",
+      revenue: 4820000,
+      profit: 820000,
+      expenses: 320000,
+      staff: 15,
+      growth: 12.5,
+    },
+    {
+      name: "DXB Office",
+      code: "DXB-01",
+      revenue: 3100000,
+      profit: 540000,
+      expenses: 210000,
+      staff: 8,
+      growth: 8.2,
+    },
+    {
+      name: "ISB Branch",
+      code: "ISB-01",
+      revenue: 2340000,
+      profit: 380000,
+      expenses: 180000,
+      staff: 6,
+      growth: -2.4,
+    },
+    {
+      name: "LHE Branch",
+      code: "LHE-01",
+      revenue: 1980000,
+      profit: 290000,
+      expenses: 160000,
+      staff: 5,
+      growth: 5.0,
+    },
   ];
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 h-full shadow-sm flex flex-col">
+    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 h-full min-h-[480px] max-h-[750px] shadow-sm flex flex-col">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="tf-h3 text-[var(--tf-text-primary)]">Branch Performance</h3>
-        <span className="text-xs font-medium px-2 py-1 bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] rounded-full">This Month</span>
+        <h3 className="tf-h3 text-[var(--tf-text-primary)]">
+          Branch Performance
+        </h3>
+        <span className="text-xs font-medium px-2 py-1 bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] rounded-full">
+          This Month
+        </span>
       </div>
-      <p className="text-sm text-[var(--tf-text-secondary)] mb-6">Revenue and metrics by location</p>
+      <p className="text-sm text-[var(--tf-text-secondary)] mb-6">
+        Revenue and metrics by location
+      </p>
 
       {isLoading ? (
         <div className="flex-1 w-full bg-[var(--tf-surface-2)] animate-pulse rounded-md" />
       ) : (
-        <div className="flex flex-col h-full gap-6">
-          <div className="h-[200px]">
-            <BarChart 
-              data={branchData} 
+        <div className="flex flex-col flex-1 min-h-0 gap-6">
+          <div className="h-[180px] shrink-0">
+            <BarChart
+              data={branchData}
               layout="vertical"
-              height={200}
+              height={180}
               showValueOnBars={true}
               series={[
-                { key: "revenue", color: "var(--tf-primary)", label: "Revenue (₨)" }
-              ]} 
+                {
+                  key: "revenue",
+                  color: "var(--tf-primary)",
+                  label: "Revenue (₨)",
+                },
+              ]}
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-1 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--tf-text-muted)] mb-2">Detailed Metrics</h4>
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--tf-text-muted)] mb-2">
+              Detailed Metrics
+            </h4>
             {branchData.map((branch, idx) => (
-              <div key={branch.code} className="p-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface-2)]/50 hover:bg-[var(--tf-surface-2)] transition-colors">
+              <div
+                key={branch.code}
+                className="p-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface-2)]/50 hover:bg-[var(--tf-surface-2)] transition-colors"
+              >
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--tf-border)] text-xs font-bold text-[var(--tf-text-secondary)]">{idx + 1}</span>
-                    <span className="font-semibold text-sm text-[var(--tf-text-primary)]">{branch.name}</span>
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--tf-border)] text-xs font-bold text-[var(--tf-text-secondary)]">
+                      {idx + 1}
+                    </span>
+                    <span className="font-semibold text-sm text-[var(--tf-text-primary)]">
+                      {branch.name}
+                    </span>
                   </div>
-                  <div className={`text-xs font-medium ${branch.growth >= 0 ? 'text-[var(--tf-success)]' : 'text-[var(--tf-danger)]'}`}>
-                    {branch.growth >= 0 ? '+' : ''}{branch.growth}%
+                  <div
+                    className={`text-xs font-medium ${branch.growth >= 0 ? "text-[var(--tf-success)]" : "text-[var(--tf-danger)]"}`}
+                  >
+                    {branch.growth >= 0 ? "+" : ""}
+                    {branch.growth}%
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[var(--tf-text-muted)]">
                       <TrendingUp className="w-3 h-3" /> Revenue
                     </span>
-                    <span className="text-xs font-semibold text-[var(--tf-text-primary)]">{formatCurrencyPKR(branch.revenue, true)}</span>
+                    <span className="text-xs font-semibold text-[var(--tf-text-primary)]">
+                      {formatCurrencyPKR(branch.revenue, true)}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[var(--tf-text-muted)]">
                       <DollarSign className="w-3 h-3" /> Profit
                     </span>
-                    <span className="text-xs font-semibold text-[var(--tf-success)]">{formatCurrencyPKR(branch.profit, true)}</span>
+                    <span className="text-xs font-semibold text-[var(--tf-success)]">
+                      {formatCurrencyPKR(branch.profit, true)}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[var(--tf-text-muted)]">
                       <CreditCard className="w-3 h-3" /> Expenses
                     </span>
-                    <span className="text-xs font-semibold text-[var(--tf-danger)]">{formatCurrencyPKR(branch.expenses, true)}</span>
+                    <span className="text-xs font-semibold text-[var(--tf-danger)]">
+                      {formatCurrencyPKR(branch.expenses, true)}
+                    </span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-[var(--tf-text-muted)]">
                       <Users className="w-3 h-3" /> Staff
                     </span>
-                    <span className="text-xs font-semibold text-[var(--tf-text-primary)]">{branch.staff} agents</span>
+                    <span className="text-xs font-semibold text-[var(--tf-text-primary)]">
+                      {branch.staff} agents
+                    </span>
                   </div>
                 </div>
               </div>

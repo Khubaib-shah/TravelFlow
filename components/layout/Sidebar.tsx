@@ -85,7 +85,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin py-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
         <SidebarNav isOpen={isOpen} />
       </div>
 

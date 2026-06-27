@@ -1,10 +1,11 @@
 "use client";
 
 import { Table } from "@tanstack/react-table";
-import { Search, SlidersHorizontal, Download } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FilterSelect } from "@/components/shared/FilterSelect";
+import { DataTableViewOptions } from "./DataTableViewOptions";
 import { toast } from "sonner";
 
 interface DataTableToolbarProps<TData> {
@@ -87,10 +88,7 @@ export function DataTableToolbar<TData>({
       </div>
       
       <div className="flex items-center space-x-2">
-        <Button variant="outline" size="sm" className="h-9 ml-auto flex hidden lg:flex border-[var(--tf-border)] text-[var(--tf-text-secondary)]">
-          <SlidersHorizontal className="mr-2 h-4 w-4" />
-          View
-        </Button>
+        <DataTableViewOptions table={table} />
         {enableExport && (
           <Button variant="outline" size="sm" onClick={handleExport} className="h-9 border-[var(--tf-border)] text-[var(--tf-text-secondary)]">
             <Download className="mr-2 h-4 w-4" />

@@ -45,7 +45,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 3: Branch Performance + Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         <BranchPerformance isLoading={isLoading} />
         <ActivityFeed isLoading={isLoading} />
       </div>

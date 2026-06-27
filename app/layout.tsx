@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
+import { IBM_Plex_Sans, Inter, JetBrains_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
@@ -7,16 +7,32 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { SeedProvider } from "@/providers/SeedProvider";
 import { Toaster } from "sonner";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-plus-jakarta",
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-ibm-plex-sans",
 });
 
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  display: "swap",
   variable: "--font-inter",
+});
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-roboto",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["500"],
+  display: "swap",
+  variable: "--font-jetbrains-mono",
 });
 
 export const metadata: Metadata = {
@@ -30,8 +46,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.variable} ${inter.variable} min-h-screen bg-[var(--tf-bg)] text-[var(--tf-text-primary)] antialiased overflow-hidden`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${ibmPlexSans.variable} ${inter.variable} ${roboto.variable} ${jetbrainsMono.variable}`}
+    >
+      <body className="min-h-screen bg-[var(--tf-bg)] text-[var(--tf-text-primary)] antialiased overflow-hidden">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SidebarProvider>
             <QueryProvider>

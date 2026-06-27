@@ -25,6 +25,7 @@ interface FilterSelectProps {
   allLabel?: string;
   className?: string;
   triggerClassName?: string;
+  fullWidth?: boolean;
 }
 
 export function FilterSelect({
@@ -36,6 +37,7 @@ export function FilterSelect({
   allLabel = "All",
   className,
   triggerClassName,
+  fullWidth = false,
 }: FilterSelectProps) {
   const selectValue = value || (allowAll ? ALL_VALUE : "");
 
@@ -46,7 +48,9 @@ export function FilterSelect({
     >
       <SelectTrigger
         className={cn(
-          "h-9 w-fit min-w-[120px] rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 text-sm text-[var(--tf-text-secondary)]",
+          fullWidth
+            ? "h-10 w-full rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 text-sm text-[var(--tf-text-primary)] shadow-sm"
+            : "h-9 w-fit min-w-[120px] rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] px-3 text-sm text-[var(--tf-text-secondary)]",
           triggerClassName
         )}
       >

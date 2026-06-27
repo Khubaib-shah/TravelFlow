@@ -20,10 +20,8 @@ export default function DashboardLayout({
         }`}
       >
         <Topbar />
-        <main className="flex-1 overflow-y-auto bg-[var(--tf-bg)] p-6 lg:p-8">
-          <div className="mx-auto max-w-[1400px]">
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto bg-[var(--tf-bg)] p-6">
+          {children}
         </main>
       </div>
     </div>

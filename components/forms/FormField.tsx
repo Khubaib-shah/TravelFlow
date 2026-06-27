@@ -49,7 +49,7 @@ export function FormField<T extends FieldValues = FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <FormItem>
+        <FormItem className="w-full space-y-2">
           <FieldLabel label={label} required={required} />
           <FormControl>
             <Input
@@ -89,7 +89,7 @@ export function FormTextArea<T extends FieldValues = FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <FormItem>
+        <FormItem className="w-full space-y-2">
           <FieldLabel label={label} required={required} />
           <FormControl>
             <Textarea
@@ -137,14 +137,16 @@ export function FormSelect<T extends FieldValues = FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <FormItem>
+        <FormItem className="w-full space-y-2">
           <FieldLabel label={label} required={required} />
           <FormControl>
             <FilterSelect
+              fullWidth
               value={field.value ?? ""}
               onValueChange={field.onChange}
               options={options}
               placeholder={`Select ${label.toLowerCase()}`}
+              triggerClassName="focus:ring-2 focus:ring-[var(--tf-primary)]"
             />
           </FormControl>
           {description && (
