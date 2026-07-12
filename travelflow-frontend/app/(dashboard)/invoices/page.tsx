@@ -80,7 +80,9 @@ export default function InvoicesPage() {
     {
       accessorKey: "paymentStatus",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.paymentStatus as any} />,
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.paymentStatus as any} />
+      ),
     },
     {
       id: "actions",
@@ -104,7 +106,7 @@ export default function InvoicesPage() {
         </div>
         <Button
           onClick={() => router.push("/bookings/new")}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Generate Invoice
         </Button>
@@ -115,7 +117,10 @@ export default function InvoicesPage() {
           icon={FileText}
           title="No invoices generated"
           description="You haven't created any invoices yet. Generate an invoice from a confirmed booking."
-          action={{ label: "Generate Invoice", onClick: () => router.push("/bookings/new") }}
+          action={{
+            label: "Generate Invoice",
+            onClick: () => router.push("/bookings/new"),
+          }}
         />
       ) : (
         <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">

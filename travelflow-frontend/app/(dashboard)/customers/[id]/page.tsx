@@ -61,7 +61,8 @@ export default function CustomerDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [isPaymentDrawerOpen, setIsPaymentDrawerOpen] = useState(false);
-  const [selectedBookingForPayment, setSelectedBookingForPayment] = useState<Booking | null>(null);
+  const [selectedBookingForPayment, setSelectedBookingForPayment] =
+    useState<Booking | null>(null);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -224,7 +225,7 @@ export default function CustomerDetailPage({
               if (customer) form.reset(mapCustomerToForm(customer));
               setEditOpen(true);
             }}
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover"
           >
             <Edit className="w-4 h-4 mr-2" /> Edit Customer
           </Button>
@@ -335,19 +336,19 @@ export default function CustomerDetailPage({
         <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="bookings"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Booking History
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Travel Documents
           </TabsTrigger>
           <TabsTrigger
             value="notes"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Internal Notes
           </TabsTrigger>

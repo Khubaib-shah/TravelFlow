@@ -102,7 +102,7 @@ export function CustomerNotesPanel({
             <Button
               onClick={handleSubmit}
               disabled={saving}
-              className="bg-[var(--tf-primary)] text-white normal-case tracking-normal"
+              className="bg-tf-primary text-white normal-case tracking-normal"
             >
               Add Note
             </Button>

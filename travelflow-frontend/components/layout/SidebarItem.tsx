@@ -34,7 +34,7 @@ export function SidebarItem({ item, isOpen }: SidebarItemProps) {
       )}
 
       {isOpen && item.badge && (
-        <span className="shrink-0 rounded-full bg-[var(--tf-primary)] px-2 py-0.5 text-[10px] font-bold text-white leading-tight">
+        <span className="shrink-0 rounded-full bg-tf-primary px-2 py-0.5 text-[10px] font-bold text-white leading-tight">
           {item.badge}
         </span>
       )}

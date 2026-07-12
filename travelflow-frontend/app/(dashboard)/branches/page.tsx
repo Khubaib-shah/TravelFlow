@@ -85,7 +85,7 @@ export default function BranchesPage() {
         </div>
         <Button
           onClick={handleOpenCreate}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Branch
         </Button>
@@ -109,7 +109,7 @@ export default function BranchesPage() {
           </p>
           <Button
             onClick={handleOpenCreate}
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Branch
           </Button>
@@ -123,7 +123,7 @@ export default function BranchesPage() {
               className="bg-tf-surface rounded-xl border border-tf-border p-5 shadow-sm hover:shadow-md hover:border-[var(--tf-primary)] transition-all cursor-pointer group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tf-primary-soft group-hover:bg-[var(--tf-primary)] transition-colors">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tf-primary-soft group-hover:bg-tf-primary transition-colors">
                   <GitBranch className="h-5 w-5 text-tf-primary group-hover:text-white transition-colors" />
                 </div>
                 <div className="flex items-center gap-2">

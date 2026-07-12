@@ -29,7 +29,7 @@ export function EmptyState({
       {action && (
         <Button
           onClick={action.onClick}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] normal-case tracking-normal"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover normal-case tracking-normal"
         >
           {action.label}
         </Button>

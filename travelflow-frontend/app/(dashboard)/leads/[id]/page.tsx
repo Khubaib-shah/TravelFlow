@@ -143,7 +143,7 @@ export default function LeadDetailPage({
             Add Follow-up
           </Button>
           <Button
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover"
             onClick={() => setConvertOpen(true)}
           >
             Convert to Booking
@@ -248,19 +248,19 @@ export default function LeadDetailPage({
         <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="activity"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Activity Log
           </TabsTrigger>
           <TabsTrigger
             value="requirements"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Detailed Requirements
           </TabsTrigger>
           <TabsTrigger
             value="followups"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Follow-ups
           </TabsTrigger>
@@ -278,7 +278,7 @@ export default function LeadDetailPage({
                 <div key={activity.id} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-3 h-3 rounded-full ${index === 0 ? "bg-[var(--tf-primary)]" : "bg-[var(--tf-border)]"}`}
+                      className={`w-3 h-3 rounded-full ${index === 0 ? "bg-tf-primary" : "bg-[var(--tf-border)]"}`}
                     />
                     {index < lead.activities.length - 1 && (
                       <div className="w-0.5 h-full bg-[var(--tf-border)] my-1" />

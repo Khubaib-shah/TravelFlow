@@ -94,7 +94,7 @@ export default function NotificationsSettingsPage() {
           <div className="pt-4 flex justify-end">
             <Button
               type="submit"
-              className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+              className="bg-tf-primary text-white hover:bg-tf-primary-hover"
             >
               <Save className="w-4 h-4 mr-2" /> Save Preferences
             </Button>

@@ -99,7 +99,7 @@ export default function BookingDetailPage({
             >
               <FileText className="w-4 h-4 mr-2" /> View Invoice
             </Button>
-            <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]">
+            <Button className="bg-tf-primary text-white hover:bg-tf-primary-hover">
               <Download className="w-4 h-4 mr-2" /> E-Ticket
             </Button>
           </>
@@ -271,19 +271,19 @@ export default function BookingDetailPage({
         <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="details"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Full Details
           </TabsTrigger>
           <TabsTrigger
             value="timeline"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Activity Log
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Documents
           </TabsTrigger>
@@ -369,7 +369,7 @@ export default function BookingDetailPage({
                 ].map((event, i) => (
                   <div key={i} className="flex gap-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 rounded-full bg-[var(--tf-primary)]"></div>
+                      <div className="w-3 h-3 rounded-full bg-tf-primary"></div>
                       {i !== 2 && (
                         <div className="w-0.5 h-full bg-[var(--tf-border)] my-1"></div>
                       )}

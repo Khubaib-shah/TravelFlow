@@ -100,7 +100,7 @@ export function DrawerForm({
             type="submit"
             form={onSubmit ? "drawer-form" : undefined}
             disabled={isSubmitting}
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover"
           >
             {isSubmitting ? (
               <>

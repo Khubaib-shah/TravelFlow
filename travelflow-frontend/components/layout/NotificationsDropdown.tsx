@@ -95,7 +95,7 @@ export function NotificationsDropdown() {
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[var(--tf-primary)] text-white text-[10px] font-bold">
+                <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-tf-primary text-white text-[10px] font-bold">
                   {unreadCount}
                 </span>
               )}
@@ -131,7 +131,7 @@ export function NotificationsDropdown() {
                   >
                     {/* Unread indicator */}
                     {!notification.read && (
-                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[var(--tf-primary)]" />
+                      <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-tf-primary" />
                     )}
 
                     <div

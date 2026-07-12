@@ -149,10 +149,12 @@ export default function UsersPage() {
       header: "Role",
       cell: ({ row }) => {
         const roleDef = roles.find((r) => r.name === row.original.role);
-        const style = roleDef ? { bg: roleDef.color, text: roleDef.textColor } : (roleColors[row.original.role] ?? {
-          bg: "var(--tf-surface-2)",
-          text: "var(--tf-text-secondary)",
-        });
+        const style = roleDef
+          ? { bg: roleDef.color, text: roleDef.textColor }
+          : (roleColors[row.original.role] ?? {
+              bg: "var(--tf-surface-2)",
+              text: "var(--tf-text-secondary)",
+            });
         return (
           <span
             className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize"
@@ -219,7 +221,7 @@ export default function UsersPage() {
         </div>
         <Button
           onClick={handleOpenCreate}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add User
         </Button>
@@ -374,7 +376,7 @@ export default function UsersPage() {
               ⚠️ Ask the user to change their password after first login.
             </p>
             <Button
-              className="w-full bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+              className="w-full bg-tf-primary text-white hover:bg-tf-primary-hover"
               onClick={() => setTempPasswordData(null)}
             >
               Done

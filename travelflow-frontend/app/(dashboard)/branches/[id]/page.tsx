@@ -243,13 +243,13 @@ export default function BranchDetailPage({
         <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="agents"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Agents
           </TabsTrigger>
           <TabsTrigger
             value="performance"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Performance Metrics
           </TabsTrigger>
@@ -279,7 +279,7 @@ export default function BranchDetailPage({
                   className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[var(--tf-primary)]/10 flex items-center justify-center text-tf-primary font-semibold">
+                    <div className="w-10 h-10 rounded-full bg-tf-primary/10 flex items-center justify-center text-tf-primary font-semibold">
                       {agent.firstName.charAt(0)}
                       {agent.lastName.charAt(0)}
                     </div>
@@ -343,9 +343,7 @@ export default function BranchDetailPage({
               variant={addMode === "assign" ? "default" : "outline"}
               size="sm"
               onClick={() => setAddMode("assign")}
-              className={
-                addMode === "assign" ? "bg-[var(--tf-primary)] text-white" : ""
-              }
+              className={addMode === "assign" ? "bg-tf-primary text-white" : ""}
             >
               Assign Existing
             </Button>
@@ -354,9 +352,7 @@ export default function BranchDetailPage({
               variant={addMode === "create" ? "default" : "outline"}
               size="sm"
               onClick={() => setAddMode("create")}
-              className={
-                addMode === "create" ? "bg-[var(--tf-primary)] text-white" : ""
-              }
+              className={addMode === "create" ? "bg-tf-primary text-white" : ""}
             >
               <UserPlus className="w-3.5 h-3.5 mr-1" /> Create New
             </Button>

@@ -37,7 +37,7 @@ export default function SettingsPage() {
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] hidden sm:flex"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover hidden sm:flex"
         >
           <Save className="w-4 h-4 mr-2" />
           {isSaving ? "Saving..." : "Save Changes"}
@@ -267,7 +267,7 @@ export default function SettingsPage() {
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-[var(--tf-primary)] text-white w-full"
+          className="bg-tf-primary text-white w-full"
         >
           <Save className="w-4 h-4 mr-2" />
           {isSaving ? "Saving..." : "Save Changes"}

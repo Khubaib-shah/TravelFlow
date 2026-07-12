@@ -195,7 +195,7 @@ export default function CustomersPage() {
         </div>
         <Button
           onClick={handleOpenCreate}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Customer
         </Button>

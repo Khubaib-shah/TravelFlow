@@ -31,8 +31,14 @@ import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { supplierSchema, SupplierFormValues } from "@/features/suppliers/schemas/supplier.schema";
-import { mapSupplierToForm, supplierDefaultValues } from "@/features/suppliers/utils/mapSupplierToForm";
+import {
+  supplierSchema,
+  SupplierFormValues,
+} from "@/features/suppliers/schemas/supplier.schema";
+import {
+  mapSupplierToForm,
+  supplierDefaultValues,
+} from "@/features/suppliers/utils/mapSupplierToForm";
 
 export default function SupplierDetailPage({
   params,
@@ -211,7 +217,7 @@ export default function SupplierDetailPage({
           </Button>
           <Button
             onClick={handleEditDetails}
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover"
           >
             <Edit className="w-4 h-4 mr-2" /> Edit Details
           </Button>
@@ -306,19 +312,19 @@ export default function SupplierDetailPage({
         <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="ledger"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Supplier Ledger
           </TabsTrigger>
           <TabsTrigger
             value="bookings"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Related Bookings
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Contracts
           </TabsTrigger>
@@ -397,7 +403,7 @@ export default function SupplierDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] cursor-pointer transition-colors">
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className="w-10 h-10 rounded bg-[var(--tf-primary)]/10 flex items-center justify-center text-tf-primary shrink-0">
+                <div className="w-10 h-10 rounded bg-tf-primary/10 flex items-center justify-center text-tf-primary shrink-0">
                   <Building className="w-5 h-5" />
                 </div>
                 <div className="overflow-hidden">

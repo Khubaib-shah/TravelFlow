@@ -32,7 +32,7 @@ export default function SignInPage() {
       <div className="z-10 w-full max-w-[480px] rounded-2xl bg-[var(--tf-surface)] p-8 sm:p-10 shadow-[var(--shadow-xl)] border border-tf-border">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--tf-primary)] text-white shadow-md">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-tf-primary text-white shadow-md">
             <Plane className="h-7 w-7" />
           </div>
           <h1 className="tf-h2 mb-2 text-tf-text-primary">TravelFlow</h1>
@@ -112,7 +112,7 @@ export default function SignInPage() {
 
           <Button
             type="submit"
-            className="mt-2 w-full bg-[var(--tf-primary)] py-3 text-white hover:bg-[var(--tf-primary-hover)] normal-case tracking-normal"
+            className="mt-2 w-full bg-tf-primary py-3 text-white hover:bg-tf-primary-hover normal-case tracking-normal"
           >
             Sign In
           </Button>

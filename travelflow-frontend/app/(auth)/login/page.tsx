@@ -106,7 +106,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <div className="flex items-center justify-center lg:hidden gap-2 mb-8">
-              <div className="bg-[var(--tf-primary)] p-2 rounded-xl">
+              <div className="bg-tf-primary p-2 rounded-xl">
                 <Plane className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-tf-text-primary tracking-tight">
@@ -205,7 +205,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] text-base font-semibold"
+                className="w-full h-11 bg-tf-primary text-white hover:bg-tf-primary-hover text-base font-semibold"
                 disabled={submitting || isLoading}
               >
                 {submitting || isLoading ? (

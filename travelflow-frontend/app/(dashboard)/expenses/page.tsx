@@ -104,7 +104,11 @@ export default function ExpensesPage() {
       ),
       cell: ({ row }) => (
         <span className="text-tf-text-secondary">
-          {new Date(row.original.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+          {new Date(row.original.date).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}
         </span>
       ),
     },
@@ -165,7 +169,7 @@ export default function ExpensesPage() {
         </div>
         <Button
           onClick={handleOpenCreate}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
         >
           <Plus className="mr-2 h-4 w-4" /> Log Expense
         </Button>

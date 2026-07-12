@@ -147,7 +147,7 @@ export function SettleBalanceDrawer({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-[var(--tf-primary)] hover:bg-[var(--tf-primary-hover)] text-white"
+              className="flex-1 bg-tf-primary hover:bg-tf-primary-hover text-white"
             >
               {isSubmitting ? "Processing..." : "Record Payment"}
             </Button>

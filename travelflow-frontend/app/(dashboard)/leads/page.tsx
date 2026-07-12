@@ -162,15 +162,15 @@ export default function LeadsPage() {
           onDelete={
             isAdminOrManager
               ? async (r) => {
-                if (!confirm(`Delete lead "${r.original.name}"?`)) return;
-                try {
-                  await API.deleteLead(r.original.id);
-                  toast.success("Lead deleted");
-                  await loadData();
-                } catch (e: any) {
-                  toast.error(e.message || "Failed to delete lead");
+                  if (!confirm(`Delete lead "${r.original.name}"?`)) return;
+                  try {
+                    await API.deleteLead(r.original.id);
+                    toast.success("Lead deleted");
+                    await loadData();
+                  } catch (e: any) {
+                    toast.error(e.message || "Failed to delete lead");
+                  }
                 }
-              }
               : undefined
           }
         />
@@ -187,12 +187,20 @@ export default function LeadsPage() {
             Manage and track your prospective customers.
           </p>
         </div>
-        <Button
-          onClick={handleOpenCreate}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add New Lead
-        </Button>
+        <div className="flex gap-4">
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Create Quatation
+          </Button>
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add New Lead
+          </Button>
+        </div>
       </div>
 
       {!isLoading && data.length === 0 ? (

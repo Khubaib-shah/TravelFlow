@@ -161,13 +161,13 @@ export default function ExpenseDetailPage({
         <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="details"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Metadata
           </TabsTrigger>
           <TabsTrigger
             value="receipts"
-            className="rounded-md data-[state=active]:bg-[var(--tf-primary)] data-[state=active]:text-white"
+            className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
           >
             Receipts / Attachments
           </TabsTrigger>

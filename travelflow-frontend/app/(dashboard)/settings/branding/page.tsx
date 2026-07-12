@@ -41,7 +41,7 @@ export default function BrandingSettingsPage() {
               Logo & Icons
             </h3>
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-lg bg-[var(--tf-primary)]/10 flex items-center justify-center border-2 border-dashed border-[var(--tf-primary)]/30">
+              <div className="w-24 h-24 rounded-lg bg-tf-primary/10 flex items-center justify-center border-2 border-dashed border-[var(--tf-primary)]/30">
                 <span className="text-tf-primary font-bold text-2xl">TF</span>
               </div>
               <div className="space-y-2">
@@ -74,7 +74,7 @@ export default function BrandingSettingsPage() {
                   key={theme.name}
                   className={`border rounded-lg p-4 cursor-pointer transition-all ${
                     theme.active
-                      ? "border-[var(--tf-primary)] ring-1 ring-[var(--tf-primary)] bg-[var(--tf-primary)]/5"
+                      ? "border-[var(--tf-primary)] ring-1 ring-[var(--tf-primary)] bg-tf-primary/5"
                       : "border-tf-border hover:border-[var(--tf-text-muted)]"
                   }`}
                 >
@@ -92,7 +92,7 @@ export default function BrandingSettingsPage() {
           <div className="pt-4 flex justify-end">
             <Button
               type="submit"
-              className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+              className="bg-tf-primary text-white hover:bg-tf-primary-hover"
             >
               <Save className="w-4 h-4 mr-2" /> Save Branding
             </Button>

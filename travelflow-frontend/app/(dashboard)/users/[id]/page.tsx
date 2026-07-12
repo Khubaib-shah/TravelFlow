@@ -57,13 +57,15 @@ export default function UserDetailPage({
 
   const loadAll = async () => {
     setIsLoading(true);
-    const [userData, branchList, leads, bookings, roleList] = await Promise.all([
-      API.getUser(id),
-      API.getBranches(),
-      API.getLeads(),
-      API.getBookings(),
-      API.getRoles(),
-    ]);
+    const [userData, branchList, leads, bookings, roleList] = await Promise.all(
+      [
+        API.getUser(id),
+        API.getBranches(),
+        API.getLeads(),
+        API.getBookings(),
+        API.getRoles(),
+      ],
+    );
     setUser(userData);
     setBranches(branchList);
     setRoles(roleList);
@@ -104,10 +106,12 @@ export default function UserDetailPage({
   }
 
   const roleDef = roles.find((r) => r.name === user.role);
-  const roleStyle = roleDef ? { bg: roleDef.color, text: roleDef.textColor } : (roleColors[user.role] ?? {
-    bg: "var(--tf-surface-2)",
-    text: "var(--tf-text-secondary)",
-  });
+  const roleStyle = roleDef
+    ? { bg: roleDef.color, text: roleDef.textColor }
+    : (roleColors[user.role] ?? {
+        bg: "var(--tf-surface-2)",
+        text: "var(--tf-text-secondary)",
+      });
 
   return (
     <div className="space-y-6 pb-12">
@@ -154,7 +158,7 @@ export default function UserDetailPage({
             form.reset(mapUserToForm(user));
             setEditOpen(true);
           }}
-          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
+          className="bg-tf-primary text-white hover:bg-tf-primary-hover"
         >
           <Edit className="w-4 h-4 mr-2" /> Edit User
         </Button>

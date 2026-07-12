@@ -122,46 +122,61 @@
   --sidebar-border: oklch(0.922 0.005 34.3);
   --sidebar-ring: oklch(0.714 0.014 41.2);
 
-  /* TravelFlow Variables - LIGHT MODE */
-  --tf-primary: #0ea5e9;
-  --tf-primary-hover: #0284c7;
-  --tf-primary-soft: #e0f2fe;
-  --tf-accent: #f97316;
-  --tf-accent-hover: #ea6c0a;
-  --tf-accent-soft: #fff7ed;
+  /* Trip Trails - LIGHT */
 
-  --tf-success: #22c55e;
+  --tf-primary: #2f6b3b;
+  --tf-primary-hover: #255730;
+  --tf-primary-soft: #eef7f0;
+
+  --tf-accent: #c79b2d;
+  --tf-accent-hover: #ad8522;
+  --tf-accent-soft: #fff8e5;
+
+  --tf-success: #16a34a;
   --tf-success-soft: #dcfce7;
-  --tf-warning: #f59e0b;
+
+  --tf-warning: #d97706;
   --tf-warning-soft: #fef3c7;
-  --tf-danger: #ef4444;
+
+  --tf-danger: #dc2626;
   --tf-danger-soft: #fee2e2;
-  --tf-info: #6366f1;
-  --tf-info-soft: #eef2ff;
+
+  --tf-info: #2563eb;
+  --tf-info-soft: #dbeafe;
+
+  /* Cards */
 
   --tf-card-blue: #eff6ff;
-  --tf-card-teal: #f0fdf4;
-  --tf-card-amber: #fffbeb;
+  --tf-card-teal: #eef7f0;
+  --tf-card-amber: #fff8e8;
   --tf-card-violet: #f5f3ff;
   --tf-card-slate: #f8fafc;
   --tf-card-coral: #fff1f2;
 
-  --tf-bg: #f8fafc;
-  --tf-surface: #ffffff;
-  --tf-surface-2: #f1f5f9;
-  --tf-border: #e2e8f0;
-  --tf-border-strong: #cbd5e1;
+  /* Surfaces */
 
-  --tf-text-primary: #0f172a;
-  --tf-text-secondary: #475569;
-  --tf-text-muted: #94a3b8;
+  --tf-bg: #f7f8f4;
+  --tf-surface: #ffffff;
+  --tf-surface-2: #f2f5ef;
+
+  --tf-border: #dde5dc;
+  --tf-border-strong: #c7d2c5;
+
+  /* Typography */
+
+  --tf-text-primary: #1b1f1c;
+  --tf-text-secondary: #4b5563;
+  --tf-text-muted: #6b7280;
   --tf-text-inverse: #ffffff;
 
+  /* Sidebar */
+
   --tf-sidebar-bg: #ffffff;
-  --tf-sidebar-active: #eff6ff;
-  --tf-sidebar-text: #475569;
-  --tf-sidebar-active-text: #0ea5e9;
-  --tf-sidebar-accent: #0ea5e9;
+  --tf-sidebar-active: #eef7f0;
+  --tf-sidebar-text: #4b5563;
+  --tf-sidebar-active-text: #2f6b3b;
+  --tf-sidebar-accent: #2f6b3b;
+
   --tf-sidebar-width: 240px;
   --tf-sidebar-collapsed-width: 64px;
 
@@ -249,43 +264,62 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.547 0.021 43.1);
 
-  /* TravelFlow Variables - DARK MODE */
-  --tf-primary: #38bdf8;
-  --tf-primary-hover: #7dd3fc;
-  --tf-primary-soft: rgba(56, 189, 248, 0.12);
-  --tf-accent: #fb923c;
-  --tf-accent-soft: rgba(249, 115, 22, 0.12);
+  /* Trip Trails - DARK */
+
+  --tf-primary: #62b46d;
+  --tf-primary-hover: #7bc684;
+  --tf-primary-soft: rgba(98, 180, 109, 0.14);
+
+  --tf-accent: #d6b04a;
+  --tf-accent-hover: #e2bf66;
+  --tf-accent-soft: rgba(214, 176, 74, 0.12);
 
   --tf-success: #4ade80;
   --tf-success-soft: rgba(74, 222, 128, 0.12);
+
   --tf-warning: #fbbf24;
   --tf-warning-soft: rgba(251, 191, 36, 0.12);
+
   --tf-danger: #f87171;
   --tf-danger-soft: rgba(248, 113, 113, 0.12);
 
-  --tf-card-blue: rgba(56, 189, 248, 0.08);
-  --tf-card-teal: rgba(52, 211, 153, 0.08);
-  --tf-card-amber: rgba(251, 191, 36, 0.08);
+  --tf-info: #60a5fa;
+  --tf-info-soft: rgba(96, 165, 250, 0.12);
+
+  /* Cards */
+
+  --tf-card-blue: rgba(96, 165, 250, 0.08);
+  --tf-card-teal: rgba(98, 180, 109, 0.08);
+  --tf-card-amber: rgba(214, 176, 74, 0.08);
   --tf-card-violet: rgba(167, 139, 250, 0.08);
   --tf-card-slate: rgba(148, 163, 184, 0.06);
-  --tf-card-coral: rgba(251, 113, 133, 0.08);
+  --tf-card-coral: rgba(248, 113, 113, 0.08);
 
-  --tf-bg: #0a0f1e;
-  --tf-surface: #111827;
-  --tf-surface-2: #1e293b;
+  /* Surfaces */
+
+  --tf-bg: #0f1511;
+  --tf-surface: #18201a;
+  --tf-surface-2: #202b22;
+
   --tf-border: rgba(255, 255, 255, 0.08);
   --tf-border-strong: rgba(255, 255, 255, 0.15);
 
-  --tf-text-primary: #f1f5f9;
-  --tf-text-secondary: #94a3b8;
-  --tf-text-muted: #475569;
-  --tf-text-inverse: #0f172a;
+  /* Typography */
 
-  --tf-sidebar-bg: #111827;
-  --tf-sidebar-active: rgba(56, 189, 248, 0.1);
-  --tf-sidebar-text: #94a3b8;
-  --tf-sidebar-active-text: #38bdf8;
-  --tf-header-bg: #111827;
+  --tf-text-primary: #f3f5f3;
+  --tf-text-secondary: #c3cbc4;
+  --tf-text-muted: #7c8a80;
+  --tf-text-inverse: #111827;
+
+  /* Sidebar */
+
+  --tf-sidebar-bg: #18201a;
+  --tf-sidebar-active: rgba(98, 180, 109, 0.14);
+  --tf-sidebar-text: #c3cbc4;
+  --tf-sidebar-active-text: #62b46d;
+  --tf-sidebar-accent: #62b46d;
+
+  --tf-header-bg: #18201a;
 }
 
 @layer base {

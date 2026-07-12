@@ -355,7 +355,7 @@ export function SearchCommand() {
                           onMouseEnter={() => setSelectedIndex(idx)}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group ${
                             isSelected
-                              ? "bg-[var(--tf-primary)] text-white"
+                              ? "bg-tf-primary text-white"
                               : "text-tf-text-primary hover:bg-[var(--tf-surface-2)]"
                           }`}
                         >

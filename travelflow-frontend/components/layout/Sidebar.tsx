@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { useSidebarStore } from "@/store/sidebar.store";
 import { SidebarNav } from "./SidebarNav";
 import appData from "@/app.json";
@@ -20,10 +21,14 @@ import { IconButton } from "@/components/shared/IconButton";
 import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
+  const { resolvedTheme } = useTheme();
   const { isOpen, toggle } = useSidebarStore();
   const [isAgencyOpen, setIsAgencyOpen] = useState(false);
   const router = useRouter();
   const { logout, user } = useAuthStore();
+
+  const logo =
+    resolvedTheme === "dark" ? appData["logo-light"] : appData["logo-dark"];
 
   const displayName = user
     ? `${user.firstName} ${user.lastName}`.trim()
@@ -57,15 +62,11 @@ export function Sidebar() {
           href="/dashboard"
           className={`flex items-center gap-2 ${!isOpen && "justify-center w-full"}`}
         >
-          {appData.logo ? (
-            <img
-              src={appData.logo}
-              alt="Logo"
-              className="size-32 object-contain"
-            />
+          {logo ? (
+            <img src={logo} alt="Logo" className="w-20 object-contain" />
           ) : (
             <>
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--tf-primary)] text-white">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-tf-primary text-white">
                 <Plane className="h-4 w-4" />
               </div>
               {isOpen && (

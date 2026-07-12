@@ -55,7 +55,7 @@ export default function ReceiptDetailPage({
               toast.success("Generating PDF...");
               window.print();
             }}
-            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] print:hidden"
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover print:hidden"
           >
             <Download className="w-4 h-4 mr-2" /> Download PDF
           </Button>
