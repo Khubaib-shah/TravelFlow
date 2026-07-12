@@ -28,7 +28,6 @@ export default function BookingDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const router = useRouter();
   const { id } = use(params);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [documents, setDocuments] = useState<BookingDocument[]>([]);
@@ -85,13 +84,15 @@ export default function BookingDetailPage({
         }
         actions={
           <>
-            <Button
-              variant="outline"
-              onClick={() => setIsPaymentDrawerOpen(true)}
-              className="bg-[var(--tf-success-soft)] text-tf-success hover:bg-tf-success hover:text-white border-tf-success/30 transition-colors"
-            >
-              <CreditCard className="w-4 h-4 mr-2" /> Record Payment
-            </Button>
+            {booking.balance > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => setIsPaymentDrawerOpen(true)}
+                className="bg-[var(--tf-success-soft)] text-tf-success hover:bg-tf-success hover:text-white border-tf-success/30 transition-colors"
+              >
+                <CreditCard className="w-4 h-4 mr-2" /> Record Payment
+              </Button>
+            )}
             <Button
               variant="outline"
               className="bg-tf-surface text-tf-text-primary"
@@ -121,8 +122,7 @@ export default function BookingDetailPage({
         <Card className="col-span-1 lg:col-span-2 shadow-sm border-tf-border bg-tf-surface">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg flex items-center gap-2 text-tf-text-primary">
-              <User className="w-5 h-5 text-tf-primary" /> Passenger
-              Details
+              <User className="w-5 h-5 text-tf-primary" /> Passenger Details
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -9,10 +9,9 @@ import { IconButton } from "@/components/shared/IconButton";
 import { Focus, Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export function Topbar() {
-  const { toggle, isOpen, setIsOpen } = useSidebarStore();
+  const { toggle, setIsOpen } = useSidebarStore();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
@@ -24,10 +23,6 @@ export function Topbar() {
     setIsFocusMode(next);
     // Focus mode collapses the sidebar to give maximum working space
     setIsOpen(!next);
-    toast(next ? "Focus mode enabled — sidebar collapsed" : "Focus mode off", {
-      icon: next ? "🎯" : "↩️",
-      duration: 2000,
-    });
   };
 
   return (

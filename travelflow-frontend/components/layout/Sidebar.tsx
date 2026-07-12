@@ -2,6 +2,7 @@
 
 import { useSidebarStore } from "@/store/sidebar.store";
 import { SidebarNav } from "./SidebarNav";
+import appData from "@/app.json";
 import {
   Plane,
   PanelLeftClose,
@@ -56,11 +57,23 @@ export function Sidebar() {
           href="/dashboard"
           className={`flex items-center gap-2 ${!isOpen && "justify-center w-full"}`}
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--tf-primary)] text-white">
-            <Plane className="h-5 w-5" />
-          </div>
-          {isOpen && (
-            <span className="tf-h4 text-tf-text-primary">TravelFlow</span>
+          {appData.logo ? (
+            <img
+              src={appData.logo}
+              alt="Logo"
+              className="size-32 object-contain"
+            />
+          ) : (
+            <>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--tf-primary)] text-white">
+                <Plane className="h-4 w-4" />
+              </div>
+              {isOpen && (
+                <span className="tf-h4 text-tf-text-primary">
+                  {appData.platformName}
+                </span>
+              )}
+            </>
           )}
         </Link>
         {isOpen && (

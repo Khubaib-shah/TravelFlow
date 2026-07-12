@@ -16,15 +16,6 @@ export function BranchPerformance({ isLoading }: { isLoading: boolean }) {
       growth: 12.5,
     },
     {
-      name: "DXB Office",
-      code: "DXB-01",
-      revenue: 3100000,
-      profit: 540000,
-      expenses: 210000,
-      staff: 8,
-      growth: 8.2,
-    },
-    {
       name: "ISB Branch",
       code: "ISB-01",
       revenue: 2340000,
