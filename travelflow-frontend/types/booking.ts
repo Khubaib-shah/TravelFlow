@@ -14,7 +14,9 @@ export interface Booking {
   supplierId: string;
   supplier?: Supplier;
   branchId: string;
+  branch?: { id: string; name: string };
   agentId: string;
+  agent?: { id: string; name: string };
   leadId?: string;
   airline: string;
   departureCity: string;     // IATA code
@@ -32,4 +34,26 @@ export interface Booking {
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Receipt {
+  id: string;
+  receiptRef: string;
+  bookingId: string;
+  customerId: string;
+  amount: number;
+  paymentMethod: string;
+  notes?: string;
+  date: Date;
+  createdAt: Date;
+}
+
+export interface BookingDocument {
+  id: string;
+  bookingId: string;
+  name: string;
+  url: string;
+  type: string;
+  uploadedBy: string;
+  createdAt: Date;
 }

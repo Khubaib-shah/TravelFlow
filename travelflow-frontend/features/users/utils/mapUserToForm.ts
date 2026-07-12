@@ -8,7 +8,7 @@ export function mapUserToForm(user: User): UserFormValues {
     email: user.email,
     phone: user.phone ?? "",
     role: user.role,
-    branchId: user.branchId,
+    branchId: user.branchId ?? "",
     status: user.status,
   };
 }
@@ -19,6 +19,6 @@ export const userDefaultValues: UserFormValues = {
   email: "",
   phone: "",
   role: "agent",
-  branchId: "br-1",
+  branchId: "",
   status: "active",
 };

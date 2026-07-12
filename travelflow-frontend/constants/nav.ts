@@ -20,6 +20,7 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   badge?: string;
+  roles?: string[];
 }
 
 export interface NavGroup {
@@ -35,6 +36,7 @@ export const sidebarNav: NavGroup[] = [
         title: "Dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
+        roles: ["admin", "manager"],
       },
     ],
   },
@@ -86,6 +88,7 @@ export const sidebarNav: NavGroup[] = [
         title: "Expenses",
         href: "/expenses",
         icon: CreditCard,
+        roles: ["admin", "manager"],
       },
     ],
   },
@@ -96,6 +99,7 @@ export const sidebarNav: NavGroup[] = [
         title: "Reports",
         href: "/reports",
         icon: BarChart3,
+        roles: ["admin", "manager"],
       },
     ],
   },
@@ -106,16 +110,19 @@ export const sidebarNav: NavGroup[] = [
         title: "Branches",
         href: "/branches",
         icon: GitBranch,
+        roles: ["admin", "manager"],
       },
       {
         title: "Users",
         href: "/users",
         icon: UserCog,
+        roles: ["admin", "manager"],
       },
       {
         title: "Roles",
         href: "/roles",
         icon: ShieldCheck,
+        roles: ["admin", "manager"],
       },
     ],
   },
@@ -126,6 +133,7 @@ export const sidebarNav: NavGroup[] = [
         title: "Settings",
         href: "/settings",
         icon: Settings,
+        roles: ["admin", "manager"],
       },
     ],
   },

@@ -21,7 +21,7 @@ export function BarChart({ data, xKey = "name", series, height = 300, layout = "
   
   return (
     <div style={{ width: '100%', height: height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <RechartsBarChart 
           data={data} 
           layout={layout}

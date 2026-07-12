@@ -15,7 +15,7 @@ export function SparklineChart({ data, color, height = 30, width = 80 }: Sparkli
 
   return (
     <div style={{ width, height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <RechartsLineChart data={chartData}>
           <Line
             type="monotone"

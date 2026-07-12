@@ -26,10 +26,10 @@ interface DrawerFormProps {
 }
 
 const sizeClasses = {
-  sm: "sm:max-w-[400px]",
-  md: "sm:max-w-[560px]",
-  lg: "sm:max-w-[720px]",
-  xl: "sm:max-w-[900px]",
+  sm: "sm:!max-w-[400px]",
+  md: "sm:!max-w-[560px]",
+  lg: "sm:!max-w-[720px]",
+  xl: "sm:!max-w-[900px]",
 };
 
 export function DrawerForm({
@@ -51,23 +51,31 @@ export function DrawerForm({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Sheet
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <SheetContent
         onPointerDownOutside={preventCloseOnSelect}
         onInteractOutside={preventCloseOnSelect}
-        className={cn("flex flex-col gap-0 p-0 sm:max-w-none bg-[var(--tf-surface)] border-l-[var(--tf-border)]", sizeClasses[size])}
+        className={cn(
+          "flex flex-col gap-0 p-0 sm:max-w-none bg-[var(--tf-surface)] border-l-[var(--tf-border)]",
+          sizeClasses[size],
+        )}
       >
-        <SheetHeader className="px-6 py-4 border-b border-[var(--tf-border)] space-y-1 bg-[var(--tf-surface)] text-left">
-          <SheetTitle className="text-xl font-semibold text-[var(--tf-text-primary)]">
+        <SheetHeader className="px-6 py-4 border-b border-tf-border space-y-1 bg-[var(--tf-surface)] text-left">
+          <SheetTitle className="text-xl font-semibold text-tf-text-primary">
             {title}
           </SheetTitle>
           {description && (
-            <SheetDescription className="text-sm text-[var(--tf-text-secondary)]">
+            <SheetDescription className="text-sm text-tf-text-secondary">
               {description}
             </SheetDescription>
           )}
         </SheetHeader>
-        
+
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {onSubmit ? (
             <form id="drawer-form" onSubmit={onSubmit} className="space-y-6">
@@ -77,14 +85,14 @@ export function DrawerForm({
             <div className="space-y-6">{children}</div>
           )}
         </div>
-        
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--tf-border)] bg-[var(--tf-surface)]">
+
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-tf-border bg-[var(--tf-surface)]">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="border-[var(--tf-border)] text-[var(--tf-text-secondary)] hover:bg-[var(--tf-surface-2)] hover:text-[var(--tf-text-primary)]"
+            className="border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] hover:text-tf-text-primary"
           >
             Cancel
           </Button>

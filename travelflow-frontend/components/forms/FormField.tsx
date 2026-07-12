@@ -1,19 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { 
-  Control, 
-  FieldPath, 
-  FieldValues,
-  Controller,
-} from "react-hook-form";
-import { FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { Control, FieldPath, FieldValues, Controller } from "react-hook-form";
+import {
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 
 interface BaseFieldProps<T extends FieldValues = FieldValues> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<T, any>;
   name: FieldPath<T>;
   label: string;
@@ -22,17 +22,34 @@ interface BaseFieldProps<T extends FieldValues = FieldValues> {
   required?: boolean;
 }
 
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({
+  label,
+  required,
+}: {
+  label: string;
+  required?: boolean;
+}) {
   return (
-    <FormLabel className="text-sm font-medium text-[var(--tf-text-secondary)]">
+    <FormLabel className="text-sm font-medium text-tf-text-secondary">
       {label}
       {required && <span className="text-[var(--tf-danger)] ml-0.5">*</span>}
     </FormLabel>
   );
 }
 
-interface TextFieldProps<T extends FieldValues = FieldValues> extends BaseFieldProps<T> {
-  type?: "text" | "email" | "password" | "number" | "tel" | "url" | "date" | "datetime-local";
+interface TextFieldProps<
+  T extends FieldValues = FieldValues,
+> extends BaseFieldProps<T> {
+  type?:
+  | "text"
+  | "email"
+  | "password"
+  | "number"
+  | "tel"
+  | "url"
+  | "date"
+  | "datetime-local"
+  | "color";
 }
 
 export function FormField<T extends FieldValues = FieldValues>({
@@ -55,13 +72,13 @@ export function FormField<T extends FieldValues = FieldValues>({
             <Input
               type={type}
               placeholder={placeholder}
-              className="rounded-lg bg-[var(--tf-surface)] border-[var(--tf-border)] focus-visible:ring-2 focus-visible:ring-[var(--tf-primary)] focus-visible:ring-offset-0 text-[var(--tf-text-primary)] shadow-sm"
+              className="rounded-lg bg-tf-surface border-tf-border focus-visible:ring-2 focus-visible:ring-[var(--tf-primary)] focus-visible:ring-offset-0 text-tf-text-primary shadow-sm"
               {...field}
               value={field.value ?? ""}
             />
           </FormControl>
           {description && (
-            <FormDescription className="text-xs text-[var(--tf-text-muted)]">
+            <FormDescription className="text-xs text-tf-text-muted">
               {description}
             </FormDescription>
           )}
@@ -94,13 +111,13 @@ export function FormTextArea<T extends FieldValues = FieldValues>({
           <FormControl>
             <Textarea
               placeholder={placeholder}
-              className="min-h-[100px] rounded-lg resize-y bg-[var(--tf-surface)] border-[var(--tf-border)] focus-visible:ring-2 focus-visible:ring-[var(--tf-primary)] focus-visible:ring-offset-0 text-[var(--tf-text-primary)] shadow-sm"
+              className="min-h-[100px] rounded-lg resize-y bg-tf-surface border-tf-border focus-visible:ring-2 focus-visible:ring-[var(--tf-primary)] focus-visible:ring-offset-0 text-tf-text-primary shadow-sm"
               {...field}
               value={field.value ?? ""}
             />
           </FormControl>
           {description && (
-            <FormDescription className="text-xs text-[var(--tf-text-muted)]">
+            <FormDescription className="text-xs text-tf-text-muted">
               {description}
             </FormDescription>
           )}
@@ -120,7 +137,9 @@ export interface SelectOption {
   value: string;
 }
 
-interface SelectFieldProps<T extends FieldValues = FieldValues> extends BaseFieldProps<T> {
+interface SelectFieldProps<
+  T extends FieldValues = FieldValues,
+> extends BaseFieldProps<T> {
   options: SelectOption[];
 }
 
@@ -150,7 +169,7 @@ export function FormSelect<T extends FieldValues = FieldValues>({
             />
           </FormControl>
           {description && (
-            <FormDescription className="text-xs text-[var(--tf-text-muted)]">
+            <FormDescription className="text-xs text-tf-text-muted">
               {description}
             </FormDescription>
           )}

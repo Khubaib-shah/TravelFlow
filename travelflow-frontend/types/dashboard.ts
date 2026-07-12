@@ -23,4 +23,12 @@ export interface DashboardStats {
     expenses: number[];
     bookings: number[];
   };
+  
+  recentActivities?: {
+    id: string;
+    type: string;
+    title: string;
+    detail: string;
+    time: string | Date;
+  }[];
 }

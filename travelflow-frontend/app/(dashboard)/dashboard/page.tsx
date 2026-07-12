@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MockAPI } from "@/lib/mock-api";
+import { useEffect, useState, useCallback } from "react";
+import { API } from "@/lib/data-source";
+import { useInvalidationStore } from "@/store/invalidation.store";
 import { DashboardStats } from "@/types";
 import { KpiRow } from "@/components/dashboard/KpiRow";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
@@ -14,20 +15,23 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      try {
-        const stats = await MockAPI.getDashboardStats();
-        setData(stats);
-      } catch (error) {
-        console.error("Failed to load dashboard data", error);
-      } finally {
-        setIsLoading(false);
-      }
+  const lastUpdated = useInvalidationStore((state) => state.lastUpdated);
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const stats = await API.getDashboardStats();
+      setData(stats);
+    } catch (error) {
+      console.error("Failed to load dashboard data", error);
+    } finally {
+      setIsLoading(false);
     }
-    loadData();
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData, lastUpdated]);
 
   return (
     <div className="space-y-6">
@@ -44,10 +48,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Row 3: Branch Performance + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         <BranchPerformance isLoading={isLoading} />
-        <ActivityFeed isLoading={isLoading} />
+        <ActivityFeed isLoading={isLoading} activities={data?.recentActivities} />
       </div>
 
       {/* Row 4: Recent Bookings Table */}

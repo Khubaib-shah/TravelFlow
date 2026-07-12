@@ -12,7 +12,11 @@ interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   searchKey?: string;
   searchPlaceholder?: string;
-  filters?: { column: string; title: string; options: { label: string; value: string }[] }[];
+  filters?: {
+    column: string;
+    title: string;
+    options: { label: string; value: string }[];
+  }[];
   enableExport?: boolean;
 }
 
@@ -21,9 +25,8 @@ export function DataTableToolbar<TData>({
   searchKey,
   searchPlaceholder,
   filters,
-  enableExport
+  enableExport,
 }: DataTableToolbarProps<TData>) {
-  
   const handleExport = () => {
     try {
       const rows = table.getFilteredRowModel().rows;
@@ -31,18 +34,23 @@ export function DataTableToolbar<TData>({
         toast.info("No data to export");
         return;
       }
-      
-      const headers = table.getAllColumns()
-        .filter(c => c.getIsVisible() && c.id !== "actions")
-        .map(c => c.id);
-        
-      const csvData = rows.map(row => {
-        return headers.map(header => {
-          const val = row.getValue(header);
-          return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
-        }).join(",");
+
+      const headers = table
+        .getAllColumns()
+        .filter((c) => c.getIsVisible() && c.id !== "actions")
+        .map((c) => c.id);
+
+      const csvData = rows.map((row) => {
+        return headers
+          .map((header) => {
+            const val = row.getValue(header);
+            return typeof val === "string"
+              ? `"${val.replace(/"/g, '""')}"`
+              : val;
+          })
+          .join(",");
       });
-      
+
       const csvString = [headers.join(","), ...csvData].join("\n");
       const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -61,16 +69,16 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
-          <div className="relative w-[250px] lg:w-[350px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--tf-text-muted)]" />
-            <Input
-              placeholder={searchPlaceholder || "Search..."}
-              value={(table.getState().globalFilter as string) ?? ""}
-              onChange={(event) => table.setGlobalFilter(event.target.value)}
-              className="pl-9 h-9 bg-[var(--tf-surface)] border-[var(--tf-border)] focus-visible:ring-[var(--tf-primary)]"
-            />
-          </div>
-        {filters?.map(filter => {
+        <div className="relative w-[250px] lg:w-[350px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-tf-text-muted" />
+          <Input
+            placeholder={searchPlaceholder || "Search..."}
+            value={(table.getState().globalFilter as string) ?? ""}
+            onChange={(event) => table.setGlobalFilter(event.target.value)}
+            className="pl-9 h-9 bg-[var(--tf-surface)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
+          />
+        </div>
+        {filters?.map((filter) => {
           const column = table.getColumn(filter.column);
           if (!column) return null;
           return (
@@ -86,11 +94,16 @@ export function DataTableToolbar<TData>({
           );
         })}
       </div>
-      
+
       <div className="flex items-center space-x-2">
         <DataTableViewOptions table={table} />
         {enableExport && (
-          <Button variant="outline" size="sm" onClick={handleExport} className="h-9 border-[var(--tf-border)] text-[var(--tf-text-secondary)]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="h-9 border-tf-border text-tf-text-secondary"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

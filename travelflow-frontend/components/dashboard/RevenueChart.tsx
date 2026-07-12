@@ -4,7 +4,13 @@ import { AreaChart } from "@/components/charts/AreaChart";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 import { useState } from "react";
 
-export function RevenueChart({ data, isLoading }: { data: any, isLoading: boolean }) {
+export function RevenueChart({
+  data,
+  isLoading,
+}: {
+  data: any;
+  isLoading: boolean;
+}) {
   const [period, setPeriod] = useState("6m");
   // Generate dummy monthly data from sparklines for demonstration
   const chartData = [
@@ -17,11 +23,13 @@ export function RevenueChart({ data, isLoading }: { data: any, isLoading: boolea
   ];
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 h-full shadow-sm">
+    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 h-full shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="tf-h3 text-[var(--tf-text-primary)]">Revenue vs Profit</h3>
-          <p className="text-sm text-[var(--tf-text-secondary)]">Last 6 months performance</p>
+          <h3 className="tf-h3 text-tf-text-primary">Revenue vs Profit</h3>
+          <p className="text-sm text-tf-text-secondary">
+            Last 6 months performance
+          </p>
         </div>
         <FilterSelect
           value={period}
@@ -37,12 +45,12 @@ export function RevenueChart({ data, isLoading }: { data: any, isLoading: boolea
       {isLoading ? (
         <div className="w-full h-[300px] bg-[var(--tf-surface-2)] animate-pulse rounded-md" />
       ) : (
-        <AreaChart 
-          data={chartData} 
+        <AreaChart
+          data={chartData}
           series={[
             { key: "revenue", color: "var(--tf-primary)", label: "Revenue" },
-            { key: "profit", color: "var(--tf-success)", label: "Profit" }
-          ]} 
+            { key: "profit", color: "var(--tf-success)", label: "Profit" },
+          ]}
         />
       )}
     </div>

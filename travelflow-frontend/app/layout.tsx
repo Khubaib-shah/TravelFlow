@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { SidebarProvider } from "@/providers/SidebarProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
-import { SeedProvider } from "@/providers/SeedProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { Toaster } from "sonner";
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -51,16 +51,21 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${ibmPlexSans.variable} ${inter.variable} ${roboto.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-screen bg-[var(--tf-bg)] text-[var(--tf-text-primary)] antialiased overflow-hidden">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <SidebarProvider>
-            <QueryProvider>
-              <SeedProvider>
+      <body className="min-h-screen bg-[var(--tf-bg)] text-tf-text-primary antialiased overflow-hidden">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <SidebarProvider>
+              <QueryProvider>
                 {children}
-              </SeedProvider>
-              <Toaster position="top-right" richColors />
-            </QueryProvider>
-          </SidebarProvider>
+                <Toaster position="top-right" richColors />
+              </QueryProvider>
+            </SidebarProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

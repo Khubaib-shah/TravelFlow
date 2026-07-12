@@ -1,65 +1,244 @@
 "use client";
 
-import { GitBranch } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GitBranch, Plus, Building2, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { formatCurrencyPKR } from "@/lib/utils";
+import { ApiClient, BranchFormValues } from "@/lib/api-client";
+import type { Branch } from "@/types";
+import { Button } from "@/components/ui/button";
+import { DrawerForm } from "@/components/forms/DrawerForm";
+import { FormField, FormSelect } from "@/components/forms/FormField";
+import { Form } from "@/components/ui/form";
+import { useEntityDrawer } from "@/hooks/use-entity-drawer";
 
-const branches = [
-  { id: "br-1", name: "Karachi Main", code: "KHI-HQ", city: "Karachi", isHeadOffice: true, status: "active", revenue: 4820000, bookings: 54 },
-  { id: "br-2", name: "Islamabad Branch", code: "ISB-01", city: "Islamabad", isHeadOffice: false, status: "active", revenue: 2340000, bookings: 28 },
-  { id: "br-3", name: "Lahore Branch", code: "LHE-01", city: "Lahore", isHeadOffice: false, status: "active", revenue: 1980000, bookings: 22 },
-  { id: "br-4", name: "Dubai Office", code: "DXB-01", city: "Dubai", isHeadOffice: false, status: "active", revenue: 3100000, bookings: 31 },
-];
+const defaultValues: BranchFormValues = {
+  name: "",
+  code: "",
+  city: "",
+  address: "",
+  phone: "",
+  isHeadOffice: false,
+  status: "active",
+};
 
 export default function BranchesPage() {
   const router = useRouter();
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
+    useEntityDrawer();
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await ApiClient.getBranches();
+      setBranches(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const form = useForm<BranchFormValues>({ defaultValues });
+
+  const handleOpenCreate = () => {
+    form.reset(defaultValues);
+    openCreate();
+  };
+
+  const onSubmit = async (values: BranchFormValues) => {
+    console.log(values.isHeadOffice);
+    const payload = {
+      ...values,
+      isHeadOffice:
+        typeof values.isHeadOffice === "string"
+          ? values.isHeadOffice === "true"
+          : values.isHeadOffice,
+    };
+
+    if (isEditing && editingId) {
+      await ApiClient.updateBranch(editingId, payload);
+      toast.success("Branch updated");
+    } else {
+      await ApiClient.createBranch(payload);
+      toast.success("Branch created");
+    }
+    close();
+    form.reset(defaultValues);
+    await loadData();
+  };
 
   return (
     <div className="space-y-6">
-      <div className="bg-[var(--tf-surface)] p-6 rounded-xl border border-[var(--tf-border)] shadow-sm">
-        <h1 className="tf-h2 text-[var(--tf-text-primary)]">Branches</h1>
-        <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Manage your office locations across Pakistan and GCC.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
+        <div>
+          <h1 className="tf-h2 text-tf-text-primary">Branches</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">
+            Manage your office locations across Pakistan and GCC.
+          </p>
+        </div>
+        <Button
+          onClick={handleOpenCreate}
+          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Add Branch
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {branches.map((branch) => (
-          <div
-            key={branch.id}
-            onClick={() => router.push(`/branches/${branch.id}`)}
-            className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-tf-surface rounded-xl border border-tf-border p-5 h-40 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : branches.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-tf-surface rounded-xl border border-tf-border">
+          <Building2 className="h-12 w-12 text-tf-text-muted mb-4" />
+          <h3 className="tf-h4 text-tf-text-primary mb-1">No branches yet</h3>
+          <p className="tf-body text-tf-text-muted mb-4">
+            Create your first branch to get started.
+          </p>
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)]"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                <GitBranch className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="flex items-center gap-2">
-                {branch.isHeadOffice && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] px-2 py-0.5 rounded-full">
-                    HQ
+            <Plus className="mr-2 h-4 w-4" /> Add Branch
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {branches.map((branch) => (
+            <div
+              key={branch.id}
+              onClick={() => router.push(`/branches/${branch.id}`)}
+              className="bg-tf-surface rounded-xl border border-tf-border p-5 shadow-sm hover:shadow-md hover:border-[var(--tf-primary)] transition-all cursor-pointer group"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-tf-primary-soft group-hover:bg-[var(--tf-primary)] transition-colors">
+                  <GitBranch className="h-5 w-5 text-tf-primary group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex items-center gap-2">
+                  {branch.isHeadOffice && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider bg-tf-primary-soft text-tf-primary px-2 py-0.5 rounded-full">
+                      HQ
+                    </span>
+                  )}
+                  <span
+                    className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${branch.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-tf-surface-2 text-tf-text-muted"}`}
+                  >
+                    {branch.status}
                   </span>
-                )}
-                <span className="text-[10px] font-semibold uppercase tracking-wider bg-[var(--tf-success-soft)] text-[var(--tf-success)] px-2 py-0.5 rounded-full">
-                  {branch.status}
-                </span>
+                </div>
+              </div>
+
+              <h3 className="tf-h4 text-tf-text-primary mb-1">{branch.name}</h3>
+              <div className="flex items-center gap-1 mb-4">
+                <MapPin className="h-3 w-3 text-tf-text-muted" />
+                <p className="tf-caption text-tf-text-muted">
+                  {branch.code} · {branch.city}
+                </p>
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-tf-border">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    form.reset({
+                      name: branch.name,
+                      code: branch.code,
+                      city: branch.city,
+                      address: branch.address ?? "",
+                      phone: branch.phone ?? "",
+                      isHeadOffice: branch.isHeadOffice,
+                      status: branch.status,
+                    });
+                    openEdit(branch.id);
+                  }}
+                  className="text-xs text-tf-text-muted hover:text-tf-primary transition-colors"
+                >
+                  Edit
+                </button>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <h3 className="tf-h4 text-[var(--tf-text-primary)] mb-1">{branch.name}</h3>
-            <p className="tf-caption text-[var(--tf-text-muted)] mb-4">{branch.code} · {branch.city}</p>
-
-            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[var(--tf-border)]">
-              <div>
-                <p className="tf-caption text-[var(--tf-text-muted)]">Revenue</p>
-                <p className="font-semibold text-sm text-[var(--tf-text-primary)]">{formatCurrencyPKR(branch.revenue, true)}</p>
-              </div>
-              <div>
-                <p className="tf-caption text-[var(--tf-text-muted)]">Bookings</p>
-                <p className="tf-h4 text-[var(--tf-text-primary)]">{branch.bookings}</p>
-              </div>
+      <DrawerForm
+        title={isEditing ? "Edit Branch" : "Add Branch"}
+        description={
+          isEditing
+            ? "Update branch details."
+            : "Create a new office branch for your agency."
+        }
+        isOpen={isDrawerOpen}
+        onClose={close}
+        onSubmit={form.handleSubmit(onSubmit)}
+        isSubmitting={form.formState.isSubmitting}
+        size="xl"
+        submitLabel={isEditing ? "Save Changes" : "Create Branch"}
+      >
+        <Form {...form}>
+          <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                label="Branch Name"
+                required
+              />
+              <FormField
+                control={form.control}
+                name="code"
+                label="Branch Code"
+                placeholder="e.g. KHI, LHR"
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="city"
+              label="City"
+              required
+            />
+            <FormField control={form.control} name="address" label="Address" />
+            <FormField
+              control={form.control}
+              name="phone"
+              label="Phone"
+              type="tel"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormSelect
+                control={form.control}
+                name="status"
+                label="Status"
+                options={[
+                  { label: "Active", value: "active" },
+                  { label: "Inactive", value: "inactive" },
+                ]}
+              />
+              <FormSelect
+                control={form.control}
+                name="isHeadOffice"
+                label="Head Office?"
+                options={[
+                  { label: "No", value: "false" },
+                  { label: "Yes", value: "true" },
+                ]}
+              />
             </div>
           </div>
-        ))}
-      </div>
+        </Form>
+      </DrawerForm>
     </div>
   );
 }

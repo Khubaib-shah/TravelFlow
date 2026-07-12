@@ -1,6 +1,14 @@
 "use client";
 
-import { Bell, Ticket, UserPlus, Users, CreditCard, CheckCircle, X } from "lucide-react";
+import {
+  Bell,
+  Ticket,
+  UserPlus,
+  Users,
+  CreditCard,
+  CheckCircle,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/lib/utils";
@@ -17,53 +25,7 @@ interface Notification {
   createdAt: Date;
 }
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: "n-1",
-    type: "booking",
-    title: "Booking BK-2024-001 confirmed",
-    description: "Emirates KHI → DXB — ticket issued",
-    href: "/bookings/bk-1",
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 5),
-  },
-  {
-    id: "n-2",
-    type: "lead",
-    title: "New lead assigned to you",
-    description: "Ahmed Raza — Dubai package inquiry",
-    href: "/leads/LD-2024-001",
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
-  },
-  {
-    id: "n-3",
-    type: "customer",
-    title: "Customer profile updated",
-    description: "Sara Khan's passport expiry updated",
-    href: "/customers/cust-2",
-    read: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  },
-  {
-    id: "n-4",
-    type: "expense",
-    title: "Expense pending approval",
-    description: "Office Rent — Rs 85,000 logged by Usman",
-    href: "/expenses",
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
-  },
-  {
-    id: "n-5",
-    type: "booking",
-    title: "Payment balance outstanding",
-    description: "BK-2024-002 — Rs 1,65,000 still due",
-    href: "/bookings/bk-2",
-    read: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-  },
-];
+const INITIAL_NOTIFICATIONS: Notification[] = [];
 
 const typeIcon: Record<Notification["type"], React.ElementType> = {
   booking: Ticket,
@@ -74,29 +36,31 @@ const typeIcon: Record<Notification["type"], React.ElementType> = {
 };
 
 const typeColor: Record<Notification["type"], string> = {
-  booking: "text-[var(--tf-primary)] bg-[var(--tf-primary-soft)]",
+  booking: "text-tf-primary bg-[var(--tf-primary-soft)]",
   lead: "text-[var(--tf-warning)] bg-[var(--tf-warning-soft)]",
-  customer: "text-[var(--tf-success)] bg-[var(--tf-success-soft)]",
+  customer: "text-tf-success bg-[var(--tf-success-soft)]",
   expense: "text-[var(--tf-danger)] bg-[var(--tf-danger-soft)]",
   system: "text-[var(--tf-info)] bg-[var(--tf-info-soft)]",
 };
 
 export function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>(
+    INITIAL_NOTIFICATIONS,
+  );
   const router = useRouter();
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
-    setNotifications(prev =>
-      prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
     );
     setIsOpen(false);
     router.push(notification.href);
@@ -104,7 +68,7 @@ export function NotificationsDropdown() {
 
   const dismissNotification = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   return (
@@ -123,11 +87,13 @@ export function NotificationsDropdown() {
       </IconButton>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-[var(--tf-border)] bg-[var(--tf-surface)] shadow-xl overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-tf-border bg-[var(--tf-surface)] shadow-xl overflow-hidden z-50">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[var(--tf-border)] px-4 py-3">
+          <div className="flex items-center justify-between border-b border-tf-border px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-[var(--tf-text-primary)]">Notifications</span>
+              <span className="font-semibold text-sm text-tf-text-primary">
+                Notifications
+              </span>
               {unreadCount > 0 && (
                 <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[var(--tf-primary)] text-white text-[10px] font-bold">
                   {unreadCount}
@@ -149,7 +115,7 @@ export function NotificationsDropdown() {
           {/* List */}
           <div className="max-h-[360px] overflow-y-auto divide-y divide-[var(--tf-border)]">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-[var(--tf-text-muted)]">
+              <div className="px-4 py-8 text-center text-sm text-tf-text-muted">
                 No notifications
               </div>
             ) : (
@@ -168,18 +134,22 @@ export function NotificationsDropdown() {
                       <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[var(--tf-primary)]" />
                     )}
 
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs ${typeColor[notification.type]}`}>
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs ${typeColor[notification.type]}`}
+                    >
                       <Icon className="h-4 w-4" />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${!notification.read ? "text-[var(--tf-text-primary)]" : "text-[var(--tf-text-secondary)]"}`}>
+                      <p
+                        className={`text-sm font-medium truncate ${!notification.read ? "text-tf-text-primary" : "text-tf-text-secondary"}`}
+                      >
                         {notification.title}
                       </p>
-                      <p className="text-xs text-[var(--tf-text-muted)] truncate mt-0.5">
+                      <p className="text-xs text-tf-text-muted truncate mt-0.5">
                         {notification.description}
                       </p>
-                      <p className="text-[10px] text-[var(--tf-text-muted)] mt-1">
+                      <p className="text-[10px] text-tf-text-muted mt-1">
                         {formatTimeAgo(notification.createdAt)}
                       </p>
                     </div>
@@ -199,11 +169,14 @@ export function NotificationsDropdown() {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[var(--tf-border)] px-4 py-2.5">
+          <div className="border-t border-tf-border px-4 py-2.5">
             <Button
               variant="link"
               size="sm"
-              onClick={() => { setIsOpen(false); router.push("/reports"); }}
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/reports");
+              }}
               className="w-full h-auto p-0 text-xs font-medium normal-case tracking-normal"
             >
               View all activity →
@@ -213,7 +186,10 @@ export function NotificationsDropdown() {
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsOpen(false)}
+        ></div>
       )}
     </div>
   );

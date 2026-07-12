@@ -25,9 +25,18 @@ export function UserMenu() {
     router.push("/login");
   };
 
-  const displayName = user?.name ?? "Ahmad Khan";
+  const displayName = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : "Ahmad Khan";
   const displayEmail = user?.email ?? "ahmad@prestigetravel.com";
-  const initials = user?.initials ?? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const initials = user
+    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+    : displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 
   return (
     <DropdownMenu>
@@ -37,15 +46,22 @@ export function UserMenu() {
           className="rounded-full p-1 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal"
           aria-label="User menu"
         >
-          <div className="h-8 w-8 rounded-full bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] flex items-center justify-center border border-[var(--tf-border)]">
+          <div className="h-8 w-8 rounded-full bg-[var(--tf-primary-soft)] text-tf-primary flex items-center justify-center border border-tf-border">
             <span className="text-sm font-semibold">{initials}</span>
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 border-[var(--tf-border)] bg-[var(--tf-surface)]">
+      <DropdownMenuContent
+        align="end"
+        className="w-56 border-tf-border bg-[var(--tf-surface)]"
+      >
         <DropdownMenuLabel className="normal-case tracking-normal">
-          <p className="text-sm font-medium text-[var(--tf-text-primary)]">{displayName}</p>
-          <p className="text-xs font-normal text-[var(--tf-text-muted)] mt-0.5 truncate">{displayEmail}</p>
+          <p className="text-sm font-medium text-tf-text-primary">
+            {displayName}
+          </p>
+          <p className="text-xs font-normal text-tf-text-muted mt-0.5 truncate">
+            {displayEmail}
+          </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className="normal-case tracking-normal">

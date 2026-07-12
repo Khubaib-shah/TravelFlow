@@ -2,7 +2,14 @@
 
 import { useSidebarStore } from "@/store/sidebar.store";
 import { SidebarNav } from "./SidebarNav";
-import { Plane, PanelLeftClose, PanelRightClose, Building, ChevronDown, LogOut } from "lucide-react";
+import {
+  Plane,
+  PanelLeftClose,
+  PanelRightClose,
+  Building,
+  ChevronDown,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -17,8 +24,17 @@ export function Sidebar() {
   const router = useRouter();
   const { logout, user } = useAuthStore();
 
-  const displayName = user?.name ?? "Ahmad Khan";
-  const initials = user?.initials ?? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const displayName = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : "Ahmad Khan";
+  const initials = user
+    ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+    : displayName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 
   const handleLogout = () => {
     logout();
@@ -28,17 +44,24 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-[var(--tf-border)] bg-[var(--tf-sidebar-bg)] transition-all duration-300 ease-out ${
-        isOpen ? "w-[var(--tf-sidebar-width)]" : "w-[var(--tf-sidebar-collapsed-width)]"
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-tf-border bg-[var(--tf-sidebar-bg)] transition-all duration-300 ease-out ${
+        isOpen
+          ? "w-[var(--tf-sidebar-width)]"
+          : "w-[var(--tf-sidebar-collapsed-width)]"
       }`}
     >
       {/* Logo Area */}
-      <div className="flex h-[var(--tf-topbar-height)] shrink-0 items-center justify-between border-b border-[var(--tf-border)] px-4">
-        <Link href="/dashboard" className={`flex items-center gap-2 ${!isOpen && "justify-center w-full"}`}>
+      <div className="flex h-[var(--tf-topbar-height)] shrink-0 items-center justify-between border-b border-tf-border px-4">
+        <Link
+          href="/dashboard"
+          className={`flex items-center gap-2 ${!isOpen && "justify-center w-full"}`}
+        >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--tf-primary)] text-white">
             <Plane className="h-5 w-5" />
           </div>
-          {isOpen && <span className="tf-h4 text-[var(--tf-text-primary)]">TravelFlow</span>}
+          {isOpen && (
+            <span className="tf-h4 text-tf-text-primary">TravelFlow</span>
+          )}
         </Link>
         {isOpen && (
           <IconButton
@@ -52,37 +75,42 @@ export function Sidebar() {
       </div>
 
       {!isOpen && (
-        <div className="flex justify-center p-2 border-b border-[var(--tf-border)]">
-           <IconButton
-            onClick={toggle}
-            aria-label="Expand Sidebar"
-          >
+        <div className="flex justify-center p-2 border-b border-tf-border">
+          <IconButton onClick={toggle} aria-label="Expand Sidebar">
             <PanelRightClose className="h-5 w-5" />
           </IconButton>
         </div>
       )}
 
       {/* Agency Switcher */}
-      <div className={`border-b border-[var(--tf-border)] ${isOpen ? "p-4" : "p-2"}`}>
-        <Button
-          variant="outline"
-          onClick={() => setIsAgencyOpen(!isAgencyOpen)}
-          className={`flex h-auto w-full items-center gap-3 rounded-lg border border-[var(--tf-border)] bg-[var(--tf-surface)] p-2 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal ${!isOpen && "justify-center"}`}
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--tf-primary-soft)] text-[var(--tf-primary)]">
-            <Building className="h-4 w-4" />
-          </div>
-          {isOpen && (
-            <>
-              <div className="flex flex-1 flex-col items-start overflow-hidden text-left">
-                <span className="tf-body-sm w-full truncate font-semibold text-[var(--tf-text-primary)]">Prestige Travel HQ</span>
-                <span className="tf-caption w-full truncate text-[var(--tf-text-muted)]">Karachi</span>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-[var(--tf-text-muted)] shrink-0 transition-transform ${isAgencyOpen ? 'rotate-180' : ''}`} />
-            </>
-          )}
-        </Button>
-      </div>
+      {user?.role === "admin" && (
+        <div className={`border-b border-tf-border ${isOpen ? "p-4" : "p-2"}`}>
+          <Button
+            variant="outline"
+            onClick={() => setIsAgencyOpen(!isAgencyOpen)}
+            className={`flex h-auto w-full items-center gap-3 rounded-lg border border-tf-border bg-[var(--tf-surface)] p-2 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal ${!isOpen && "justify-center"}`}
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--tf-primary-soft)] text-tf-primary">
+              <Building className="h-4 w-4" />
+            </div>
+            {isOpen && (
+              <>
+                <div className="flex flex-1 flex-col items-start overflow-hidden text-left">
+                  <span className="tf-body-sm w-full truncate font-semibold text-tf-text-primary">
+                    Prestige Travel HQ
+                  </span>
+                  <span className="tf-caption w-full truncate text-tf-text-muted">
+                    Karachi
+                  </span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 text-tf-text-muted shrink-0 transition-transform ${isAgencyOpen ? "rotate-180" : ""}`}
+                />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
@@ -90,15 +118,21 @@ export function Sidebar() {
       </div>
 
       {/* User Profile */}
-      <div className="border-t border-[var(--tf-border)] p-4">
-        <div className={`flex items-center gap-3 ${!isOpen && "justify-center"}`}>
-          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[var(--tf-surface-2)] border border-[var(--tf-border)] flex items-center justify-center font-semibold text-[var(--tf-text-secondary)]">
+      <div className="border-t border-tf-border p-4">
+        <div
+          className={`flex items-center gap-3 ${!isOpen && "justify-center"}`}
+        >
+          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[var(--tf-surface-2)] border border-tf-border flex items-center justify-center font-semibold text-tf-text-secondary">
             {initials}
           </div>
           {isOpen && (
             <div className="flex flex-1 flex-col overflow-hidden">
-              <span className="tf-body-sm truncate font-semibold text-[var(--tf-text-primary)]">{displayName}</span>
-              <span className="tf-caption truncate text-[var(--tf-text-muted)]">Agency Owner</span>
+              <span className="tf-body-sm truncate font-semibold text-tf-text-primary">
+                {displayName}
+              </span>
+              <span className="tf-caption truncate text-tf-text-muted">
+                Agency Owner
+              </span>
             </div>
           )}
           {isOpen && (

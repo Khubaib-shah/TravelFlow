@@ -17,7 +17,6 @@ export function Topbar() {
   const [mounted, setMounted] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const handleFocusMode = () => {
@@ -32,7 +31,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-[var(--tf-topbar-height)] shrink-0 items-center gap-4 border-b border-[var(--tf-border)] bg-[var(--tf-header-bg)] px-4 sm:px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-[var(--tf-topbar-height)] shrink-0 items-center gap-4 border-b border-tf-border bg-[var(--tf-header-bg)] px-4 sm:px-6 shadow-sm">
       {/* Left side */}
       <div className="flex items-center gap-4">
         <IconButton
@@ -59,7 +58,7 @@ export function Topbar() {
           onClick={handleFocusMode}
           className={`hidden sm:flex ${
             isFocusMode
-              ? "bg-[var(--tf-primary-soft)] text-[var(--tf-primary)] hover:bg-[var(--tf-primary-soft)] hover:text-[var(--tf-primary)]"
+              ? "bg-[var(--tf-primary-soft)] text-tf-primary hover:bg-[var(--tf-primary-soft)] hover:text-tf-primary"
               : ""
           }`}
           aria-label="Toggle Focus Mode"
@@ -72,10 +71,14 @@ export function Topbar() {
 
         {mounted && (
           <IconButton
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle Theme"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </IconButton>
         )}
 

@@ -32,10 +32,14 @@ interface LeadSourceSelectorProps {
   required?: boolean;
 }
 
-export function LeadSourceSelector({ value, onChange, required }: LeadSourceSelectorProps) {
+export function LeadSourceSelector({
+  value,
+  onChange,
+  required,
+}: LeadSourceSelectorProps) {
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-[var(--tf-text-secondary)]">
+      <p className="text-sm font-medium text-tf-text-secondary">
         Lead Source
         {required && <span className="text-[var(--tf-danger)] ml-0.5">*</span>}
       </p>
@@ -50,8 +54,8 @@ export function LeadSourceSelector({ value, onChange, required }: LeadSourceSele
               className={cn(
                 "flex min-h-10 items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-medium transition-colors normal-case tracking-normal",
                 selected
-                  ? "border-[var(--tf-primary)] bg-[var(--tf-primary-soft)] text-[var(--tf-primary)]"
-                  : "border-[var(--tf-border)] bg-transparent text-[var(--tf-text-muted)] hover:bg-[var(--tf-surface-2)]"
+                  ? "border-[var(--tf-primary)] bg-[var(--tf-primary-soft)] text-tf-primary"
+                  : "border-tf-border bg-transparent text-tf-text-muted hover:bg-[var(--tf-surface-2)]",
               )}
             >
               <Icon className="h-3.5 w-3.5 shrink-0" />

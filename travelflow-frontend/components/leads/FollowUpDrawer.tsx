@@ -9,7 +9,7 @@ import { FormField, FormTextArea } from "@/components/forms/FormField";
 import { FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { Lead } from "@/types";
-import { MockAPI } from "@/lib/mock-api";
+import { API } from "@/lib/data-source";
 
 const followUpSchema = z.object({
   type: z.enum(["call", "whatsapp", "email", "meeting", "site_visit"]),
@@ -39,7 +39,7 @@ export function FollowUpDrawer({ lead, isOpen, onClose, onSaved }: FollowUpDrawe
   });
 
   const onSubmit = async (values: FollowUpValues) => {
-    await MockAPI.addLeadActivity(lead.id, {
+    await API.addLeadActivity(lead.id, {
       type: values.type,
       description: values.notes,
       outcome: values.outcome,

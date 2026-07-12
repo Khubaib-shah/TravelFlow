@@ -6,11 +6,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 
 import { Expense } from "@/types";
-import { MockAPI } from "@/lib/mock-api";
+import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
@@ -21,19 +20,26 @@ import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { expenseSchema, ExpenseFormValues } from "@/features/expenses/schemas/expense.schema";
+import {
+  expenseSchema,
+  ExpenseFormValues,
+} from "@/features/expenses/schemas/expense.schema";
 import { useEntityDrawer } from "@/hooks/use-entity-drawer";
-import { expenseDefaultValues, mapExpenseToForm } from "@/features/expenses/utils/mapExpenseToForm";
+import {
+  expenseDefaultValues,
+  mapExpenseToForm,
+} from "@/features/expenses/utils/mapExpenseToForm";
 
 export default function ExpensesPage() {
   const router = useRouter();
   const [data, setData] = useState<Expense[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
+    useEntityDrawer();
 
   const loadData = async () => {
     setIsLoading(true);
-    const expenses = await MockAPI.getExpenses();
+    const expenses = await API.getExpenses();
     setData(expenses);
     setIsLoading(false);
   };
@@ -54,10 +60,10 @@ export default function ExpensesPage() {
 
   const onSubmit = async (values: ExpenseFormValues) => {
     if (isEditing && editingId) {
-      await MockAPI.updateExpense(editingId, values);
+      await API.updateExpense(editingId, values);
       toast.success("Expense updated successfully");
     } else {
-      await MockAPI.createExpense(values);
+      await API.createExpense(values);
       toast.success("Expense logged successfully");
     }
     close();
@@ -69,38 +75,66 @@ export default function ExpensesPage() {
     {
       accessorKey: "expenseRef",
       header: "Ref",
-      cell: ({ row }) => <div className="font-mono text-xs text-[var(--tf-text-muted)]">{row.original.expenseRef}</div>,
+      cell: ({ row }) => (
+        <div className="font-mono text-xs text-tf-text-muted">
+          {row.original.expenseRef}
+        </div>
+      ),
     },
     {
       accessorKey: "title",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Description" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Description" />
+      ),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium text-[var(--tf-text-primary)]">{row.original.title}</span>
-          <span className="text-xs text-[var(--tf-text-secondary)] capitalize">{row.original.category.replace("_", " ")}</span>
+          <span className="font-medium text-tf-text-primary">
+            {row.original.title}
+          </span>
+          <span className="text-xs text-tf-text-secondary capitalize">
+            {row.original.category.replace("_", " ")}
+          </span>
         </div>
       ),
     },
     {
       accessorKey: "date",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
-      cell: ({ row }) => <span className="text-[var(--tf-text-secondary)]">{format(new Date(row.original.date), "dd MMM yyyy")}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-tf-text-secondary">
+          {new Date(row.original.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+        </span>
+      ),
     },
     {
       accessorKey: "amount",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
-      cell: ({ row }) => <div className="font-semibold text-[var(--tf-text-primary)]">₨ {row.original.amount.toLocaleString()}</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
+      cell: ({ row }) => (
+        <div className="font-semibold text-tf-text-primary">
+          ₨ {row.original.amount.toLocaleString()}
+        </div>
+      ),
     },
     {
       accessorKey: "paymentMethod",
       header: "Payment Method",
-      cell: ({ row }) => <span className="capitalize text-[var(--tf-text-secondary)]">{row.original.paymentMethod.replace("_", " ")}</span>,
+      cell: ({ row }) => (
+        <span className="capitalize text-tf-text-secondary">
+          {row.original.paymentMethod.replace("_", " ")}
+        </span>
+      ),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === "approved" ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]" : "bg-[var(--tf-warning-soft)] text-[var(--tf-warning)]"}`}>
+        <span
+          className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === "approved" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-warning-soft)] text-[var(--tf-warning)]"}`}
+        >
           {row.original.status}
         </span>
       ),
@@ -122,17 +156,22 @@ export default function ExpensesPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-[var(--tf-border)] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Expenses</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Log and track operational costs.</p>
+          <h1 className="tf-h2 text-tf-text-primary">Expenses</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">
+            Log and track operational costs.
+          </p>
         </div>
-        <Button onClick={handleOpenCreate} className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm">
+        <Button
+          onClick={handleOpenCreate}
+          className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm"
+        >
           <Plus className="mr-2 h-4 w-4" /> Log Expense
         </Button>
       </div>
 
-      {(!isLoading && data.length === 0) ? (
+      {!isLoading && data.length === 0 ? (
         <EmptyState
           icon={CreditCard}
           title="No expenses recorded"
@@ -140,7 +179,7 @@ export default function ExpensesPage() {
           action={{ label: "Log Expense", onClick: handleOpenCreate }}
         />
       ) : (
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
+        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">
           <DataTable
             columns={columns}
             data={data}
@@ -164,7 +203,11 @@ export default function ExpensesPage() {
 
       <DrawerForm
         title={isEditing ? "Edit Expense" : "Log Expense"}
-        description={isEditing ? "Update expense details." : "Record a new operational expense."}
+        description={
+          isEditing
+            ? "Update expense details."
+            : "Record a new operational expense."
+        }
         isOpen={isDrawerOpen}
         onClose={close}
         onSubmit={form.handleSubmit(onSubmit)}
@@ -174,9 +217,21 @@ export default function ExpensesPage() {
       >
         <Form {...form}>
           <div className="space-y-6">
-            <FormField control={form.control} name="title" label="Expense Description" placeholder="e.g. Office Rent" required />
+            <FormField
+              control={form.control}
+              name="title"
+              label="Expense Description"
+              placeholder="e.g. Office Rent"
+              required
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="amount" label="Amount (PKR)" type="number" required />
+              <FormField
+                control={form.control}
+                name="amount"
+                label="Amount (PKR)"
+                type="number"
+                required
+              />
               <FormSelect
                 control={form.control}
                 name="category"
@@ -195,7 +250,7 @@ export default function ExpensesPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-[var(--tf-text-secondary)]">
+              <Label className="text-sm font-medium text-tf-text-secondary">
                 Date<span className="text-[var(--tf-danger)] ml-0.5">*</span>
               </Label>
               <Controller
@@ -204,9 +259,17 @@ export default function ExpensesPage() {
                 render={({ field }) => (
                   <Input
                     type="date"
-                    className="rounded-lg bg-[var(--tf-surface)] border-[var(--tf-border)]"
-                    value={field.value ? new Date(field.value).toISOString().slice(0, 10) : ""}
-                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : undefined)}
+                    className="rounded-lg bg-[var(--tf-surface)] border-tf-border"
+                    value={
+                      field.value
+                        ? new Date(field.value).toISOString().slice(0, 10)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? new Date(e.target.value) : undefined,
+                      )
+                    }
                   />
                 )}
               />

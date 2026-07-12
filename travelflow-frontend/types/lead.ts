@@ -1,4 +1,6 @@
-export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'interested' | 'negotiation' | 'converted' | 'lost';
+import type { leadStatusValues } from "@/features/leads/constants";
+
+export type LeadStatus = (typeof leadStatusValues)[number];
 export type LeadSource = 'walk_in' | 'whatsapp' | 'facebook' | 'instagram' | 'website' | 'referral' | 'google_ads';
 
 export interface LeadActivity {

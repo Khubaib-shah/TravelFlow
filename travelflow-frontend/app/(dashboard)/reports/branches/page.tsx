@@ -15,8 +15,10 @@ export default function BranchReportPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Branch Performance</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Metrics comparing different agency branches.</p>
+          <h1 className="tf-h2 text-tf-text-primary">Branch Performance</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">
+            Metrics comparing different agency branches.
+          </p>
         </div>
       </div>
 

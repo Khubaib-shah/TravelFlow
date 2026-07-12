@@ -64,7 +64,7 @@ const colorMap = {
 };
 
 const valueClassName =
-  "text-[1.625rem] font-extrabold leading-none tracking-tight text-[var(--tf-text-primary)] sm:text-[1.75rem] xl:text-[1.875rem]";
+  "text-[1.625rem] font-extrabold leading-none tracking-tight text-tf-text-primary sm:text-[1.75rem] xl:text-[1.875rem]";
 
 export function KpiCard({
   label,
@@ -106,13 +106,13 @@ export function KpiCard({
       size="sm"
       onClick={onClick}
       className={cn(
-        "gap-0 overflow-hidden rounded-[14px] border-[var(--tf-border)] py-3 shadow-none ring-0 [--card-spacing:--spacing(4)]",
+        "gap-0 overflow-hidden rounded-[14px] border-tf-border py-3 shadow-none ring-0 [--card-spacing:--spacing(4)]",
         styles.bg,
         onClick && "cursor-pointer transition-shadow hover:shadow-md",
       )}
     >
       <CardHeader className="grid-cols-[1fr_auto] items-center gap-2 pb-2">
-        <p className="truncate text-xs font-medium text-[var(--tf-text-secondary)]">
+        <p className="truncate text-xs font-medium text-tf-text-secondary">
           {label}
         </p>
         <CardAction>
@@ -144,7 +144,7 @@ export function KpiCard({
       </CardContent>
 
       {trend !== undefined && (
-        <CardFooter className="border-t border-[var(--tf-border)]/60 pt-2">
+        <CardFooter className="border-t border-tf-border/60 pt-2">
           <TrendBadge value={trend} label={trendLabel} className="w-full" />
         </CardFooter>
       )}

@@ -18,7 +18,7 @@ export function mapLeadToForm(lead: Lead): LeadFormValues {
     source: lead.source,
     status: lead.status,
     assignedAgentId: lead.assignedAgentId ?? "",
-    branchId: lead.branchId ?? "br-1",
+    branchId: lead.branchId ?? undefined,
     notes: lead.notes ?? "",
   };
 }
@@ -35,5 +35,5 @@ export const leadDefaultValues: LeadFormValues = {
   children: 0,
   specialRequirements: "",
   notes: "",
-  branchId: "br-1",
+  branchId: undefined,
 };

@@ -1,19 +1,31 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { ArrowLeft, Mail, Phone, Building, CalendarDays, UserPlus, Plane, Edit } from "lucide-react";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Building,
+  CalendarDays,
+  UserPlus,
+  Plane,
+  Edit,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
 
-import { User, Branch, Lead, Booking } from "@/types";
-import { MockAPI } from "@/lib/mock-api";
+import { User, Branch, Role, Lead, Booking } from "@/types";
+import { API } from "@/lib/data-source";
 import { Button } from "@/components/ui/button";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
-import { userSchema, UserFormValues } from "@/features/users/schemas/user.schema";
+import {
+  userSchema,
+  UserFormValues,
+} from "@/features/users/schemas/user.schema";
 import { mapUserToForm } from "@/features/users/utils/mapUserToForm";
 
 const roleColors: Record<string, { bg: string; text: string }> = {
@@ -23,7 +35,11 @@ const roleColors: Record<string, { bg: string; text: string }> = {
   accountant: { bg: "var(--tf-success-soft)", text: "var(--tf-success)" },
 };
 
-export default function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function UserDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
   const { id } = use(params);
   const [user, setUser] = useState<User | null>(null);
@@ -33,6 +49,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const [editOpen, setEditOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -40,19 +57,25 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
 
   const loadAll = async () => {
     setIsLoading(true);
-    const [userData, branchList, leads, bookings] = await Promise.all([
-      MockAPI.getUser(id),
-      MockAPI.getBranches(),
-      MockAPI.getLeads(),
-      MockAPI.getBookings(),
+    const [userData, branchList, leads, bookings, roleList] = await Promise.all([
+      API.getUser(id),
+      API.getBranches(),
+      API.getLeads(),
+      API.getBookings(),
+      API.getRoles(),
     ]);
     setUser(userData);
     setBranches(branchList);
+    setRoles(roleList);
     if (userData) {
       setBranch(branchList.find((b) => b.id === userData.branchId) ?? null);
       form.reset(mapUserToForm(userData));
-      setLeadCount(leads.filter((l: Lead) => l.assignedAgentId === userData.id).length);
-      setBookingCount(bookings.filter((b: Booking) => b.agentId === userData.id).length);
+      setLeadCount(
+        leads.filter((l: Lead) => l.assignedAgentId === userData.id).length,
+      );
+      setBookingCount(
+        bookings.filter((b: Booking) => b.agentId === userData.id).length,
+      );
     }
     setIsLoading(false);
   };
@@ -62,7 +85,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   }, [id]);
 
   const onSubmit = async (values: UserFormValues) => {
-    await MockAPI.updateUser(id, values);
+    await API.updateUser(id, values);
     toast.success("User updated successfully");
     setEditOpen(false);
     await loadAll();
@@ -80,26 +103,46 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
     return <div className="p-6">User not found.</div>;
   }
 
-  const roleStyle = roleColors[user.role] ?? { bg: "var(--tf-surface-2)", text: "var(--tf-text-secondary)" };
+  const roleDef = roles.find((r) => r.name === user.role);
+  const roleStyle = roleDef ? { bg: roleDef.color, text: roleDef.textColor } : (roleColors[user.role] ?? {
+    bg: "var(--tf-surface-2)",
+    text: "var(--tf-text-secondary)",
+  });
 
   return (
     <div className="space-y-6 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full bg-[var(--tf-surface)] border border-[var(--tf-border)]">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[var(--tf-primary-soft)] flex items-center justify-center text-[var(--tf-primary)] font-bold text-2xl">
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+            <div className="w-16 h-16 rounded-full bg-[var(--tf-primary-soft)] flex items-center justify-center text-tf-primary font-bold text-2xl">
+              {user.firstName.charAt(0)}
+              {user.lastName.charAt(0)}
             </div>
             <div>
-              <h1 className="tf-h2 text-[var(--tf-text-primary)]">{user.firstName} {user.lastName}</h1>
+              <h1 className="tf-h2 text-tf-text-primary">
+                {user.firstName} {user.lastName}
+              </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize" style={{ backgroundColor: roleStyle.bg, color: roleStyle.text }}>
+                <span
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize"
+                  style={{
+                    backgroundColor: roleStyle.bg,
+                    color: roleStyle.text,
+                  }}
+                >
                   {user.role}
                 </span>
-                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize ${user.status === "active" ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]" : "bg-[var(--tf-surface-2)] text-[var(--tf-text-secondary)]"}`}>
+                <span
+                  className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize ${user.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-surface-2)] text-tf-text-secondary"}`}
+                >
                   {user.status}
                 </span>
               </div>
@@ -118,56 +161,75 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[var(--tf-text-muted)] mb-2">
+        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <UserPlus className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Leads Handled</span>
+            <span className="text-xs uppercase tracking-wider">
+              Leads Handled
+            </span>
           </div>
-          <p className="text-2xl font-bold text-[var(--tf-text-primary)]">{leadCount}</p>
+          <p className="text-2xl font-bold text-tf-text-primary">{leadCount}</p>
         </div>
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[var(--tf-text-muted)] mb-2">
+        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <Plane className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">Bookings</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--tf-text-primary)]">{bookingCount}</p>
+          <p className="text-2xl font-bold text-tf-text-primary">
+            {bookingCount}
+          </p>
         </div>
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[var(--tf-text-muted)] mb-2">
+        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <CalendarDays className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Member Since</span>
+            <span className="text-xs uppercase tracking-wider">
+              Member Since
+            </span>
           </div>
-          <p className="text-lg font-semibold text-[var(--tf-text-primary)]">
-            {new Date(user.createdAt).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
+          <p className="text-lg font-semibold text-tf-text-primary">
+            {new Date(user.createdAt).toLocaleDateString("en-GB", {
+              month: "short",
+              year: "numeric",
+            })}
           </p>
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-[var(--tf-text-primary)] mb-4">Profile Details</h3>
+      <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-tf-text-primary mb-4">
+          Profile Details
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className="text-xs text-[var(--tf-text-muted)] uppercase tracking-wider mb-1 flex items-center gap-1">
+            <p className="text-xs text-tf-text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
               <Mail className="w-3 h-3" /> Email
             </p>
-            <p className="font-medium text-[var(--tf-text-primary)]">{user.email}</p>
+            <p className="font-medium text-tf-text-primary">{user.email}</p>
           </div>
           <div>
-            <p className="text-xs text-[var(--tf-text-muted)] uppercase tracking-wider mb-1 flex items-center gap-1">
+            <p className="text-xs text-tf-text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
               <Phone className="w-3 h-3" /> Phone
             </p>
-            <p className="font-medium text-[var(--tf-text-primary)]">{user.phone ?? "Not provided"}</p>
+            <p className="font-medium text-tf-text-primary">
+              {user.phone ?? "Not provided"}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-[var(--tf-text-muted)] uppercase tracking-wider mb-1 flex items-center gap-1">
+            <p className="text-xs text-tf-text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
               <Building className="w-3 h-3" /> Branch
             </p>
-            <p className="font-medium text-[var(--tf-text-primary)]">{branch?.name ?? user.branchId}</p>
+            <p className="font-medium text-tf-text-primary">
+              {branch?.name ?? user.branchId}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-[var(--tf-text-muted)] uppercase tracking-wider mb-1">Last Login</p>
-            <p className="font-medium text-[var(--tf-text-primary)]">
-              {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Never logged in"}
+            <p className="text-xs text-tf-text-muted uppercase tracking-wider mb-1">
+              Last Login
+            </p>
+            <p className="font-medium text-tf-text-primary">
+              {user.lastLoginAt
+                ? new Date(user.lastLoginAt).toLocaleString()
+                : "Never logged in"}
             </p>
           </div>
         </div>
@@ -185,28 +247,65 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
         <Form {...form}>
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="firstName" label="First Name" required />
-              <FormField control={form.control} name="lastName" label="Last Name" required />
+              <FormField
+                control={form.control}
+                name="firstName"
+                label="First Name"
+                required
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                label="Last Name"
+                required
+              />
             </div>
-            <FormField control={form.control} name="email" label="Email" type="email" required />
-            <FormField control={form.control} name="phone" label="Phone" type="tel" />
+            <FormField
+              control={form.control}
+              name="email"
+              label="Email"
+              type="email"
+              required
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              label="Phone"
+              type="tel"
+            />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormSelect control={form.control} name="role" label="Role" required options={[
-                { label: "Admin", value: "admin" },
-                { label: "Manager", value: "manager" },
-                { label: "Agent", value: "agent" },
-                { label: "Accountant", value: "accountant" },
-              ]} />
-              <FormSelect control={form.control} name="branchId" label="Branch" required options={branches.map((b) => ({
-                label: b.name,
-                value: b.id,
-              }))} />
+              <FormSelect
+                control={form.control}
+                name="role"
+                label="Role"
+                required
+                options={roles.map((r) => ({
+                  label: r.name,
+                  value: r.name,
+                }))}
+              />
+              <FormSelect
+                control={form.control}
+                name="branchId"
+                label="Branch"
+                required
+                options={branches.map((b) => ({
+                  label: b.name,
+                  value: b.id,
+                }))}
+              />
             </div>
-            <FormSelect control={form.control} name="status" label="Status" required options={[
-              { label: "Active", value: "active" },
-              { label: "Inactive", value: "inactive" },
-              { label: "Invited", value: "invited" },
-            ]} />
+            <FormSelect
+              control={form.control}
+              name="status"
+              label="Status"
+              required
+              options={[
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+                { label: "Invited", value: "invited" },
+              ]}
+            />
           </div>
         </Form>
       </DrawerForm>

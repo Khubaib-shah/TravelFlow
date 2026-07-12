@@ -16,8 +16,8 @@ export function TrendBadge({ value, label, className }: TrendBadgeProps) {
         className={cn(
           "inline-flex shrink-0 items-center justify-center rounded-[var(--radius-sm)] px-1.5 py-0.5 text-[11px] font-bold",
           isPositive
-            ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]"
-            : "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)]"
+            ? "bg-[var(--tf-success-soft)] text-tf-success"
+            : "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)]",
         )}
       >
         {isPositive ? (
@@ -29,7 +29,7 @@ export function TrendBadge({ value, label, className }: TrendBadgeProps) {
         {value}%
       </span>
       {label && (
-        <span className="truncate text-[11px] text-[var(--tf-text-muted)] whitespace-nowrap">
+        <span className="truncate text-[11px] text-tf-text-muted whitespace-nowrap">
           {label}
         </span>
       )}

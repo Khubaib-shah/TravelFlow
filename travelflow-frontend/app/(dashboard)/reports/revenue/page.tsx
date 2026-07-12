@@ -15,8 +15,10 @@ export default function RevenueReportPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Revenue Report</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Detailed breakdown of gross and net revenue.</p>
+          <h1 className="tf-h2 text-tf-text-primary">Revenue Report</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">
+            Detailed breakdown of gross and net revenue.
+          </p>
         </div>
       </div>
 

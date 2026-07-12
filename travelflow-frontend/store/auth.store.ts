@@ -1,34 +1,86 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-
-export interface AuthUser {
-  email: string;
-  name: string;
-  role: 'admin' | 'agent';
-  initials: string;
-}
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { User } from "@/types";
 
 interface AuthState {
-  user: AuthUser | null;
+  user: User | null;
   isAuthenticated: boolean;
-  setUser: (user: AuthUser) => void;
-  logout: () => void;
+  isLoading: boolean;
+
+  // Actions
+  setUser: (user: User) => void;
+  clearUser: () => void;
+  setLoading: (loading: boolean) => void;
+
+  // Async actions (implementations delegated to api-client to avoid circular deps)
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  fetchMe: () => Promise<void>;
+}
+
+// These will be injected by the api-client after it's initialised
+let _loginFn: (email: string, password: string) => Promise<User>;
+let _logoutFn: () => Promise<void>;
+let _getMeFn: () => Promise<User>;
+
+export function injectAuthActions(
+  loginFn: typeof _loginFn,
+  logoutFn: typeof _logoutFn,
+  getMeFn: typeof _getMeFn
+) {
+  _loginFn = loginFn;
+  _logoutFn = logoutFn;
+  _getMeFn = getMeFn;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: false,
+
       setUser: (user) => set({ user, isAuthenticated: true }),
-      logout: () => {
-        // Clear the session cookie
-        document.cookie = 'tf_mock_session=; path=/; max-age=0';
-        set({ user: null, isAuthenticated: false });
+      clearUser: () => set({ user: null, isAuthenticated: false }),
+      setLoading: (loading) => set({ isLoading: loading }),
+
+      login: async (email, password) => {
+        set({ isLoading: true });
+        try {
+          const user = await _loginFn(email, password);
+          set({ user, isAuthenticated: true });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      logout: async () => {
+        set({ isLoading: true });
+        try {
+          if (_logoutFn) await _logoutFn();
+        } finally {
+          get().clearUser();
+          set({ isLoading: false });
+        }
+      },
+
+      fetchMe: async () => {
+        if (!_getMeFn) return;
+        set({ isLoading: true });
+        try {
+          const user = await _getMeFn();
+          set({ user, isAuthenticated: true });
+        } catch {
+          set({ user: null, isAuthenticated: false });
+        } finally {
+          set({ isLoading: false });
+        }
       },
     }),
     {
-      name: 'tf-auth-storage',
+      name: "tf-auth-user",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )
 );

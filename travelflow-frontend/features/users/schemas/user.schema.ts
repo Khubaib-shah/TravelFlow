@@ -7,7 +7,7 @@ export const userSchema = z.object({
   lastName: z.string().min(2, "Last name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().regex(phoneRegex, "Enter a valid Pakistani number").optional().or(z.literal("")),
-  role: z.enum(["admin", "manager", "agent", "accountant"]),
+  role: z.string().min(1),
   branchId: z.string().min(1, "Branch is required"),
   status: z.enum(["active", "inactive", "invited"]),
 });

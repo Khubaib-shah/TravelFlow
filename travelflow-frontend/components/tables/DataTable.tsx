@@ -53,8 +53,11 @@ export function DataTable<TData, TValue>({
   isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
 
@@ -81,26 +84,32 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar 
-        table={table} 
-        searchKey={searchKey} 
+      <DataTableToolbar
+        table={table}
+        searchKey={searchKey}
         searchPlaceholder={searchPlaceholder}
         filters={filters}
         enableExport={enableExport}
       />
-      <div className="rounded-md border border-[var(--tf-border)] bg-[var(--tf-surface)] overflow-hidden">
+      <div className="rounded-md border border-tf-border bg-[var(--tf-surface)] overflow-hidden">
         <Table>
           <TableHeader className="bg-[var(--tf-surface-2)]">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-[var(--tf-surface-2)]">
+              <TableRow
+                key={headerGroup.id}
+                className="hover:bg-[var(--tf-surface-2)]"
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="h-10 px-4 text-xs uppercase tracking-wider text-[var(--tf-text-muted)] font-semibold">
+                    <TableHead
+                      key={header.id}
+                      className="h-10 px-4 text-xs uppercase tracking-wider text-tf-text-muted font-semibold"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -111,10 +120,15 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   <div className="flex flex-col items-center justify-center space-y-3">
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--tf-primary)] border-t-transparent"></div>
-                    <span className="text-[var(--tf-text-muted)] text-sm">Loading data...</span>
+                    <span className="text-tf-text-muted text-sm">
+                      Loading data...
+                    </span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -123,18 +137,27 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`h-[52px] hover:bg-[var(--tf-primary-soft)] transition-colors ${i % 2 === 1 ? 'bg-[var(--tf-surface-2)]/50' : 'bg-transparent'}`}
+                  className={`h-[52px] hover:bg-[var(--tf-primary-soft)] transition-colors ${i % 2 === 1 ? "bg-[var(--tf-surface-2)]/50" : "bg-transparent"}`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-4 py-2 text-sm text-[var(--tf-text-primary)]">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <TableCell
+                      key={cell.id}
+                      className="px-4 py-2 text-sm text-tf-text-primary"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-[var(--tf-text-muted)]">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-tf-text-muted"
+                >
                   No results found.
                 </TableCell>
               </TableRow>

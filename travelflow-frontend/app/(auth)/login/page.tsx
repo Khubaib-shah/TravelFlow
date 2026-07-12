@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/auth.store";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -26,7 +27,8 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuthStore();
+  const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -37,24 +39,26 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-    setIsLoading(true);
-    // Mock authentication delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Set a dummy cookie to pass the middleware check
-    document.cookie = `tf_mock_session=${values.email}; path=/; max-age=86400`;
-
-    toast.success("Successfully logged in");
-    router.push("/dashboard");
+    setSubmitting(true);
+    try {
+      await login(values.email, values.password);
+      toast.success("Successfully logged in");
+      router.push("/dashboard");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fillDummyCredentials = (role: "admin" | "agent") => {
     if (role === "admin") {
-      form.setValue("email", "admin@travelflow.pk");
-      form.setValue("password", "admin123");
+      form.setValue("email", "admin@triptrails.com");
+      form.setValue("password", "password123");
       toast.info("Admin credentials filled");
     } else {
-      form.setValue("email", "agent@travelflow.pk");
+      form.setValue("email", "agent@triptrails.com");
       form.setValue("password", "agent123");
       toast.info("Agent credentials filled");
     }
@@ -105,21 +109,19 @@ export default function LoginPage() {
               <div className="bg-[var(--tf-primary)] p-2 rounded-xl">
                 <Plane className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-[var(--tf-text-primary)] tracking-tight">
+              <span className="text-2xl font-bold text-tf-text-primary tracking-tight">
                 TravelFlow
               </span>
             </div>
-            <h2 className="tf-h1 text-[var(--tf-text-primary)]">
-              Welcome back
-            </h2>
-            <p className="tf-body text-[var(--tf-text-secondary)] mt-2">
+            <h2 className="tf-h1 text-tf-text-primary">Welcome back</h2>
+            <p className="tf-body text-tf-text-secondary mt-2">
               Enter your credentials to access your agency dashboard.
             </p>
           </div>
 
           {/* Dummy Credentials Helper */}
-          <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-[var(--tf-text-secondary)] mb-3 font-medium uppercase tracking-wider">
+          <div className="bg-tf-surface border border-tf-border rounded-xl p-4 shadow-sm">
+            <p className="text-xs text-tf-text-secondary mb-3 font-medium uppercase tracking-wider">
               Demo Credentials
             </p>
             <div className="flex gap-2">
@@ -151,15 +153,15 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[var(--tf-text-secondary)]">
+                    <FormLabel className="text-tf-text-secondary">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-[var(--tf-text-muted)]" />
+                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-tf-text-muted" />
                         <Input
-                          placeholder="name@travelflow.pk"
-                          className="pl-10 bg-[var(--tf-surface)] border-[var(--tf-border)] h-11 text-[var(--tf-text-primary)]"
+                          placeholder="name@triptrails.com"
+                          className="pl-10 bg-tf-surface border-tf-border h-11 text-tf-text-primary"
                           {...field}
                         />
                       </div>
@@ -175,23 +177,23 @@ export default function LoginPage() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">
-                      <FormLabel className="text-[var(--tf-text-secondary)]">
+                      <FormLabel className="text-tf-text-secondary">
                         Password
                       </FormLabel>
                       <a
                         href="#"
-                        className="text-sm font-medium text-[var(--tf-primary)] hover:underline"
+                        className="text-sm font-medium text-tf-primary hover:underline"
                       >
                         Forgot password?
                       </a>
                     </div>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-[var(--tf-text-muted)]" />
+                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-tf-text-muted" />
                         <Input
                           type="password"
                           placeholder="••••••••"
-                          className="pl-10 bg-[var(--tf-surface)] border-[var(--tf-border)] h-11 text-[var(--tf-text-primary)]"
+                          className="pl-10 bg-tf-surface border-tf-border h-11 text-tf-text-primary"
                           {...field}
                         />
                       </div>
@@ -204,9 +206,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full h-11 bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] text-base font-semibold"
-                disabled={isLoading}
+                disabled={submitting || isLoading}
               >
-                {isLoading ? (
+                {submitting || isLoading ? (
                   "Signing in..."
                 ) : (
                   <>

@@ -7,3 +7,4 @@ export * from './supplier';
 export * from './expense';
 export * from './invoice';
 export * from './dashboard';
+export * from './role';

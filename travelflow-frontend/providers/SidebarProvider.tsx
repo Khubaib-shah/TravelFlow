@@ -8,7 +8,6 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const isOpen = useSidebarStore((state) => state.isOpen);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

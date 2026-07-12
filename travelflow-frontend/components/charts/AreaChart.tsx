@@ -17,7 +17,7 @@ interface AreaChartProps {
 export function AreaChart({ data, xKey = "name", series, height = 300 }: AreaChartProps) {
   return (
     <div style={{ width: '100%', height: height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <RechartsAreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             {series.map((s) => (

@@ -17,7 +17,9 @@ interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
 }
 
-function getColumnLabel<TData>(column: ReturnType<Table<TData>["getAllColumns"]>[number]): string {
+function getColumnLabel<TData>(
+  column: ReturnType<Table<TData>["getAllColumns"]>[number],
+): string {
   const header = column.columnDef.header;
   if (typeof header === "string") return header;
   return column.id
@@ -27,7 +29,9 @@ function getColumnLabel<TData>(column: ReturnType<Table<TData>["getAllColumns"]>
     .trim();
 }
 
-export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps<TData>) {
+export function DataTableViewOptions<TData>({
+  table,
+}: DataTableViewOptionsProps<TData>) {
   const columns = table.getAllColumns().filter((column) => column.getCanHide());
 
   const handleReset = () => {
@@ -40,7 +44,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
         <Button
           variant="outline"
           size="sm"
-          className="ml-auto hidden h-9 border-[var(--tf-border)] text-[var(--tf-text-secondary)] lg:flex"
+          className="ml-auto hidden h-9 border-tf-border text-tf-text-secondary lg:flex"
         >
           <SlidersHorizontal className="mr-2 h-4 w-4" />
           View
@@ -48,18 +52,18 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-56 rounded-lg border-[var(--tf-border)] bg-[var(--tf-surface)] p-0"
+        className="w-56 rounded-lg border-tf-border bg-[var(--tf-surface)] p-0"
       >
-        <PopoverHeader className="border-b border-[var(--tf-border)] px-4 py-3">
+        <PopoverHeader className="border-b border-tf-border px-4 py-3">
           <div className="flex items-center justify-between">
-            <PopoverTitle className="text-xs font-semibold uppercase tracking-wider text-[var(--tf-text-primary)]">
+            <PopoverTitle className="text-xs font-semibold uppercase tracking-wider text-tf-text-primary">
               Toggle columns
             </PopoverTitle>
             <Button
               variant="link"
               size="sm"
               onClick={handleReset}
-              className="h-auto p-0 text-xs normal-case tracking-normal text-[var(--tf-primary)]"
+              className="h-auto p-0 text-xs normal-case tracking-normal text-tf-primary"
             >
               Reset
             </Button>
@@ -75,7 +79,9 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               />
-              <span className="text-sm text-[var(--tf-text-secondary)]">{getColumnLabel(column)}</span>
+              <span className="text-sm text-tf-text-secondary">
+                {getColumnLabel(column)}
+              </span>
             </label>
           ))}
         </div>

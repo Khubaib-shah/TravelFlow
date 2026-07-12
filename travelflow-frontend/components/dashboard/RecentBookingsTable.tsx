@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MockAPI } from "@/lib/mock-api";
+import { API } from "@/lib/data-source";
 import { Booking } from "@/types";
 import { DataTable } from "@/components/tables/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
@@ -14,7 +14,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { TableEntityLink } from "@/components/shared/TableEntityLink";
 
-export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: boolean }) {
+export function RecentBookingsTable({
+  isLoading: initialLoading,
+}: {
+  isLoading: boolean;
+}) {
   const [data, setData] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(initialLoading);
   const router = useRouter();
@@ -22,7 +26,7 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const bookings = await MockAPI.getBookings();
+      const bookings = await API.getBookings();
       setData(bookings);
       setLoading(false);
     }
@@ -32,9 +36,13 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
   const columns: ColumnDef<Booking>[] = [
     {
       accessorKey: "bookingRef",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Reference" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Reference" />
+      ),
       cell: ({ row }) => (
-        <TableEntityLink onClick={() => router.push(`/bookings/${row.original.id}`)}>
+        <TableEntityLink
+          onClick={() => router.push(`/bookings/${row.original.id}`)}
+        >
           {row.original.bookingRef}
         </TableEntityLink>
       ),
@@ -42,17 +50,23 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
     {
       accessorKey: "pnr",
       header: "PNR",
-      cell: ({ row }) => <div className="font-mono text-xs text-[var(--tf-text-secondary)]">{row.original.pnr}</div>,
+      cell: ({ row }) => (
+        <div className="font-mono text-xs text-tf-text-secondary">
+          {row.original.pnr}
+        </div>
+      ),
     },
     {
       accessorKey: "customer",
       header: "Customer",
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium text-[var(--tf-text-primary)]">
+          <span className="font-medium text-tf-text-primary">
             {row.original.customer?.firstName} {row.original.customer?.lastName}
           </span>
-          <span className="text-xs text-[var(--tf-text-muted)]">{row.original.customer?.phone}</span>
+          <span className="text-xs text-tf-text-muted">
+            {row.original.customer?.phone}
+          </span>
         </div>
       ),
     },
@@ -61,16 +75,22 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
       header: "Airline",
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="font-medium text-[var(--tf-text-primary)]">{row.original.airline}</span>
-          <span className="text-xs text-[var(--tf-text-muted)]">{row.original.departureCity} → {row.original.arrivalCity}</span>
+          <span className="font-medium text-tf-text-primary">
+            {row.original.airline}
+          </span>
+          <span className="text-xs text-tf-text-muted">
+            {row.original.departureCity} → {row.original.arrivalCity}
+          </span>
         </div>
       ),
     },
     {
       accessorKey: "salePrice",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Amount" />,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
       cell: ({ row }) => (
-        <div className="font-semibold text-[var(--tf-text-primary)] font-mono tabular-nums text-sm">
+        <div className="font-semibold text-tf-text-primary font-mono tabular-nums text-sm">
           {formatCurrencyPKR(row.original.salePrice)}
         </div>
       ),
@@ -78,7 +98,9 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
     {
       accessorKey: "bookingStatus",
       header: "Status",
-      cell: ({ row }) => <StatusBadge status={row.original.bookingStatus as any} />,
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.bookingStatus as any} />
+      ),
     },
     {
       id: "actions",
@@ -92,15 +114,17 @@ export function RecentBookingsTable({ isLoading: initialLoading }: { isLoading: 
   ];
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-[var(--tf-border)] rounded-xl p-6 shadow-sm">
+    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="tf-h3 text-[var(--tf-text-primary)]">Recent Bookings</h3>
-          <p className="text-sm text-[var(--tf-text-secondary)]">Latest flight and package bookings</p>
+          <h3 className="tf-h3 text-tf-text-primary">Recent Bookings</h3>
+          <p className="text-sm text-tf-text-secondary">
+            Latest flight and package bookings
+          </p>
         </div>
         <Link
           href="/bookings"
-          className="flex items-center gap-1.5 text-sm font-medium text-[var(--tf-primary)] hover:text-[var(--tf-primary-hover)] transition-colors group"
+          className="flex items-center gap-1.5 text-sm font-medium text-tf-primary hover:text-[var(--tf-primary-hover)] transition-colors group"
         >
           View All
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

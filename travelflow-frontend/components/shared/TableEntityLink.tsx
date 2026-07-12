@@ -11,7 +11,7 @@ export function TableEntityLink({ onClick, children }: TableEntityLinkProps) {
       variant="link"
       size="sm"
       onClick={onClick}
-      className="h-auto p-0 font-mono text-xs font-medium text-[var(--tf-primary)]"
+      className="h-auto p-0 font-mono text-xs font-medium text-tf-primary"
     >
       {children}
     </Button>

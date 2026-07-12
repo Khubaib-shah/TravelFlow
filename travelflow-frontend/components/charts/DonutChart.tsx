@@ -1,6 +1,12 @@
 "use client";
 
-import { Cell, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Cell,
+  Pie,
+  PieChart as RechartsPieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 import { formatShort } from "@/lib/utils";
 
 interface DonutChartProps {
@@ -10,10 +16,23 @@ interface DonutChartProps {
   centerValue?: string | number;
 }
 
-export function DonutChart({ data, height = 300, centerLabel, centerValue }: DonutChartProps) {
+export function DonutChart({
+  data,
+  height = 300,
+  centerLabel,
+  centerValue,
+}: DonutChartProps) {
   return (
-    <div style={{ width: '100%', height: height }} className="relative flex items-center justify-center">
-      <ResponsiveContainer width="100%" height="100%">
+    <div
+      style={{ width: "100%", height: height }}
+      className="relative flex items-center justify-center"
+    >
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        minWidth={1}
+        minHeight={1}
+      >
         <RechartsPieChart>
           <Pie
             data={data}
@@ -31,21 +50,34 @@ export function DonutChart({ data, height = 300, centerLabel, centerValue }: Don
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip 
-            contentStyle={{ backgroundColor: "var(--tf-surface)", borderColor: "var(--tf-border)", borderRadius: "8px", boxShadow: "var(--shadow-sm)" }}
-            itemStyle={{ fontSize: 13, fontWeight: 500, color: "var(--tf-text-primary)" }}
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "var(--tf-surface)",
+              borderColor: "var(--tf-border)",
+              borderRadius: "8px",
+              boxShadow: "var(--shadow-sm)",
+            }}
+            itemStyle={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--tf-text-primary)",
+            }}
             formatter={(value, name) => {
-              const num = typeof value === 'number' ? value : 0;
+              const num = typeof value === "number" ? value : 0;
               return [`₨ ${formatShort(num)}`, String(name)];
             }}
           />
         </RechartsPieChart>
       </ResponsiveContainer>
-      
+
       {(centerLabel || centerValue) && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          {centerValue && <span className="tf-h3 text-[var(--tf-text-primary)]">{centerValue}</span>}
-          {centerLabel && <span className="tf-caption text-[var(--tf-text-muted)]">{centerLabel}</span>}
+          {centerValue && (
+            <span className="tf-h3 text-tf-text-primary">{centerValue}</span>
+          )}
+          {centerLabel && (
+            <span className="tf-caption text-tf-text-muted">{centerLabel}</span>
+          )}
         </div>
       )}
     </div>

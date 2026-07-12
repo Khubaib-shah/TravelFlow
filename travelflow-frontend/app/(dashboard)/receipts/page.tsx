@@ -1,59 +1,92 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Receipt } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Receipt } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Button } from "@/components/ui/button";
+import { API } from "@/lib/data-source";
 
 export default function ReceiptsPage() {
   const router = useRouter();
-  const [data, setData] = useState<any[]>([
-    { receiptRef: "RCP-2024-001", customer: "Usman Ali", date: "16 May 2024", amount: 45000, paymentMethod: "Bank Transfer" },
-    { receiptRef: "RCP-2024-002", customer: "Ali Hassan", date: "19 May 2024", amount: 60000, paymentMethod: "Cash" },
-  ]); 
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const receipts = await API.getReceipts();
+        setData(receipts);
+      } catch {
+        // ignore
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "receiptRef",
       header: "Receipt #",
-      cell: ({ row }) => <div className="font-mono text-xs font-medium text-[var(--tf-primary)]">{row.original.receiptRef}</div>,
+      cell: ({ row }) => (
+        <div className="font-mono text-xs font-medium text-tf-primary">
+          {row.original.receiptRef}
+        </div>
+      ),
     },
     {
-      accessorKey: "customer",
+      accessorKey: "customerId",
       header: "Customer",
-      cell: ({ row }) => <span className="font-medium text-[var(--tf-text-primary)]">{row.original.customer}</span>,
+      cell: ({ row }) => (
+        <span className="font-medium text-tf-text-primary">
+          {row.original.customerId || "—"}
+        </span>
+      ),
     },
     {
       accessorKey: "date",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
-      cell: ({ row }) => <span className="text-[var(--tf-text-secondary)]">{row.original.date}</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-tf-text-secondary">
+          {new Date(row.original.date ?? row.original.createdAt).toLocaleDateString("en-GB")}
+        </span>
+      ),
     },
     {
       accessorKey: "amount",
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Amount Received" />,
-      cell: ({ row }) => <div className="font-semibold text-[var(--tf-success)]">₨ {row.original.amount.toLocaleString()}</div>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount Received" />
+      ),
+      cell: ({ row }) => (
+        <div className="font-semibold text-tf-success">
+          ₨ {Number(row.original.amount).toLocaleString()}
+        </div>
+      ),
     },
     {
       accessorKey: "paymentMethod",
       header: "Method",
-      cell: ({ row }) => <span className="capitalize text-[var(--tf-text-secondary)]">{row.original.paymentMethod}</span>,
+      cell: ({ row }) => (
+        <span className="capitalize text-tf-text-secondary">
+          {row.original.paymentMethod?.replace("_", " ") || "—"}
+        </span>
+      ),
     },
     {
       id: "actions",
       cell: ({ row }) => (
-        <DataTableRowActions 
-          row={row} 
-          onView={() => router.push(`/receipts/${row.original.receiptRef}`)} 
-          onEdit={() => toast.success(`Editing receipt ${row.original.receiptRef}`)} 
+        <DataTableRowActions
+          row={row}
+          onView={() => router.push(`/bookings/${row.original.bookingId}`)}
         />
       ),
     },
@@ -61,26 +94,30 @@ export default function ReceiptsPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-[var(--tf-border)] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
-          <h1 className="tf-h2 text-[var(--tf-text-primary)]">Receipts</h1>
-          <p className="tf-body text-[var(--tf-text-secondary)] mt-1">Track incoming payments and issued receipts.</p>
+          <h1 className="tf-h2 text-tf-text-primary">Receipts</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">
+            Track incoming payments and issued receipts.
+          </p>
         </div>
-        <Button className="bg-[var(--tf-primary)] text-white hover:bg-[var(--tf-primary-hover)] shadow-sm">
-          <Plus className="mr-2 h-4 w-4" /> Record Payment
-        </Button>
       </div>
 
-      {(!isLoading && data.length === 0) ? (
-        <EmptyState 
-          icon={Receipt} 
-          title="No receipts recorded" 
+      {!isLoading && data.length === 0 ? (
+        <EmptyState
+          icon={Receipt}
+          title="No receipts recorded"
           description="You haven't recorded any payments yet. Add a payment to a booking to generate a receipt."
-          action={{ label: "Add Payment" }}
         />
       ) : (
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-[var(--tf-border)] shadow-sm p-6">
-          <DataTable columns={columns} data={data} searchKey="receiptRef" isLoading={isLoading} />
+        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">
+          <DataTable
+            columns={columns}
+            data={data}
+            searchKey="receiptRef"
+            searchPlaceholder="Search receipts..."
+            isLoading={isLoading}
+          />
         </div>
       )}
     </div>
