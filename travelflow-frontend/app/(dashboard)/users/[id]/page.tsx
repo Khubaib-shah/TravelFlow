@@ -121,7 +121,7 @@ export default function UserDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -165,7 +165,7 @@ export default function UserDetailPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-5 shadow-sm">
           <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <UserPlus className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">
@@ -174,7 +174,7 @@ export default function UserDetailPage({
           </div>
           <p className="text-2xl font-bold text-tf-text-primary">{leadCount}</p>
         </div>
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-5 shadow-sm">
           <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <Plane className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">Bookings</span>
@@ -183,7 +183,7 @@ export default function UserDetailPage({
             {bookingCount}
           </p>
         </div>
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-5 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-5 shadow-sm">
           <div className="flex items-center gap-2 text-tf-text-muted mb-2">
             <CalendarDays className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">
@@ -199,7 +199,7 @@ export default function UserDetailPage({
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+      <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-tf-text-primary mb-4">
           Profile Details
         </h3>

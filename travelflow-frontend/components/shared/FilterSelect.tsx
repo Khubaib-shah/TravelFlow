@@ -49,8 +49,8 @@ export function FilterSelect({
       <SelectTrigger
         className={cn(
           fullWidth
-            ? "h-10 w-full rounded-lg border border-tf-border bg-[var(--tf-surface)] px-3 text-sm text-tf-text-primary shadow-sm"
-            : "h-9 w-fit min-w-[120px] rounded-md border border-tf-border bg-[var(--tf-surface)] px-3 text-sm text-tf-text-secondary",
+            ? "h-10 w-full rounded-lg border border-tf-border bg-tf-surface px-3 text-sm text-tf-text-primary shadow-sm"
+            : "h-9 w-fit min-w-[120px] rounded-md border border-tf-border bg-tf-surface px-3 text-sm text-tf-text-secondary",
           triggerClassName,
         )}
       >

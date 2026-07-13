@@ -90,7 +90,7 @@ export default function LeadDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -104,7 +104,7 @@ export default function LeadDetailPage({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="start"
-                  className="w-[180px] bg-[var(--tf-surface)] border-tf-border"
+                  className="w-[180px] bg-tf-surface border-tf-border"
                 >
                   {[
                     "new",
@@ -137,7 +137,7 @@ export default function LeadDetailPage({
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="bg-[var(--tf-surface)] text-tf-text-primary"
+            className="bg-tf-surface text-tf-text-primary"
             onClick={() => setFollowUpOpen(true)}
           >
             Add Follow-up
@@ -152,7 +152,7 @@ export default function LeadDetailPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4 flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-tf-primary" /> Lead Information
           </h3>
@@ -213,7 +213,7 @@ export default function LeadDetailPage({
           </div>
         </div>
 
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4">
             Pipeline Status
           </h3>
@@ -245,7 +245,7 @@ export default function LeadDetailPage({
       </div>
 
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="activity"
             className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
@@ -268,7 +268,7 @@ export default function LeadDetailPage({
 
         <TabsContent
           value="activity"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="space-y-6">
             {lead.activities.length === 0 ? (
@@ -309,7 +309,7 @@ export default function LeadDetailPage({
 
         <TabsContent
           value="requirements"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="max-w-2xl space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -343,7 +343,7 @@ export default function LeadDetailPage({
 
         <TabsContent
           value="followups"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           {followUps.length === 0 ? (
             <p className="text-sm text-tf-text-muted">No follow-ups yet.</p>

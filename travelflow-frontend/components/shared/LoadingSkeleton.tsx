@@ -4,7 +4,7 @@ export function KpiCardSkeleton({ count = 1 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="h-[140px] w-full rounded-xl border border-tf-border bg-[var(--tf-surface)] p-5 shadow-sm"
+          className="h-[140px] w-full rounded-xl border border-tf-border bg-tf-surface p-5 shadow-sm"
         >
           <div className="flex justify-between items-start mb-4">
             <div className="h-4 w-24 bg-[var(--tf-surface-2)] rounded animate-pulse"></div>
@@ -29,7 +29,7 @@ export function DataTableSkeleton({
   columns?: number;
 }) {
   return (
-    <div className="w-full rounded-lg border border-tf-border bg-[var(--tf-surface)] overflow-hidden">
+    <div className="w-full rounded-lg border border-tf-border bg-tf-surface overflow-hidden">
       <div className="flex items-center gap-4 border-b border-tf-border p-4 bg-[var(--tf-surface-2)]">
         {Array.from({ length: columns }).map((_, i) => (
           <div
@@ -58,7 +58,7 @@ export function DataTableSkeleton({
 export function ChartSkeleton({ height = 280 }: { height?: number }) {
   return (
     <div
-      className="w-full rounded-xl border border-tf-border bg-[var(--tf-surface)] p-5 shadow-sm flex flex-col gap-4"
+      className="w-full rounded-xl border border-tf-border bg-tf-surface p-5 shadow-sm flex flex-col gap-4"
       style={{ height: `${height}px` }}
     >
       <div className="flex justify-between items-center">

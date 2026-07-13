@@ -160,7 +160,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
           <h1 className="tf-h2 text-tf-text-primary">Expenses</h1>
           <p className="tf-body text-tf-text-secondary mt-1">
@@ -183,7 +183,7 @@ export default function ExpensesPage() {
           action={{ label: "Log Expense", onClick: handleOpenCreate }}
         />
       ) : (
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">
+        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
           <DataTable
             columns={columns}
             data={data}
@@ -263,7 +263,7 @@ export default function ExpensesPage() {
                 render={({ field }) => (
                   <Input
                     type="date"
-                    className="rounded-lg bg-[var(--tf-surface)] border-tf-border"
+                    className="rounded-lg bg-tf-surface border-tf-border"
                     value={
                       field.value
                         ? new Date(field.value).toISOString().slice(0, 10)

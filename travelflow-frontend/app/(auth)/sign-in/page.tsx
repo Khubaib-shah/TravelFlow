@@ -29,7 +29,7 @@ export default function SignInPage() {
         }}
       />
 
-      <div className="z-10 w-full max-w-[480px] rounded-2xl bg-[var(--tf-surface)] p-8 sm:p-10 shadow-[var(--shadow-xl)] border border-tf-border">
+      <div className="z-10 w-full max-w-[480px] rounded-2xl bg-tf-surface p-8 sm:p-10 shadow-[var(--shadow-xl)] border border-tf-border">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-tf-primary text-white shadow-md">
@@ -57,7 +57,7 @@ export default function SignInPage() {
               id="email"
               type="email"
               placeholder="name@agency.com"
-              className="rounded-md border-tf-border bg-[var(--tf-surface)] focus-visible:ring-[var(--tf-primary)] placeholder:text-tf-text-muted normal-case tracking-normal"
+              className="rounded-md border-tf-border bg-tf-surface focus-visible:ring-[var(--tf-primary)] placeholder:text-tf-text-muted normal-case tracking-normal"
             />
           </div>
 
@@ -76,7 +76,7 @@ export default function SignInPage() {
                 Forgot password?
               </Link>
             </div>
-            <InputGroup className="rounded-md border border-tf-border bg-[var(--tf-surface)] focus-within:ring-1 focus-within:ring-[var(--tf-primary)]">
+            <InputGroup className="rounded-md border border-tf-border bg-tf-surface focus-within:ring-1 focus-within:ring-[var(--tf-primary)]">
               <InputGroupInput
                 id="password"
                 type={showPassword ? "text" : "password"}

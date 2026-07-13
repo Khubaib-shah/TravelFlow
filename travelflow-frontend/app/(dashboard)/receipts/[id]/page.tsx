@@ -24,7 +24,7 @@ export default function ReceiptDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -39,14 +39,14 @@ export default function ReceiptDetailPage({
           <Button
             variant="outline"
             onClick={() => window.print()}
-            className="bg-[var(--tf-surface)] text-tf-text-primary print:hidden"
+            className="bg-tf-surface text-tf-text-primary print:hidden"
           >
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
           <Button
             variant="outline"
             onClick={() => toast.success("Receipt emailed successfully")}
-            className="bg-[var(--tf-surface)] text-tf-text-primary print:hidden"
+            className="bg-tf-surface text-tf-text-primary print:hidden"
           >
             <Send className="w-4 h-4 mr-2" /> Email
           </Button>

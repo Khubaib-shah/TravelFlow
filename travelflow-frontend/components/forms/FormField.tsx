@@ -41,15 +41,15 @@ interface TextFieldProps<
   T extends FieldValues = FieldValues,
 > extends BaseFieldProps<T> {
   type?:
-  | "text"
-  | "email"
-  | "password"
-  | "number"
-  | "tel"
-  | "url"
-  | "date"
-  | "datetime-local"
-  | "color";
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "tel"
+    | "url"
+    | "date"
+    | "datetime-local"
+    | "color";
 }
 
 export function FormField<T extends FieldValues = FieldValues>({

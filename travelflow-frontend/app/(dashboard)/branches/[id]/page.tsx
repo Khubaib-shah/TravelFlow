@@ -151,7 +151,7 @@ export default function BranchDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -175,7 +175,7 @@ export default function BranchDetailPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4 flex items-center gap-2">
             <MapPin className="w-5 h-5 text-tf-primary" /> Branch Details
           </h3>
@@ -209,7 +209,7 @@ export default function BranchDetailPage({
           </div>
         </div>
 
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4">
             Current Month Performance
           </h3>
@@ -240,7 +240,7 @@ export default function BranchDetailPage({
       </div>
 
       <Tabs defaultValue="agents" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="agents"
             className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
@@ -257,7 +257,7 @@ export default function BranchDetailPage({
 
         <TabsContent
           value="agents"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-tf-text-primary">
@@ -365,7 +365,7 @@ export default function BranchDetailPage({
                 <span className="text-[var(--tf-danger)] ml-0.5">*</span>
               </Label>
               <select
-                className="w-full h-10 rounded-lg border border-tf-border bg-[var(--tf-surface)] px-3 text-sm"
+                className="w-full h-10 rounded-lg border border-tf-border bg-tf-surface px-3 text-sm"
                 value={assignUserId}
                 onChange={(e) => setAssignUserId(e.target.value)}
               >

@@ -87,7 +87,7 @@ export function NotificationsDropdown() {
       </IconButton>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-tf-border bg-[var(--tf-surface)] shadow-xl overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-1 w-80 rounded-xl border border-tf-border bg-tf-surface shadow-xl overflow-hidden z-50">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-tf-border px-4 py-3">
             <div className="flex items-center gap-2">

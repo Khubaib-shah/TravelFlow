@@ -21,7 +21,7 @@ export function ProfitChart({
   const total = data?.monthlyProfit || 680000;
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 h-full shadow-sm flex flex-col">
+    <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full shadow-sm flex flex-col">
       <h3 className="tf-h3 text-tf-text-primary mb-2">Profit Breakdown</h3>
       <p className="text-sm text-tf-text-secondary mb-6">By service category</p>
 

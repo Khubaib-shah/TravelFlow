@@ -22,7 +22,7 @@ export default function NotificationsSettingsPage() {
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -35,7 +35,7 @@ export default function NotificationsSettingsPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm overflow-hidden">
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
         <form onSubmit={handleSave} className="p-8 space-y-8 max-w-3xl">
           <div className="space-y-6">
             <div className="flex items-start justify-between border-b border-tf-border pb-6">

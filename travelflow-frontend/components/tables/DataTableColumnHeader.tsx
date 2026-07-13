@@ -60,7 +60,7 @@ export function DataTableColumnHeader<TData, TValue>({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="bg-[var(--tf-surface)] border-tf-border"
+          className="bg-tf-surface border-tf-border"
         >
           <DropdownMenuItem
             onClick={() => column.toggleSorting(false)}

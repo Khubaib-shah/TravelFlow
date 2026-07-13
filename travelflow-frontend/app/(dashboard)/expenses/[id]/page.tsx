@@ -61,7 +61,7 @@ export default function ExpenseDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -93,7 +93,7 @@ export default function ExpenseDetailPage({
               toast.success("Downloading receipt PDF...");
               window.print();
             }}
-            className="bg-[var(--tf-surface)] text-tf-text-primary print:hidden"
+            className="bg-tf-surface text-tf-text-primary print:hidden"
           >
             <Download className="w-4 h-4 mr-2" /> Receipt
           </Button>
@@ -103,7 +103,7 @@ export default function ExpenseDetailPage({
       {/* Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Info */}
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-tf-primary" /> Expense
             Information
@@ -145,7 +145,7 @@ export default function ExpenseDetailPage({
         </div>
 
         {/* Financial Amount */}
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm flex flex-col justify-center items-center text-center">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm flex flex-col justify-center items-center text-center">
           <p className="text-sm font-medium text-tf-text-secondary mb-2">
             Total Amount
           </p>
@@ -158,7 +158,7 @@ export default function ExpenseDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="details"
             className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
@@ -175,7 +175,7 @@ export default function ExpenseDetailPage({
 
         <TabsContent
           value="details"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="space-y-4">
             <div className="flex justify-between items-center py-2 border-b border-tf-border">
@@ -201,7 +201,7 @@ export default function ExpenseDetailPage({
 
         <TabsContent
           value="receipts"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="text-center py-12 border-2 border-dashed border-tf-border rounded-lg">
             <p className="text-tf-text-secondary">

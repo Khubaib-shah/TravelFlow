@@ -61,11 +61,11 @@ export function DrawerForm({
         onPointerDownOutside={preventCloseOnSelect}
         onInteractOutside={preventCloseOnSelect}
         className={cn(
-          "flex flex-col gap-0 p-0 sm:max-w-none bg-[var(--tf-surface)] border-l-[var(--tf-border)]",
+          "flex flex-col gap-0 p-0 sm:max-w-none bg-tf-surface border-l-[var(--tf-border)]",
           sizeClasses[size],
         )}
       >
-        <SheetHeader className="px-6 py-4 border-b border-tf-border space-y-1 bg-[var(--tf-surface)] text-left">
+        <SheetHeader className="px-6 py-4 border-b border-tf-border space-y-1 bg-tf-surface text-left">
           <SheetTitle className="text-xl font-semibold text-tf-text-primary">
             {title}
           </SheetTitle>
@@ -86,7 +86,7 @@ export function DrawerForm({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-tf-border bg-[var(--tf-surface)]">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-tf-border bg-tf-surface">
           <Button
             type="button"
             variant="outline"

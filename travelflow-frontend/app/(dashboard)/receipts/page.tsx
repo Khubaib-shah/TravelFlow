@@ -57,7 +57,9 @@ export default function ReceiptsPage() {
       ),
       cell: ({ row }) => (
         <span className="text-tf-text-secondary">
-          {new Date(row.original.date ?? row.original.createdAt).toLocaleDateString("en-GB")}
+          {new Date(
+            row.original.date ?? row.original.createdAt,
+          ).toLocaleDateString("en-GB")}
         </span>
       ),
     },
@@ -94,7 +96,7 @@ export default function ReceiptsPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
           <h1 className="tf-h2 text-tf-text-primary">Receipts</h1>
           <p className="tf-body text-tf-text-secondary mt-1">
@@ -110,7 +112,7 @@ export default function ReceiptsPage() {
           description="You haven't recorded any payments yet. Add a payment to a booking to generate a receipt."
         />
       ) : (
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">
+        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
           <DataTable
             columns={columns}
             data={data}

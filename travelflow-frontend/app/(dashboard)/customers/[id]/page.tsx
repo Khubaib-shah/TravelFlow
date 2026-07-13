@@ -235,7 +235,7 @@ export default function CustomerDetailPage({
       {/* Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contact Info */}
-        <Card className="col-span-1 lg:col-span-2 shadow-sm border-tf-border bg-[var(--tf-surface)]">
+        <Card className="col-span-1 lg:col-span-2 shadow-sm border-tf-border bg-tf-surface">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg flex items-center gap-2 text-tf-text-primary">
               <User className="w-5 h-5 text-tf-primary" /> Profile Information
@@ -300,7 +300,7 @@ export default function CustomerDetailPage({
         </Card>
 
         {/* Lifetime Stats */}
-        <Card className="shadow-sm border-tf-border bg-[var(--tf-surface)]">
+        <Card className="shadow-sm border-tf-border bg-tf-surface">
           <CardHeader className="pb-4">
             <CardTitle className="text-lg text-tf-text-primary">
               Value Metrics
@@ -333,7 +333,7 @@ export default function CustomerDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="bookings"
             className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
@@ -355,7 +355,7 @@ export default function CustomerDetailPage({
         </TabsList>
 
         <TabsContent value="bookings" className="mt-4">
-          <Card className="border-tf-border bg-[var(--tf-surface)] shadow-sm">
+          <Card className="border-tf-border bg-tf-surface shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Recent Bookings</CardTitle>
               <Button
@@ -392,7 +392,7 @@ export default function CustomerDetailPage({
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4">
-          <Card className="border-tf-border bg-[var(--tf-surface)] shadow-sm">
+          <Card className="border-tf-border bg-tf-surface shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Uploaded Documents</CardTitle>
             </CardHeader>
@@ -407,7 +407,7 @@ export default function CustomerDetailPage({
         </TabsContent>
 
         <TabsContent value="notes" className="mt-4">
-          <Card className="border-tf-border bg-[var(--tf-surface)] shadow-sm">
+          <Card className="border-tf-border bg-tf-surface shadow-sm">
             <CardContent className="pt-6">
               <CustomerNotesPanel
                 customerId={id}

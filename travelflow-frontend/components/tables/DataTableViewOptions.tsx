@@ -52,7 +52,7 @@ export function DataTableViewOptions<TData>({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-56 rounded-lg border-tf-border bg-[var(--tf-surface)] p-0"
+        className="w-56 rounded-lg border-tf-border bg-tf-surface p-0"
       >
         <PopoverHeader className="border-b border-tf-border px-4 py-3">
           <div className="flex items-center justify-between">

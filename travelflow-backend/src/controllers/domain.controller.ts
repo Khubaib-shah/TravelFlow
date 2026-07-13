@@ -407,8 +407,15 @@ export async function deleteUser(req: Request, res: Response) {
 
 // ─── Supplier Payments ────────────────────────────────────────────────────────
 
-export async function recordSupplierPayment(req: AuthenticatedRequest, res: Response) {
-  const supplier = await domain.recordSupplierPayment(buildContext(req), req.params.id, req.body);
+export async function recordSupplierPayment(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  const supplier = await domain.recordSupplierPayment(
+    buildContext(req),
+    req.params.id,
+    req.body,
+  );
   ApiResponse.success(res, supplier);
 }
 
@@ -419,23 +426,47 @@ export async function listReceipts(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function createReceipt(req: AuthenticatedRequest, res: Response) {
-  const receipt = await domain.createReceipt(buildContext(req), req.body, actor(req));
+  const receipt = await domain.createReceipt(
+    buildContext(req),
+    req.body,
+    actor(req),
+  );
   ApiResponse.created(res, receipt);
 }
 
 // ─── Booking Documents ────────────────────────────────────────────────────────
 
-export async function listBookingDocuments(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listBookingDocuments(buildContext(req), req.params.id));
+export async function listBookingDocuments(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  ApiResponse.success(
+    res,
+    await domain.listBookingDocuments(buildContext(req), req.params.id),
+  );
 }
 
-export async function createBookingDocument(req: AuthenticatedRequest, res: Response) {
-  const doc = await domain.createBookingDocument(buildContext(req), req.params.id, req.body, actor(req));
+export async function createBookingDocument(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  const doc = await domain.createBookingDocument(
+    buildContext(req),
+    req.params.id,
+    req.body,
+    actor(req),
+  );
   ApiResponse.created(res, doc);
 }
 
-export async function deleteBookingDocument(req: AuthenticatedRequest, res: Response) {
-  const ok = await domain.deleteBookingDocument(buildContext(req), req.params.docId);
+export async function deleteBookingDocument(
+  req: AuthenticatedRequest,
+  res: Response,
+) {
+  const ok = await domain.deleteBookingDocument(
+    buildContext(req),
+    req.params.docId,
+  );
   if (!ok) throw ApiError.notFound("Document");
   ApiResponse.success(res, { deleted: true });
 }

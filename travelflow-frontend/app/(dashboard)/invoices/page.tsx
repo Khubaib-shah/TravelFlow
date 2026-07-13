@@ -97,7 +97,7 @@ export default function InvoicesPage() {
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
           <h1 className="tf-h2 text-tf-text-primary">Invoices</h1>
           <p className="tf-body text-tf-text-secondary mt-1">
@@ -123,7 +123,7 @@ export default function InvoicesPage() {
           }}
         />
       ) : (
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm p-6">
+        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
           <DataTable
             columns={columns}
             data={data}

@@ -24,7 +24,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm flex items-center gap-4">
+      <div className="bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm flex items-center gap-4">
         <div className="w-12 h-12 rounded-xl bg-[var(--tf-surface-2)] flex items-center justify-center">
           <Settings className="w-6 h-6 text-tf-text-secondary" />
         </div>
@@ -45,7 +45,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="company" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg w-full justify-start h-auto flex-wrap sm:flex-nowrap mb-6 shadow-sm">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg w-full justify-start h-auto flex-wrap sm:flex-nowrap mb-6 shadow-sm">
           <TabsTrigger
             value="company"
             className="flex-1 sm:flex-none data-[state=active]:bg-[var(--tf-primary-soft)] data-[state=active]:text-tf-primary py-2.5 px-4 rounded-md"
@@ -70,7 +70,7 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="company" className="space-y-6 mt-0">
-          <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm overflow-hidden">
+          <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
             <div className="p-6 border-b border-tf-border bg-[var(--tf-surface-2)]/30">
               <h2 className="tf-h3 text-tf-text-primary">Company Details</h2>
               <p className="tf-body-sm text-tf-text-secondary mt-1">
@@ -152,7 +152,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-6 mt-0">
-          <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm overflow-hidden">
+          <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
             <div className="p-6 border-b border-tf-border bg-violet-50/30">
               <h2 className="tf-h3 text-tf-text-primary">
                 Branding & Appearance
@@ -215,7 +215,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6 mt-0">
-          <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border shadow-sm overflow-hidden">
+          <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
             <div className="p-6 border-b border-tf-border bg-amber-50/30">
               <h2 className="tf-h3 text-tf-text-primary">
                 Notification Preferences

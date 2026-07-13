@@ -193,6 +193,16 @@ export function SearchCommand() {
       keywords: ["new booking", "flight"],
     },
     {
+      id: "act-new-quotation",
+      label: "Create Quotation",
+      description: "New customer quotation",
+      icon: Plus,
+      action: () => navigateAndCreate("/quotations"),
+      group: "Quick Actions",
+      keywords: ["quotation", "quote", "quotation management"],
+    },
+
+    {
       id: "act-new-supplier",
       label: "Add Supplier",
       description: "Register a B2B partner",
@@ -286,12 +296,12 @@ export function SearchCommand() {
       <Button
         variant="outline"
         onClick={() => setIsOpen(true)}
-        className="flex h-10 w-full max-w-[320px] items-center gap-2 rounded-lg border-tf-border bg-[var(--tf-surface-2)] px-3 text-sm font-normal text-tf-text-muted hover:bg-[var(--tf-surface)] hover:border-[var(--tf-border-strong)] normal-case tracking-normal justify-start"
+        className="flex h-10 w-full max-w-[320px] items-center gap-2 rounded-lg border-tf-border bg-tf-surface-2 px-3 text-sm font-normal text-tf-text-muted hover:bg-tf-surface hover:border-[var(--tf-border-strong)] normal-case tracking-normal justify-start"
         aria-label="Open command palette"
       >
         <Search className="h-4 w-4 shrink-0" />
         <span className="flex-1 text-left truncate">Search or jump to...</span>
-        <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-[var(--tf-border-strong)] bg-[var(--tf-surface)] px-1.5 font-mono text-[10px] font-medium text-tf-text-secondary">
+        <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-[var(--tf-border-strong)] bg-tf-surface px-1.5 font-mono text-[10px] font-medium text-tf-text-secondary">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
@@ -305,7 +315,7 @@ export function SearchCommand() {
           }}
         >
           <div
-            className="w-full max-w-[620px] rounded-xl bg-[var(--tf-surface)] shadow-2xl border border-tf-border overflow-hidden mx-4"
+            className="w-full max-w-[620px] rounded-xl bg-tf-surface shadow-2xl border border-tf-border overflow-hidden mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input */}
@@ -321,7 +331,7 @@ export function SearchCommand() {
                 aria-label="Command search"
               />
               <kbd
-                className="ml-2 inline-flex h-6 items-center gap-1 rounded bg-[var(--tf-surface-2)] px-2 font-mono text-[10px] font-medium text-tf-text-muted cursor-pointer hover:bg-[var(--tf-border)]"
+                className="ml-2 inline-flex h-6 items-center gap-1 rounded bg-tf-surface-2 px-2 font-mono text-[10px] font-medium text-tf-text-muted cursor-pointer hover:bg-[var(--tf-border)]"
                 onClick={() => {
                   setIsOpen(false);
                   setSearchQuery("");
@@ -356,14 +366,14 @@ export function SearchCommand() {
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group ${
                             isSelected
                               ? "bg-tf-primary text-white"
-                              : "text-tf-text-primary hover:bg-[var(--tf-surface-2)]"
+                              : "text-tf-text-primary hover:bg-tf-surface-2"
                           }`}
                         >
                           <div
                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
                               isSelected
                                 ? "bg-white/20 text-white"
-                                : "bg-[var(--tf-surface-2)] text-tf-text-secondary"
+                                : "bg-tf-surface-2 text-tf-text-secondary"
                             }`}
                           >
                             <Icon className="h-4 w-4" />
@@ -396,19 +406,19 @@ export function SearchCommand() {
             {/* Footer */}
             <div className="border-t border-tf-border px-4 py-2 flex items-center gap-4 text-xs text-tf-text-muted">
               <span className="flex items-center gap-1">
-                <kbd className="bg-[var(--tf-surface-2)] px-1.5 py-0.5 rounded text-[10px]">
+                <kbd className="bg-tf-surface-2 px-1.5 py-0.5 rounded text-[10px]">
                   ↑↓
                 </kbd>{" "}
                 navigate
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="bg-[var(--tf-surface-2)] px-1.5 py-0.5 rounded text-[10px]">
+                <kbd className="bg-tf-surface-2 px-1.5 py-0.5 rounded text-[10px]">
                   ↵
                 </kbd>{" "}
                 select
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="bg-[var(--tf-surface-2)] px-1.5 py-0.5 rounded text-[10px]">
+                <kbd className="bg-tf-surface-2 px-1.5 py-0.5 rounded text-[10px]">
                   ESC
                 </kbd>{" "}
                 close

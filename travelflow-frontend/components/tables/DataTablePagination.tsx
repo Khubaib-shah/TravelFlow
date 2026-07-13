@@ -41,7 +41,7 @@ export function DataTablePagination<TData>({
               table.setPageSize(Number(value));
             }}
           >
-            <SelectTrigger className="h-8 w-[70px] rounded-md border-tf-border bg-[var(--tf-surface)] focus:ring-[var(--tf-primary)]">
+            <SelectTrigger className="h-8 w-[70px] rounded-md border-tf-border bg-tf-surface focus:ring-[var(--tf-primary)]">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">

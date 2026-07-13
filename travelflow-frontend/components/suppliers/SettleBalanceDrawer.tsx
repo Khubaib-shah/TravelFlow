@@ -68,7 +68,7 @@ export function SettleBalanceDrawer({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="bg-[var(--tf-surface)] border-l border-tf-border sm:max-w-md w-full overflow-y-auto">
+      <SheetContent className="bg-tf-surface border-l border-tf-border sm:max-w-md w-full overflow-y-auto">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-tf-text-primary">
             Settle Balance
@@ -98,7 +98,7 @@ export function SettleBalanceDrawer({
                 placeholder="e.g. 50000"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="bg-[var(--tf-surface)]"
+                className="bg-tf-surface"
                 min="1"
                 required
               />
@@ -109,7 +109,7 @@ export function SettleBalanceDrawer({
                 Payment Method
               </label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger className="bg-[var(--tf-surface)]">
+                <SelectTrigger className="bg-tf-surface">
                   <SelectValue placeholder="Select method" />
                 </SelectTrigger>
                 <SelectContent>
@@ -130,7 +130,7 @@ export function SettleBalanceDrawer({
                 placeholder="e.g. TRN-12345"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="bg-[var(--tf-surface)]"
+                className="bg-tf-surface"
               />
             </div>
           </div>

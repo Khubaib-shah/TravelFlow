@@ -174,7 +174,7 @@ export function CustomerDocumentsPanel({
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full min-h-[80px] rounded-md border border-tf-border bg-[var(--tf-surface)] p-2 text-sm"
+              className="w-full min-h-[80px] rounded-md border border-tf-border bg-tf-surface p-2 text-sm"
             />
           </div>
         </div>

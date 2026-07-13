@@ -37,7 +37,12 @@ export default function RolesPage() {
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleSchema),
-    defaultValues: { name: "", description: "", color: "#3b82f6", textColor: "#ffffff" },
+    defaultValues: {
+      name: "",
+      description: "",
+      color: "#3b82f6",
+      textColor: "#ffffff",
+    },
   });
 
   const loadData = async () => {
@@ -112,14 +117,20 @@ export default function RolesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm">
+      <div className="flex justify-between items-center bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
         <div>
           <h1 className="tf-h2 text-tf-text-primary">Roles & Permissions</h1>
           <p className="tf-body text-tf-text-secondary mt-1">
             Manage what each role can access across TravelFlow.
           </p>
         </div>
-        <Button onClick={() => { form.reset(); setSelectedPermissions([]); setCreateOpen(true); }}>
+        <Button
+          onClick={() => {
+            form.reset();
+            setSelectedPermissions([]);
+            setCreateOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" /> Add Role
         </Button>
       </div>
@@ -128,7 +139,7 @@ export default function RolesPage() {
         {roles.map((role) => (
           <div
             key={role.id}
-            className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm flex flex-col"
+            className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm flex flex-col"
           >
             <div className="flex items-start justify-between mb-4">
               <div
@@ -239,11 +250,30 @@ export default function RolesPage() {
       >
         <Form {...form}>
           <div className="space-y-4">
-            <FormField control={form.control} name="name" label="Role Name" required />
-            <FormField control={form.control} name="description" label="Description" />
+            <FormField
+              control={form.control}
+              name="name"
+              label="Role Name"
+              required
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              label="Description"
+            />
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="color" label="Background Color" type="color" />
-              <FormField control={form.control} name="textColor" label="Text Color" type="color" />
+              <FormField
+                control={form.control}
+                name="color"
+                label="Background Color"
+                type="color"
+              />
+              <FormField
+                control={form.control}
+                name="textColor"
+                label="Text Color"
+                type="color"
+              />
             </div>
 
             <div className="pt-4 border-t border-tf-border mt-6">

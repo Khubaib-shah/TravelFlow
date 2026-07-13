@@ -23,7 +23,7 @@ export function RevenueChart({
   ];
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 h-full shadow-sm">
+    <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="tf-h3 text-tf-text-primary">Revenue vs Profit</h3>

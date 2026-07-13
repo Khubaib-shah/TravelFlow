@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
         filters={filters}
         enableExport={enableExport}
       />
-      <div className="rounded-md border border-tf-border bg-[var(--tf-surface)] overflow-hidden">
+      <div className="rounded-md border border-tf-border bg-tf-surface overflow-hidden">
         <Table>
           <TableHeader className="bg-[var(--tf-surface-2)]">
             {table.getHeaderGroups().map((headerGroup) => (

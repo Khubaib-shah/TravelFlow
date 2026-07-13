@@ -16,6 +16,7 @@ const ROLE_RESTRICTIONS: Record<string, string[]> = {
   "/reports": ["admin", "manager"],
   "/expenses": ["admin", "manager"],
   "/branches": ["admin", "manager"],
+  "/quotations": ["admin", "manager"],
 };
 
 function getRequiredRoles(path: string): string[] | null {
@@ -65,7 +66,9 @@ export default function DashboardLayout({
       <Sidebar />
       <div
         className={`flex flex-col flex-1 transition-all duration-300 ease-out ${
-          isOpen ? "ml-[var(--tf-sidebar-width)]" : "ml-[var(--tf-sidebar-collapsed-width)]"
+          isOpen
+            ? "ml-[var(--tf-sidebar-width)]"
+            : "ml-[var(--tf-sidebar-collapsed-width)]"
         }`}
       >
         <Topbar />

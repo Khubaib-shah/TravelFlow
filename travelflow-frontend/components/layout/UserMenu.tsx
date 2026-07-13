@@ -53,7 +53,7 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 border-tf-border bg-[var(--tf-surface)]"
+        className="w-56 border-tf-border bg-tf-surface"
       >
         <DropdownMenuLabel className="normal-case tracking-normal">
           <p className="text-sm font-medium text-tf-text-primary">

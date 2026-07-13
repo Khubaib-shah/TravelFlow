@@ -20,7 +20,7 @@ export function DetailHeader({ title, subtitle, actions }: DetailHeaderProps) {
           variant="ghost"
           size="icon"
           onClick={() => router.back()}
-          className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+          className="rounded-full bg-tf-surface border border-tf-border"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>

@@ -68,7 +68,7 @@ export function ActivityFeed({
   const displayed = showAll ? filtered : filtered.slice(0, 7);
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 h-full min-h-[480px] max-h-[740px]  shadow-sm flex flex-col">
+    <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full min-h-[480px] max-h-[740px]  shadow-sm flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>

@@ -36,7 +36,7 @@ export function BranchPerformance({ isLoading }: { isLoading: boolean }) {
   ];
 
   return (
-    <div className="bg-[var(--tf-surface)] border border-tf-border rounded-xl p-6 h-full min-h-[480px] max-h-[750px] shadow-sm flex flex-col">
+    <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full min-h-[480px] max-h-[750px] shadow-sm flex flex-col">
       <div className="flex items-center justify-between mb-2">
         <h3 className="tf-h3 text-tf-text-primary">Branch Performance</h3>
         <span className="text-xs font-medium px-2 py-1 bg-[var(--tf-primary-soft)] text-tf-primary rounded-full">

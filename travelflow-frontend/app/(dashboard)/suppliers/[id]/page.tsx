@@ -190,7 +190,7 @@ export default function SupplierDetailPage({
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="rounded-full bg-[var(--tf-surface)] border border-tf-border"
+            className="rounded-full bg-tf-surface border border-tf-border"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -211,7 +211,7 @@ export default function SupplierDetailPage({
           <Button
             variant="outline"
             onClick={handleSettleBalance}
-            className="bg-[var(--tf-surface)] text-tf-text-primary"
+            className="bg-tf-surface text-tf-text-primary"
           >
             <CreditCard className="w-4 h-4 mr-2" /> Settle Balance
           </Button>
@@ -227,7 +227,7 @@ export default function SupplierDetailPage({
       {/* Overview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Contact Info */}
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm col-span-1 lg:col-span-2">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4 flex items-center gap-2">
             <Building className="w-5 h-5 text-tf-primary" /> Business
             Information
@@ -285,7 +285,7 @@ export default function SupplierDetailPage({
         </div>
 
         {/* Ledger Summary */}
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-tf-text-primary mb-4">
             Financial Standing
           </h3>
@@ -309,7 +309,7 @@ export default function SupplierDetailPage({
 
       {/* Tabs */}
       <Tabs defaultValue="ledger" className="w-full">
-        <TabsList className="bg-[var(--tf-surface)] border border-tf-border p-1 rounded-lg">
+        <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg">
           <TabsTrigger
             value="ledger"
             className="rounded-md data-[state=active]:bg-tf-primary data-[state=active]:text-white"
@@ -332,7 +332,7 @@ export default function SupplierDetailPage({
 
         <TabsContent
           value="ledger"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-tf-text-primary">
@@ -374,7 +374,7 @@ export default function SupplierDetailPage({
 
         <TabsContent
           value="bookings"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-tf-text-primary">
@@ -398,7 +398,7 @@ export default function SupplierDetailPage({
 
         <TabsContent
           value="documents"
-          className="mt-4 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6"
+          className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] cursor-pointer transition-colors">

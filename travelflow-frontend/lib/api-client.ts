@@ -25,6 +25,13 @@ import type {
 } from "@/types";
 import type { Role } from "@/types/role";
 import type { LeadActivity } from "@/types/lead";
+import type {
+  Quotation,
+  QuotationVersion,
+  QuotationStatus,
+} from "@/types/quotation";
+import type { QuotationFormValues } from "@/features/quotations/schemas/quotation.schema";
+
 export interface CreateBookingInput {
   customerId: string;
   supplierId: string;
@@ -87,7 +94,7 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  retried = false
+  retried = false,
 ): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method,
@@ -97,7 +104,12 @@ async function request<T>(
   });
 
   // Silent token refresh on 401
-  if (res.status === 401 && !retried && path !== "/auth/login" && path !== "/auth/refresh-token") {
+  if (
+    res.status === 401 &&
+    !retried &&
+    path !== "/auth/login" &&
+    path !== "/auth/refresh-token"
+  ) {
     if (!_isRefreshing) {
       _isRefreshing = true;
       _pendingRefresh = fetch(`${BASE}/auth/refresh-token`, {
@@ -110,11 +122,17 @@ async function request<T>(
         .catch(async () => {
           // Refresh failed — explicitly tell backend to clear cookies
           try {
-            await fetch(`${BASE}/auth/logout`, { method: "POST", credentials: "include" });
+            await fetch(`${BASE}/auth/logout`, {
+              method: "POST",
+              credentials: "include",
+            });
           } catch (e) {}
 
           // Redirect to login
-          if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          if (
+            typeof window !== "undefined" &&
+            window.location.pathname !== "/login"
+          ) {
             window.location.href = "/login";
           }
         })
@@ -132,7 +150,8 @@ async function request<T>(
   const json = await res.json();
 
   if (!res.ok) {
-    const message = (json as { message?: string }).message ?? `HTTP ${res.status}`;
+    const message =
+      (json as { message?: string }).message ?? `HTTP ${res.status}`;
     throw new Error(message);
   }
 
@@ -167,7 +186,10 @@ function reviveList<T>(items: unknown[]): T[] {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 async function login(email: string, password: string): Promise<User> {
-  const data = await post<{ user: unknown }>("/auth/login", { email, password });
+  const data = await post<{ user: unknown }>("/auth/login", {
+    email,
+    password,
+  });
   return reviveItem<User>(data.user);
 }
 
@@ -193,14 +215,15 @@ export const ApiClient = {
     if (params?.timeRange) searchParams.set("timeRange", params.timeRange);
     if (params?.branchId) searchParams.set("branchId", params.branchId);
     const queryString = searchParams.toString();
-    return get<unknown>(`/dashboard/analytics${queryString ? `?${queryString}` : ""}`);
+    return get<unknown>(
+      `/dashboard/analytics${queryString ? `?${queryString}` : ""}`,
+    );
   },
 
   // ── Leads ──
   getLeads: () => get<Lead[]>("/leads").then(reviveList<Lead>),
 
-  getLead: (id: string) =>
-    get<unknown>(`/leads/${id}`).then(reviveItem<Lead>),
+  getLead: (id: string) => get<unknown>(`/leads/${id}`).then(reviveItem<Lead>),
 
   createLead: (values: LeadFormValues) =>
     post<unknown>("/leads", values).then(reviveItem<Lead>),
@@ -208,13 +231,23 @@ export const ApiClient = {
   updateLead: (id: string, data: Partial<Lead> | LeadFormValues) =>
     patch<unknown>(`/leads/${id}`, data).then(reviveItem<Lead>),
 
-  convertLead: (id: string, bookingData: Omit<CreateBookingInput, "customerId" | "leadId">) =>
-    post<unknown>(`/leads/${id}/convert`, bookingData).then(reviveItem<Booking>),
+  convertLead: (
+    id: string,
+    bookingData: Omit<CreateBookingInput, "customerId" | "leadId">,
+  ) =>
+    post<unknown>(`/leads/${id}/convert`, bookingData).then(
+      reviveItem<Booking>,
+    ),
 
   addLeadActivity: (
     leadId: string,
-    activity: Omit<LeadActivity, "id" | "leadId" | "createdAt"> & { createdAt?: Date }
-  ) => post<unknown>(`/leads/${leadId}/activities`, activity).then(reviveItem<LeadActivity>),
+    activity: Omit<LeadActivity, "id" | "leadId" | "createdAt"> & {
+      createdAt?: Date;
+    },
+  ) =>
+    post<unknown>(`/leads/${leadId}/activities`, activity).then(
+      reviveItem<LeadActivity>,
+    ),
 
   deleteLead: (id: string) => del<{ deleted: boolean }>(`/leads/${id}`),
 
@@ -233,26 +266,40 @@ export const ApiClient = {
   deleteCustomer: (id: string) => del<{ deleted: boolean }>(`/customers/${id}`),
 
   findOrCreateCustomerFromLead: (lead: Lead) =>
-    post<unknown>(`/customers/from-lead/${lead.id}`, {}).then(reviveItem<Customer>),
+    post<unknown>(`/customers/from-lead/${lead.id}`, {}).then(
+      reviveItem<Customer>,
+    ),
 
   getCustomerNotes: (customerId: string) =>
-    get<unknown[]>(`/customers/${customerId}/notes`).then(reviveList<CustomerNote>),
+    get<unknown[]>(`/customers/${customerId}/notes`).then(
+      reviveList<CustomerNote>,
+    ),
 
   createCustomerNote: (customerId: string, note: string) =>
-    post<unknown>(`/customers/${customerId}/notes`, { note }).then(reviveItem<CustomerNote>),
+    post<unknown>(`/customers/${customerId}/notes`, { note }).then(
+      reviveItem<CustomerNote>,
+    ),
 
   deleteCustomerNote: (id: string) => del<boolean>(`/customers/notes/${id}`),
 
   getCustomerDocuments: (customerId: string) =>
-    get<unknown[]>(`/customers/${customerId}/documents`).then(reviveList<CustomerDocument>),
+    get<unknown[]>(`/customers/${customerId}/documents`).then(
+      reviveList<CustomerDocument>,
+    ),
 
   createCustomerDocument: (
     customerId: string,
-    doc: Omit<CustomerDocument, "id" | "customerId" | "uploadedBy" | "createdAt" | "updatedAt">
+    doc: Omit<
+      CustomerDocument,
+      "id" | "customerId" | "uploadedBy" | "createdAt" | "updatedAt"
+    >,
   ) =>
-    post<unknown>(`/customers/${customerId}/documents`, doc).then(reviveItem<CustomerDocument>),
+    post<unknown>(`/customers/${customerId}/documents`, doc).then(
+      reviveItem<CustomerDocument>,
+    ),
 
-  deleteCustomerDocument: (id: string) => del<boolean>(`/customers/documents/${id}`),
+  deleteCustomerDocument: (id: string) =>
+    del<boolean>(`/customers/documents/${id}`),
 
   // ── Bookings ──
   getBookings: () => get<unknown[]>("/bookings").then(reviveList<Booking>),
@@ -270,8 +317,14 @@ export const ApiClient = {
       airline: values.airline,
       departureCity: values.departureCity,
       arrivalCity: values.arrivalCity,
-      departureDate: values.departureDate instanceof Date ? values.departureDate.toISOString() : values.departureDate,
-      returnDate: values.returnDate instanceof Date ? values.returnDate.toISOString() : values.returnDate,
+      departureDate:
+        values.departureDate instanceof Date
+          ? values.departureDate.toISOString()
+          : values.departureDate,
+      returnDate:
+        values.returnDate instanceof Date
+          ? values.returnDate.toISOString()
+          : values.returnDate,
       pnr: values.pnr,
       ticketNumber: values.ticketNumber,
       costPrice: values.costPrice,
@@ -284,8 +337,14 @@ export const ApiClient = {
   updateBooking: (id: string, values: BookingFormValues) =>
     patch<unknown>(`/bookings/${id}`, {
       ...values,
-      departureDate: values.departureDate instanceof Date ? values.departureDate.toISOString() : values.departureDate,
-      returnDate: values.returnDate instanceof Date ? values.returnDate?.toISOString() : values.returnDate,
+      departureDate:
+        values.departureDate instanceof Date
+          ? values.departureDate.toISOString()
+          : values.departureDate,
+      returnDate:
+        values.returnDate instanceof Date
+          ? values.returnDate?.toISOString()
+          : values.returnDate,
     }).then(reviveItem<Booking>),
 
   deleteBooking: (id: string) => del<{ deleted: boolean }>(`/bookings/${id}`),
@@ -302,7 +361,10 @@ export const ApiClient = {
   updateSupplier: (id: string, values: SupplierFormValues) =>
     patch<unknown>(`/suppliers/${id}`, values).then(reviveItem<Supplier>),
 
-  recordSupplierPayment: (id: string, data: { amount: number; method: string; reference?: string }) =>
+  recordSupplierPayment: (
+    id: string,
+    data: { amount: number; method: string; reference?: string },
+  ) =>
     post<unknown>(`/suppliers/${id}/payments`, data).then(reviveItem<Supplier>),
 
   deleteSupplier: (id: string) => del<{ deleted: boolean }>(`/suppliers/${id}`),
@@ -322,11 +384,12 @@ export const ApiClient = {
   // ── Users ──
   getUsers: () => get<unknown[]>("/users").then(reviveList<User>),
 
-  getUser: (id: string) =>
-    get<unknown>(`/users/${id}`).then(reviveItem<User>),
+  getUser: (id: string) => get<unknown>(`/users/${id}`).then(reviveItem<User>),
 
   createUser: (values: UserFormValues) =>
-    post<unknown>("/users", values) as Promise<{ tempPassword?: string } & User>,
+    post<unknown>("/users", values) as Promise<
+      { tempPassword?: string } & User
+    >,
 
   updateUser: (id: string, values: UserFormValues) =>
     patch<unknown>(`/users/${id}`, values).then(reviveItem<User>),
@@ -344,13 +407,15 @@ export const ApiClient = {
   createExpense: (values: ExpenseFormValues) =>
     post<unknown>("/expenses", {
       ...values,
-      date: values.date instanceof Date ? values.date.toISOString() : values.date,
+      date:
+        values.date instanceof Date ? values.date.toISOString() : values.date,
     }).then(reviveItem<Expense>),
 
   updateExpense: (id: string, values: ExpenseFormValues) =>
     patch<unknown>(`/expenses/${id}`, {
       ...values,
-      date: values.date instanceof Date ? values.date.toISOString() : values.date,
+      date:
+        values.date instanceof Date ? values.date.toISOString() : values.date,
     }).then(reviveItem<Expense>),
 
   deleteExpense: (id: string) => del<{ deleted: boolean }>(`/expenses/${id}`),
@@ -358,11 +423,18 @@ export const ApiClient = {
   // ── Roles ──
   getRoles: () => get<unknown[]>("/roles").then(reviveList<Role>),
 
-  createRole: (data: { name: string; description?: string; color: string; textColor: string; permissions?: string[] }) =>
-    post<unknown>("/roles", data).then(reviveItem<Role>),
+  createRole: (data: {
+    name: string;
+    description?: string;
+    color: string;
+    textColor: string;
+    permissions?: string[];
+  }) => post<unknown>("/roles", data).then(reviveItem<Role>),
 
   updateRolePermissions: (roleId: string, permissions: string[]) =>
-    patch<unknown>(`/roles/${roleId}/permissions`, { permissions }).then(reviveItem<Role>),
+    patch<unknown>(`/roles/${roleId}/permissions`, { permissions }).then(
+      reviveItem<Role>,
+    ),
 
   deleteRole: (roleId: string) => del<{ deleted: boolean }>(`/roles/${roleId}`),
 
@@ -379,12 +451,56 @@ export const ApiClient = {
 
   // ── Booking Documents ──
   getBookingDocuments: (bookingId: string) =>
-    get<unknown[]>(`/bookings/${bookingId}/documents`).then(reviveList<BookingDocument>),
+    get<unknown[]>(`/bookings/${bookingId}/documents`).then(
+      reviveList<BookingDocument>,
+    ),
 
-  createBookingDocument: (bookingId: string, doc: { name: string; url: string; type: string }) =>
-    post<unknown>(`/bookings/${bookingId}/documents`, doc).then(reviveItem<BookingDocument>),
+  createBookingDocument: (
+    bookingId: string,
+    doc: { name: string; url: string; type: string },
+  ) =>
+    post<unknown>(`/bookings/${bookingId}/documents`, doc).then(
+      reviveItem<BookingDocument>,
+    ),
 
-  deleteBookingDocument: (docId: string) => del<{ deleted: boolean }>(`/bookings/documents/${docId}`),
+  deleteBookingDocument: (docId: string) =>
+    del<{ deleted: boolean }>(`/bookings/documents/${docId}`),
+
+  // ── Quotations ──
+  getQuotations: () =>
+    get<unknown[]>("/quotations").then((arr) =>
+      reviveList<Quotation>(arr as any),
+    ),
+
+  getQuotation: (id: string) =>
+    get<unknown>(`/quotations/${id}`).then((q) =>
+      reviveItem<Quotation>(q as any),
+    ),
+
+  createQuotation: (values: QuotationFormValues) =>
+    post<unknown>("/quotations", values).then((q) =>
+      reviveItem<Quotation>(q as any),
+    ),
+
+  updateQuotation: (id: string, values: QuotationFormValues) =>
+    patch<unknown>(`/quotations/${id}`, values).then((q) =>
+      reviveItem<Quotation>(q as any),
+    ),
+
+  sendQuotation: (id: string) =>
+    post<unknown>(`/quotations/${id}/send`, {}).then((q) =>
+      reviveItem<Quotation>(q as any),
+    ),
+
+  convertQuotationToBooking: (id: string) =>
+    post<unknown>(`/quotations/${id}/convert-to-booking`, {}).then((b) =>
+      reviveItem<Booking>(b as any),
+    ),
+
+  getQuotationVersions: (id: string) =>
+    get<unknown[]>(`/quotations/${id}/versions`).then((v) =>
+      reviveList<QuotationVersion>(v as any),
+    ),
 
   // ── Auth helpers (exposed for login page) ──
   login,

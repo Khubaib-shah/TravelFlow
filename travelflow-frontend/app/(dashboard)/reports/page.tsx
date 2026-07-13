@@ -92,7 +92,7 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="bg-[var(--tf-surface)] p-6 rounded-xl border border-tf-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
             <BarChart3 className="w-6 h-6 text-blue-600" />
@@ -139,7 +139,7 @@ export default function ReportsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="tf-h4 text-tf-text-secondary">Total Revenue</h3>
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
@@ -151,7 +151,7 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="tf-h4 text-tf-text-secondary">Net Profit</h3>
             <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
@@ -163,7 +163,7 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="tf-h4 text-tf-text-secondary">Total Bookings</h3>
             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -175,7 +175,7 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="tf-h4 text-tf-text-secondary">Profit Margin</h3>
             <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
@@ -191,7 +191,7 @@ export default function ReportsPage() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Revenue Chart */}
-        <div className="lg:col-span-2 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+        <div className="lg:col-span-2 bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
           <h3 className="tf-h3 text-tf-text-primary mb-6">Revenue vs Profit</h3>
           {revenueData.length > 0 ? (
             <AreaChart
@@ -215,7 +215,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Lead Sources Donut */}
-        <div className="bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm flex flex-col">
+        <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm flex flex-col">
           <h3 className="tf-h3 text-tf-text-primary mb-2">Leads by Source</h3>
           {leadSourceData.length > 0 ? (
             <>
@@ -252,7 +252,7 @@ export default function ReportsPage() {
 
         {/* Branch Performance Bar Chart */}
         {isAdmin && (
-          <div className="lg:col-span-3 bg-[var(--tf-surface)] rounded-xl border border-tf-border p-6 shadow-sm">
+          <div className="lg:col-span-3 bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
             <h3 className="tf-h3 text-tf-text-primary mb-6">
               Bookings by Branch
             </h3>

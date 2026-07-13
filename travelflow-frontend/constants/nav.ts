@@ -12,7 +12,7 @@ import {
   UserCog,
   ShieldCheck,
   Settings,
-  LucideIcon
+  LucideIcon,
 } from "lucide-react";
 
 export interface NavItem {
@@ -133,6 +133,17 @@ export const sidebarNav: NavGroup[] = [
         title: "Settings",
         href: "/settings",
         icon: Settings,
+        roles: ["admin", "manager"],
+      },
+    ],
+  },
+  {
+    label: "SALES DOCUMENTS",
+    items: [
+      {
+        title: "Quotations",
+        href: "/quotations",
+        icon: FileText,
         roles: ["admin", "manager"],
       },
     ],

@@ -56,7 +56,7 @@ export function DataTableRowActions<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-[160px] bg-[var(--tf-surface)] border-tf-border shadow-md"
+          className="w-[160px] bg-tf-surface border-tf-border shadow-md"
         >
           {onView && (
             <DropdownMenuItem
@@ -94,7 +94,7 @@ export function DataTableRowActions<TData>({
 
       {onDelete && (
         <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-          <AlertDialogContent className="bg-[var(--tf-surface)] border-tf-border">
+          <AlertDialogContent className="bg-tf-surface border-tf-border">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-tf-text-primary">
                 Are you sure?
