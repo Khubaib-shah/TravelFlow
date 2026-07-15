@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // The backend sets tf_access_token and tf_refresh_token as HttpOnly cookies.
   // Next.js middleware runs on the Edge and CAN read HttpOnly cookies.
   const token = request.cookies.get("tf_access_token");
