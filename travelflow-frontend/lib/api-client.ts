@@ -25,11 +25,17 @@ import type {
 } from "@/types";
 import type { Role } from "@/types/role";
 import type { LeadActivity } from "@/types/lead";
-import type {
+import {
   Quotation,
   QuotationVersion,
   QuotationStatus,
 } from "@/types/quotation";
+import {
+  Template,
+  CreateTemplatePayload,
+  UpdateTemplatePayload,
+  TemplateType,
+} from "@/types/template";
 import type { QuotationFormValues } from "@/features/quotations/schemas/quotation.schema";
 
 export interface CreateBookingInput {
@@ -147,7 +153,15 @@ async function request<T>(
     return request<T>(method, path, body, true);
   }
 
-  const json = await res.json();
+  let json: any;
+  try {
+    json = await res.json();
+  } catch (e) {
+    if (!res.ok) {
+      throw new Error(`Server Error: ${res.status} ${res.statusText}`);
+    }
+    throw new Error("Received invalid JSON from server");
+  }
 
   if (!res.ok) {
     const message =
@@ -468,13 +482,18 @@ export const ApiClient = {
 
   // ── Quotations ──
   getQuotations: () =>
-    get<unknown[]>("/quotations").then((arr) =>
-      reviveList<Quotation>(arr as any),
+    get<{ items: unknown[] }>("/quotations").then((res) =>
+      reviveList<Quotation>(res.items as any),
     ),
 
   getQuotation: (id: string) =>
     get<unknown>(`/quotations/${id}`).then((q) =>
       reviveItem<Quotation>(q as any),
+    ),
+
+  getQuotationForPrint: (id: string) =>
+    get<unknown>(`/quotations/${id}/print`).then((q) =>
+      reviveItem<any>(q as any),
     ),
 
   createQuotation: (values: QuotationFormValues) =>
@@ -501,6 +520,24 @@ export const ApiClient = {
     get<unknown[]>(`/quotations/${id}/versions`).then((v) =>
       reviveList<QuotationVersion>(v as any),
     ),
+
+  // ── Templates ──
+  getTemplates: (type?: TemplateType) =>
+    get<unknown[]>(type ? `/templates?type=${type}` : "/templates").then((res) =>
+      reviveList<Template>(res as any),
+    ),
+
+  createTemplate: (payload: CreateTemplatePayload) =>
+    post<unknown>("/templates", payload).then((res) =>
+      reviveItem<Template>(res as any),
+    ),
+
+  updateTemplate: (id: string, payload: UpdateTemplatePayload) =>
+    patch<unknown>(`/templates/${id}`, payload).then((res) =>
+      reviveItem<Template>(res as any),
+    ),
+
+  deleteTemplate: (id: string) => del<{ deleted: boolean }>(`/templates/${id}`),
 
   // ── Auth helpers (exposed for login page) ──
   login,

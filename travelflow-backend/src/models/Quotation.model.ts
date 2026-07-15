@@ -28,6 +28,7 @@ export type QuotationCustomerType =
 export interface IQuotation extends Document {
   agencyId: Types.ObjectId;
   quotationNumber: string;
+  title: string;
 
   leadId?: Types.ObjectId;
   customerId?: Types.ObjectId;
@@ -60,6 +61,7 @@ export interface IQuotation extends Document {
   internalNotes?: string;
 
   termsTemplateId?: Types.ObjectId;
+  terms?: string;
 
   authorizedSignature?: string;
 
@@ -77,6 +79,7 @@ const QuotationSchema = new Schema<IQuotation>(
       index: true,
     },
     quotationNumber: { type: String, required: true },
+    title: { type: String, required: true },
 
     leadId: { type: Schema.Types.ObjectId, ref: "Lead" },
     customerId: { type: Schema.Types.ObjectId, ref: "Customer" },
@@ -127,6 +130,7 @@ const QuotationSchema = new Schema<IQuotation>(
     internalNotes: { type: String },
 
     termsTemplateId: { type: Schema.Types.ObjectId },
+    terms: { type: String },
 
     authorizedSignature: { type: String },
 

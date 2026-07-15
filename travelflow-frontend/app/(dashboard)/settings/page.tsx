@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { TemplatesSettings } from "@/components/settings/TemplatesSettings";
+import { FileText } from "lucide-react";
 
 export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -66,6 +68,13 @@ export default function SettingsPage() {
           >
             <Bell className="w-4 h-4 mr-2" />
             Notifications
+          </TabsTrigger>
+          <TabsTrigger
+            value="templates"
+            className="flex-1 sm:flex-none data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 py-2.5 px-4 rounded-md"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Templates
           </TabsTrigger>
         </TabsList>
 
@@ -260,6 +269,10 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-0">
+          <TemplatesSettings />
         </TabsContent>
       </Tabs>
 

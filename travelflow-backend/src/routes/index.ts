@@ -26,6 +26,7 @@ import {
 import * as auth from "../controllers/auth.controller";
 import * as domain from "../controllers/domain.controller";
 import quotationsRouter from "./quotations";
+import templateRouter from "./template.routes";
 
 const router = Router();
 
@@ -355,6 +356,7 @@ protectedRouter.delete(
 router.use(protectedRouter);
 
 // Quotations
-router.use("/quotations", quotationsRouter);
+protectedRouter.use("/quotations", quotationsRouter);
+protectedRouter.use("/templates", templateRouter);
 
 export default router;

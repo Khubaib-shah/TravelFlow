@@ -47,6 +47,13 @@ export const quotationSchema = z
 
     status: z.enum(["draft", "sent", "accepted", "rejected", "cancelled"]),
 
+    travelType: z.string().min(1, "Travel type is required").default("custom"),
+    destination: z.string().min(1, "Destination is required"),
+    adults: z.coerce.number().min(0).default(0),
+    children: z.coerce.number().min(0).default(0),
+    infants: z.coerce.number().min(0).default(0),
+    validUntil: z.string().optional(),
+
     items: z.array(quotationItemSchema).min(1, "Add at least one item"),
     taxes: z.array(quotationTaxSchema).optional().default([]),
 
@@ -94,6 +101,13 @@ export const quotationDefaultValues: QuotationFormValues = {
   agentId: undefined,
 
   status: "draft",
+
+  travelType: "custom",
+  destination: "",
+  adults: 0,
+  children: 0,
+  infants: 0,
+  validUntil: "",
 
   items: [
     {

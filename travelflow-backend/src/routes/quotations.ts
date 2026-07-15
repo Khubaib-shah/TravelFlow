@@ -11,6 +11,7 @@ router.use(authMiddleware, tenantMiddleware);
 
 router.get("/", quotation.listQuotations);
 router.get("/:id", validate(idParamSchema, "params"), quotation.getQuotation);
+router.get("/:id/print", validate(idParamSchema, "params"), quotation.getQuotationForPrint);
 
 router.post("/", quotation.createQuotation);
 

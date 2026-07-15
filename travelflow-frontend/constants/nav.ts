@@ -54,6 +54,12 @@ export const sidebarNav: NavGroup[] = [
         href: "/customers",
         icon: Users,
       },
+      {
+        title: "Quotations",
+        href: "/quotations",
+        icon: FileText,
+        roles: ["admin", "manager"],
+      },
     ],
   },
   {
@@ -137,15 +143,5 @@ export const sidebarNav: NavGroup[] = [
       },
     ],
   },
-  {
-    label: "SALES DOCUMENTS",
-    items: [
-      {
-        title: "Quotations",
-        href: "/quotations",
-        icon: FileText,
-        roles: ["admin", "manager"],
-      },
-    ],
-  },
+
 ];

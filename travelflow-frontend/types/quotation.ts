@@ -67,10 +67,18 @@ export interface QuotationActivity {
 export interface Quotation {
   id: string;
   quotationRef: string;
+  title: string;
   status: QuotationStatus;
 
   createdAt: Date;
   updatedAt: Date;
+
+  travelType?: string;
+  destination?: string;
+  adults?: number;
+  children?: number;
+  infants?: number;
+  validUntil?: Date;
 
   customer?: Customer;
   customerId?: string;

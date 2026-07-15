@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, FileText, Share2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -12,9 +12,11 @@ import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useEntityDrawer } from "@/hooks/use-entity-drawer";
 import { QuotationDrawer } from "@/components/quotations/QuotationDrawer";
+import { QuotationPreviewModal } from "@/components/quotations/QuotationPreviewModal";
 import type { QuotationFormValues } from "@/features/quotations/schemas/quotation.schema";
 import { mapQuotationToForm } from "@/features/quotations/utils/mapQuotationToForm";
 
@@ -40,12 +42,24 @@ export default function QuotationsPage() {
   >({});
   const [isViewMode, setIsViewMode] = useState(false);
 
+  const [previewQuotation, setPreviewQuotation] = useState<Quotation | null>(null);
+
   const openView = async (id: string) => {
-    setIsViewMode(true);
-    setViewingQuotationId(id);
     try {
       const q = await API.getQuotation(id);
       setViewInitialValues(mapQuotationToForm(q));
+      setViewingQuotationId(id);
+      setIsViewMode(true);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load quotation");
+    }
+  };
+
+  const handleOpenEdit = async (id: string) => {
+    try {
+      const q = await API.getQuotation(id);
+      setViewInitialValues(mapQuotationToForm(q));
+      openEdit(id);
     } catch (e: any) {
       toast.error(e.message || "Failed to load quotation");
     }
@@ -137,8 +151,30 @@ export default function QuotationsPage() {
           row={row}
           onView={() => openView(row.original.id)}
           onEdit={() => {
-            openEdit(row.original.id);
+            handleOpenEdit(row.original.id);
           }}
+          customActions={(row) => (
+            <>
+              <DropdownMenuItem
+                onClick={() => {
+                  window.open(`/print/quotation/${row.original.id}`, "_blank");
+                }}
+                className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                View PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  toast.success("Sharing option will be available soon!");
+                }}
+                className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </DropdownMenuItem>
+            </>
+          )}
         />
       ),
     },
@@ -195,30 +231,36 @@ export default function QuotationsPage() {
               ? "Update quotation items, taxes and totals."
               : "Create a new quotation for a customer."
         }
-        isOpen={isDrawerOpen}
+        isOpen={isDrawerOpen || isViewMode}
         onClose={() => {
           setIsViewMode(false);
-          setViewingQuotationId(null);
           close();
         }}
-        editingId={isViewMode ? undefined : (editingId ?? undefined)}
         mode={isViewMode ? "view" : isEditing ? "edit" : "create"}
+        editingId={isViewMode ? viewingQuotationId! : editingId ?? undefined}
         customers={customers}
         branches={branches}
         agents={agents}
-        initialValues={isViewMode ? viewInitialValues : initialValues}
-        onSaved={async () => {
+        initialValues={isViewMode || isEditing ? viewInitialValues : initialValues}
+        onSaved={async (q) => {
           await loadData();
+          if (!isEditing && !isViewMode) {
+            setPreviewQuotation(q);
+          }
         }}
         onEditFromView={() => {
-          if (!viewingQuotationId) return;
           setIsViewMode(false);
-          openEdit(viewingQuotationId);
+          openEdit(viewingQuotationId!);
         }}
         onCreateFromView={() => {
           setIsViewMode(false);
           openCreate();
         }}
+      />
+      <QuotationPreviewModal
+        isOpen={!!previewQuotation}
+        onClose={() => setPreviewQuotation(null)}
+        quotation={previewQuotation}
       />
     </div>
   );

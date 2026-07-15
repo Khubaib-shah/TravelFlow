@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
@@ -9,10 +9,12 @@ import { Plus, Trash2 } from "lucide-react";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   FormField,
   FormSelect,
   FormTextArea,
+  FormCombobox,
 } from "@/components/forms/FormField";
 
 import {
@@ -24,6 +26,7 @@ import {
 } from "@/features/quotations/schemas/quotation.schema";
 import type { QuotationItem, QuotationTax, Quotation } from "@/types/quotation";
 import type { Customer, Supplier, Branch, User } from "@/types";
+import type { Template } from "@/types/template";
 
 import { API } from "@/lib/data-source";
 
@@ -64,7 +67,7 @@ export function QuotationDrawer({
   description?: string;
   isOpen: boolean;
   onClose: () => void;
-  onSaved: () => Promise<void> | void;
+  onSaved: (q?: any) => Promise<void> | void;
   initialValues?: Partial<QuotationFormValues>;
   size?: "sm" | "md" | "lg" | "xl";
   customers?: Customer[];
@@ -76,6 +79,22 @@ export function QuotationDrawer({
   onCreateFromView?: () => void;
 }) {
   const isViewMode = mode === "view";
+
+  const [newCustomer, setNewCustomer] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
+
+  const [notesTemplates, setNotesTemplates] = useState<Template[]>([]);
+  const [termsTemplates, setTermsTemplates] = useState<Template[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      API.getTemplates("quotation_notes").then(setNotesTemplates).catch(console.error);
+      API.getTemplates("quotation_terms").then(setTermsTemplates).catch(console.error);
+    }
+  }, [isOpen]);
 
   const form = useForm<QuotationFormValues>({
     resolver: zodResolver(quotationSchema),
@@ -121,162 +140,46 @@ export function QuotationDrawer({
     if (isViewMode) return;
 
     try {
-      // Only runs if validation succeeded
       console.log("[QuotationDrawer] Submitting validated payload:", values);
 
+      let finalCustomerId = values.customerId;
+      if (finalCustomerId === "NEW_CUSTOMER") {
+        const parts = newCustomer.name.trim().split(" ");
+        const firstName = parts[0] || "Unknown";
+        const lastName = parts.slice(1).join(" ") || " ";
+
+        const createdCustomer = await API.createCustomer({
+          type: "individual",
+          firstName,
+          lastName,
+          phone: newCustomer.phone,
+          email: newCustomer.email || undefined,
+          city: "Karachi",
+        } as any);
+        finalCustomerId = createdCustomer.id;
+      }
+
+      const payload = { ...values, customerId: finalCustomerId };
+      let finalQuotation: any = null;
+
       if (editingId) {
-        await API.updateQuotation(editingId, values);
+        finalQuotation = await API.updateQuotation(editingId, payload);
         toast.success("Quotation updated successfully");
       } else {
-        const created = await API.createQuotation(values);
+        finalQuotation = await API.createQuotation(payload);
         toast.success("Quotation created successfully", {
-          description: created.quotationRef
-            ? `Ref: ${created.quotationRef}`
+          description: finalQuotation.quotationRef
+            ? `Ref: ${finalQuotation.quotationRef}`
             : undefined,
         });
       }
 
-      await onSaved();
+      await onSaved(finalQuotation);
       onClose();
     } catch (e: any) {
       toast.error(e.message || "Failed to save quotation");
     }
   };
-
-  if (isViewMode) {
-    const values = form.getValues();
-
-    return (
-      <DrawerForm
-        title={title}
-        description={description}
-        isOpen={isOpen}
-        onClose={onClose}
-        // DrawerForm always renders its footer with Cancel + Submit when onSubmit is provided.
-        // We omit onSubmit by not passing it (no submit in view mode).
-      >
-        <div className="space-y-5">
-          <div className="flex items-center justify-between gap-3">
-            <div />
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="border-tf-border text-tf-text-secondary"
-                onClick={onClose}
-              >
-                ✕
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onEditFromView}
-              >
-                Edit
-              </Button>
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => onCreateFromView?.()}
-              >
-                Create
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-              Title
-            </div>
-            <div className="text-sm font-medium text-tf-text-primary">
-              {values.title || "-"}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-              Customer / Supplier IDs
-            </div>
-            <div className="text-sm text-tf-text-primary">
-              Customer: {values.customerId || "-"}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-              Items
-            </div>
-            <div className="space-y-2">
-              {(Array.isArray(values.items) ? values.items : []).map(
-                (it, idx) => (
-                  <div
-                    key={`${it.id ?? "new"}-${idx}`}
-                    className="rounded-lg border border-tf-border p-3"
-                  >
-                    <div className="font-medium text-tf-text-primary">
-                      {it.description || "-"}
-                    </div>
-                    <div className="text-sm text-tf-text-secondary">
-                      Qty: {it.quantity} • Unit: {formatMoney(it.unitPrice)}
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-              Taxes
-            </div>
-            <div className="space-y-2">
-              {(Array.isArray(values.taxes) ? values.taxes : []).map(
-                (t, idx) => (
-                  <div
-                    key={`${t.id ?? "new"}-${idx}`}
-                    className="rounded-lg border border-tf-border p-3"
-                  >
-                    <div className="font-medium text-tf-text-primary">
-                      {t.label || "-"}
-                    </div>
-                    <div className="text-sm text-tf-text-secondary">
-                      {t.taxType} • Value: {formatMoney(t.value)}
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-                Notes
-              </div>
-              <div className="text-sm text-tf-text-primary">
-                {values.notes || "-"}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-xs text-tf-text-muted uppercase tracking-wider">
-                Terms
-              </div>
-              <div className="text-sm text-tf-text-primary">
-                {values.terms || "-"}
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-1">
-            <div className="text-sm font-semibold text-tf-text-primary">
-              Grand Total: ₨ {grandTotal?.toLocaleString?.() ?? "0"}
-            </div>
-          </div>
-        </div>
-      </DrawerForm>
-    );
-  }
 
   return (
     <DrawerForm
@@ -286,6 +189,11 @@ export function QuotationDrawer({
       onClose={onClose}
       onSubmit={(e) => {
         e.preventDefault();
+        
+        if (isViewMode && onEditFromView) {
+          onEditFromView();
+          return;
+        }
 
         const values = form.getValues();
         console.log(
@@ -298,12 +206,11 @@ export function QuotationDrawer({
             "[QuotationDrawer] Validation failed. Errors:",
             formErrors,
           );
-          // Keep UI feedback minimal here; react-hook-form FormField components should show errors.
         })(e);
       }}
       isSubmitting={form.formState.isSubmitting}
       size={size}
-      submitLabel={editingId ? "Save Changes" : "Create Quotation"}
+      submitLabel={isViewMode ? "Edit" : editingId ? "Save Changes" : "Create Quotation"}
     >
       <Form {...form}>
         <div className="space-y-8">
@@ -320,14 +227,130 @@ export function QuotationDrawer({
                   label="Title"
                   placeholder="e.g. Umrah package - 2026"
                   required
+                  disabled={isViewMode}
                 />
 
-                <FormField
+                <FormCombobox
                   control={form.control}
                   name="customerId"
-                  label="Customer Name"
-                  placeholder="Type customer name"
+                  label="Customer"
                   required
+                  options={[
+                    { label: "+ Create New Customer", value: "NEW_CUSTOMER" },
+                    ...(customers || []).map((c) => ({
+                      label: `${c.firstName} ${c.lastName}`,
+                      value: c.id,
+                    })),
+                  ]}
+                  disabled={isViewMode}
+                />
+              </div>
+
+              {form.watch("customerId") === "NEW_CUSTOMER" && (
+                <div className="p-4 border rounded-lg bg-tf-surface-2 space-y-4">
+                  <h4 className="text-sm font-semibold text-tf-text-primary">
+                    New Customer Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-tf-text-secondary">Customer Name <span className="text-[var(--tf-danger)]">*</span></div>
+                      <Input
+                        value={newCustomer.name}
+                        onChange={(e) =>
+                          setNewCustomer({ ...newCustomer, name: e.target.value })
+                        }
+                        placeholder="e.g. John Doe"
+                        required
+                        disabled={isViewMode}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-tf-text-secondary">Phone <span className="text-[var(--tf-danger)]">*</span></div>
+                      <Input
+                        value={newCustomer.phone}
+                        onChange={(e) =>
+                          setNewCustomer({ ...newCustomer, phone: e.target.value })
+                        }
+                        placeholder="03XX-XXXXXXX"
+                        required
+                        disabled={isViewMode}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-tf-text-secondary">Email</div>
+                      <Input
+                        value={newCustomer.email}
+                        onChange={(e) =>
+                          setNewCustomer({ ...newCustomer, email: e.target.value })
+                        }
+                        placeholder="john@example.com"
+                        type="email"
+                        disabled={isViewMode}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-tf-text-primary">
+                Trip Details
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="destination"
+                  label="Destination"
+                  placeholder="e.g. Dubai, Saudia Arabia"
+                  required
+                  disabled={isViewMode}
+                />
+                <FormSelect
+                  control={form.control}
+                  name="travelType"
+                  label="Travel Type"
+                  required
+                  options={[
+                    { label: "Visa", value: "visa" },
+                    { label: "Holiday Package", value: "holiday_package" },
+                    { label: "Honey Moon", value: "honey moon" },
+                    { label: "Umrah", value: "umrah" },
+                    { label: "Hajj", value: "hajj" },
+                    { label: "Flight", value: "flight" },
+                    { label: "Hotel", value: "hotel" },
+                    { label: "Corporate", value: "corporate" },
+                    { label: "Custom", value: "custom" },
+                  ]}
+                  disabled={isViewMode}
+                />
+                <FormField
+                  control={form.control}
+                  name="validUntil"
+                  label="Valid Until"
+                  type="date"
+                  disabled={isViewMode}
+                />
+                <FormField
+                  control={form.control}
+                  name="adults"
+                  label="Adults"
+                  type="number"
+                  disabled={isViewMode}
+                />
+                <FormField
+                  control={form.control}
+                  name="children"
+                  label="Children"
+                  type="number"
+                  disabled={isViewMode}
+                />
+                <FormField
+                  control={form.control}
+                  name="infants"
+                  label="Infants"
+                  type="number"
+                  disabled={isViewMode}
                 />
               </div>
             </div>
@@ -349,6 +372,7 @@ export function QuotationDrawer({
                         label={index === 0 ? "Description" : ""}
                         placeholder="e.g. Umrah package"
                         required
+                        disabled={isViewMode}
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -358,6 +382,7 @@ export function QuotationDrawer({
                         label={index === 0 ? "Qty" : ""}
                         type="number"
                         required
+                        disabled={isViewMode}
                       />
                     </div>
                     <div className="md:col-span-3">
@@ -367,6 +392,7 @@ export function QuotationDrawer({
                         label={index === 0 ? "Unit Price (PKR)" : ""}
                         type="number"
                         required
+                        disabled={isViewMode}
                       />
                     </div>
                     <div className="md:col-span-1 flex justify-end">
@@ -375,7 +401,7 @@ export function QuotationDrawer({
                         variant="outline"
                         className="border-tf-border text-tf-text-muted hover:text-tf-text-primary"
                         onClick={() => removeItem(index)}
-                        disabled={itemFields.length <= 1}
+                        disabled={isViewMode || itemFields.length <= 1}
                         aria-label="Remove item"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -388,6 +414,7 @@ export function QuotationDrawer({
                   type="button"
                   variant="outline"
                   className="w-full border-dashed border-tf-border text-tf-text-secondary hover:bg-tf-surface-2"
+                  disabled={isViewMode}
                   onClick={() =>
                     appendItem({
                       id: undefined,
@@ -420,6 +447,7 @@ export function QuotationDrawer({
                         label={index === 0 ? "Label" : ""}
                         placeholder="e.g. Sales tax"
                         required
+                        disabled={isViewMode}
                       />
                     </div>
                     <div className="md:col-span-3">
@@ -428,6 +456,7 @@ export function QuotationDrawer({
                         name={`taxes.${index}.taxType` as const}
                         label={index === 0 ? "Type" : ""}
                         required
+                        disabled={isViewMode}
                         options={quotationTaxTypeOptions.map((t) => ({
                           label: t.label,
                           value: t.value,
@@ -441,6 +470,7 @@ export function QuotationDrawer({
                         label={index === 0 ? "Value" : ""}
                         type="number"
                         required
+                        disabled={isViewMode}
                       />
                     </div>
                     <div className="md:col-span-1 flex justify-end">
@@ -450,7 +480,7 @@ export function QuotationDrawer({
                         className="border-tf-border text-tf-text-muted hover:text-tf-text-primary"
                         onClick={() => removeTax(index)}
                         aria-label="Remove tax"
-                        disabled={taxFields.length <= 0}
+                        disabled={isViewMode || taxFields.length <= 0}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -462,6 +492,7 @@ export function QuotationDrawer({
                   type="button"
                   variant="outline"
                   className="w-full border-dashed border-tf-border text-tf-text-secondary hover:bg-tf-surface-2"
+                  disabled={isViewMode}
                   onClick={() =>
                     appendTax({
                       id: undefined,
@@ -481,18 +512,62 @@ export function QuotationDrawer({
                 Notes & Terms
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormTextArea
-                  control={form.control}
-                  name="notes"
-                  label="Notes"
-                  placeholder="Internal or customer notes"
-                />
-                <FormTextArea
-                  control={form.control}
-                  name="terms"
-                  label="Terms"
-                  placeholder="Payment / cancellation / package terms"
-                />
+                <div className="space-y-2">
+                  {!isViewMode && notesTemplates.length > 0 && (
+                    <div className="flex justify-end">
+                      <select
+                        className="text-xs bg-tf-surface-2 border border-tf-border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-tf-primary text-tf-text-secondary w-full"
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const t = notesTemplates.find(x => x.id === e.target.value);
+                            if (t) form.setValue("notes", t.content, { shouldDirty: true });
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">-- Load Notes Template --</option>
+                        {notesTemplates.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <FormTextArea
+                    control={form.control}
+                    name="notes"
+                    label="Notes"
+                    placeholder="Internal or customer notes"
+                    disabled={isViewMode}
+                  />
+                </div>
+                <div className="space-y-2">
+                  {!isViewMode && termsTemplates.length > 0 && (
+                    <div className="flex justify-end">
+                      <select
+                        className="text-xs bg-tf-surface-2 border border-tf-border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-tf-primary text-tf-text-secondary w-full"
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const t = termsTemplates.find(x => x.id === e.target.value);
+                            if (t) form.setValue("terms", t.content, { shouldDirty: true });
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">-- Load Terms Template --</option>
+                        {termsTemplates.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <FormTextArea
+                    control={form.control}
+                    name="terms"
+                    label="Terms"
+                    placeholder="Payment / cancellation / package terms"
+                    disabled={isViewMode}
+                  />
+                </div>
               </div>
 
               <FormSelect
@@ -503,6 +578,7 @@ export function QuotationDrawer({
                   label: s.label,
                   value: s.value,
                 }))}
+                disabled={isViewMode}
               />
             </div>
           </div>

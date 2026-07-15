@@ -5,6 +5,8 @@ import { QuotationAttachment } from "../models/QuotationAttachment.model";
 import { QuotationItem } from "../models/QuotationItem.model";
 import { QuotationTax } from "../models/QuotationTax.model";
 import { QuotationVersion } from "../models/QuotationVersion.model";
+import { User } from "../models/User.model";
+import { Branch } from "../models/Agency.model";
 import { ApiError } from "../utils/ApiError";
 import { toJSON, toJSONList } from "../utils/serialize";
 import { generateRef, type RefPrefix } from "../utils/refGenerator";
@@ -15,6 +17,7 @@ type TenantContext = {
 
 export type QuotationServiceQuotationInput = {
   quotationNumber?: string;
+  title: string;
   leadId?: string;
   customerId?: string;
   branchId: string;
@@ -132,13 +135,23 @@ export async function listQuotations({
   const skip = (page - 1) * limit;
 
   const docs = await Quotation.find(q)
+    .populate("customerId")
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean();
 
+  const items = toJSONList(docs).map((doc: any) => ({
+    ...doc,
+    quotationRef: doc.quotationNumber,
+    grandTotal: doc.total,
+    subtotalAmount: doc.subtotal,
+    taxAmount: doc.taxTotal,
+    customer: doc.customerId ? toJSON(doc.customerId) : undefined,
+  }));
+
   return {
-    items: toJSONList(docs),
+    items,
     page,
     limit,
     total: await Quotation.countDocuments(q),
@@ -154,7 +167,7 @@ export async function getQuotation(agencyId: string, quotationId: string) {
     agencyId,
     _id: quotationId,
     isDeleted: false,
-  });
+  }).populate("customerId");
   if (!quotationDoc) return null;
 
   const [items, taxes, attachments, versions] = await Promise.all([
@@ -180,6 +193,12 @@ export async function getQuotation(agencyId: string, quotationId: string) {
   q.grandTotal = q.total;
   q.subtotalAmount = q.subtotal;
   q.taxAmount = q.taxTotal;
+  q.notes = q.customerNotes;
+  q.termsAndConditions = q.terms;
+  q.terms = q.terms;
+  if (quotationDoc.customerId) {
+    q.customer = toJSON(quotationDoc.customerId);
+  }
 
   const mappedItems = toJSONList(items).map((it: any) => ({
     ...it,
@@ -243,6 +262,7 @@ export async function createQuotation({
   const quotation = await Quotation.create({
     agencyId,
     quotationNumber,
+    title: input.title,
     leadId: input.leadId,
     customerId: input.customerId,
     branchId: input.branchId,
@@ -621,4 +641,46 @@ export async function getQuotationVersions(
     .lean();
 
   return toJSONList(docs);
+}
+
+export async function getQuotationForPrint(agencyId: string, id: string) {
+  const quotation = await getQuotation(agencyId, id);
+  if (!quotation) return null;
+
+  let branchManager: any = null;
+  const creator = await User.findById(quotation.consultantId);
+
+  if (creator) {
+    if (creator.role === "admin" || creator.role === "owner") {
+      const headBranch = await Branch.findOne({ agencyId, isHeadOffice: true });
+      if (headBranch) {
+        branchManager = await User.findOne({
+          agencyId,
+          branchId: headBranch._id,
+          role: { $in: ["manager", "branch_manager", "admin"] },
+        });
+      }
+    } else {
+      branchManager = await User.findOne({
+        agencyId,
+        branchId: creator.branchId,
+        role: { $in: ["manager", "branch_manager"] },
+      });
+    }
+  }
+
+  if (!branchManager && creator) {
+    branchManager = creator;
+  }
+
+  return {
+    ...quotation,
+    managerContact: branchManager
+      ? {
+          name: `${branchManager.firstName} ${branchManager.lastName}`,
+          phone: branchManager.phone,
+          email: branchManager.email,
+        }
+      : null,
+  };
 }

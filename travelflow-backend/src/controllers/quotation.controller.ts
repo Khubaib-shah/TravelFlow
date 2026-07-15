@@ -26,16 +26,49 @@ export async function getQuotation(req: AuthenticatedRequest, res: Response) {
   ApiResponse.success(res, quotation);
 }
 
+export async function getQuotationForPrint(req: AuthenticatedRequest, res: Response) {
+  const printDetails = await quotationService.getQuotationForPrint(
+    req.agencyId!,
+    req.params.id,
+  );
+  if (!printDetails) throw ApiError.notFound("Quotation");
+  ApiResponse.success(res, printDetails);
+}
+
 export async function createQuotation(
   req: AuthenticatedRequest,
   res: Response,
 ) {
   if (!req.user) throw ApiError.unauthorized();
 
+  const input = {
+    ...req.body,
+    branchId: req.body.branchId || String(req.user.branchId),
+    consultantId: req.body.consultantId || String(req.user._id),
+    travelType: req.body.travelType || "custom",
+    destination: req.body.destination || req.body.title || "TBD",
+    currency: req.body.currency || "PKR",
+    customerNotes: req.body.notes || req.body.customerNotes,
+    terms: req.body.terms,
+    items: req.body.items?.map((it: any) => ({
+      ...it,
+      serviceCategory: it.serviceCategory || "general",
+      title: it.title || it.description || "Item",
+      unit: it.unit || "Unit",
+      costPrice: it.costPrice || 0,
+      sellingPrice: it.sellingPrice ?? it.unitPrice ?? 0,
+    })) || [],
+    taxes: req.body.taxes?.map((t: any) => ({
+      ...t,
+      taxName: t.taxName || t.label || "Tax",
+      taxValue: t.taxValue ?? t.value ?? 0,
+    })) || [],
+  };
+
   const quotation = await quotationService.createQuotation({
     agencyId: req.agencyId!,
     createdBy: String(req.user._id),
-    input: req.body,
+    input,
   });
 
   ApiResponse.created(res, quotation);
@@ -47,11 +80,33 @@ export async function updateQuotation(
 ) {
   if (!req.user) throw ApiError.unauthorized();
 
+  const input = {
+    ...req.body,
+    travelType: req.body.travelType || "custom",
+    destination: req.body.destination || req.body.title || "TBD",
+    currency: req.body.currency || "PKR",
+    customerNotes: req.body.notes || req.body.customerNotes,
+    terms: req.body.terms,
+    items: req.body.items?.map((it: any) => ({
+      ...it,
+      serviceCategory: it.serviceCategory || "general",
+      title: it.title || it.description || "Item",
+      unit: it.unit || "Unit",
+      costPrice: it.costPrice || 0,
+      sellingPrice: it.sellingPrice ?? it.unitPrice ?? 0,
+    })),
+    taxes: req.body.taxes?.map((t: any) => ({
+      ...t,
+      taxName: t.taxName || t.label || "Tax",
+      taxValue: t.taxValue ?? t.value ?? 0,
+    })),
+  };
+
   const quotation = await quotationService.updateQuotation({
     agencyId: req.agencyId!,
     quotationId: req.params.id,
     updatedBy: String(req.user._id),
-    input: req.body,
+    input,
   });
 
   if (!quotation) throw ApiError.notFound("Quotation");

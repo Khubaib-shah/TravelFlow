@@ -12,6 +12,13 @@ export function mapQuotationToForm(q: Quotation): QuotationFormValues {
 
     status: q.status,
 
+    travelType: q.travelType ?? "custom",
+    destination: q.destination ?? "",
+    adults: q.adults ?? 0,
+    children: q.children ?? 0,
+    infants: q.infants ?? 0,
+    validUntil: q.validUntil ? new Date(q.validUntil).toISOString().split("T")[0] : "",
+
     items: (Array.isArray(q.items) ? q.items : []).map((it) => ({
       id: it.id,
       description: it.description,

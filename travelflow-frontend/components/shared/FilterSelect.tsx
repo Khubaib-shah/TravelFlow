@@ -26,6 +26,7 @@ interface FilterSelectProps {
   className?: string;
   triggerClassName?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 export function FilterSelect({
@@ -38,6 +39,7 @@ export function FilterSelect({
   className,
   triggerClassName,
   fullWidth = false,
+  disabled,
 }: FilterSelectProps) {
   const selectValue = value || (allowAll ? ALL_VALUE : "");
 
@@ -45,6 +47,7 @@ export function FilterSelect({
     <Select
       value={selectValue}
       onValueChange={(v) => onValueChange(v === ALL_VALUE ? "" : v)}
+      disabled={disabled}
     >
       <SelectTrigger
         className={cn(

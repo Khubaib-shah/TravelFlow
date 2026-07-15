@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
-  // The backend sets tf_access_token as an HttpOnly cookie.
+export function middleware(request: NextRequest) {
+  // The backend sets tf_access_token and tf_refresh_token as HttpOnly cookies.
   // Next.js middleware runs on the Edge and CAN read HttpOnly cookies.
   const token = request.cookies.get("tf_access_token");
+  const refreshToken = request.cookies.get("tf_refresh_token");
+  const isAuthenticated = !!token || !!refreshToken;
+  
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users to login
-  if (!token && !pathname.startsWith("/login")) {
+  if (!isAuthenticated && !pathname.startsWith("/login")) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from login
-  if (token && pathname.startsWith("/login")) {
+  if (isAuthenticated && pathname.startsWith("/login")) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }
@@ -22,7 +25,7 @@ export function proxy(request: NextRequest) {
   // Root redirect
   if (pathname === "/") {
     return NextResponse.redirect(
-      new URL(token ? "/dashboard" : "/login", request.url)
+      new URL(isAuthenticated ? "/dashboard" : "/login", request.url)
     );
   }
 
