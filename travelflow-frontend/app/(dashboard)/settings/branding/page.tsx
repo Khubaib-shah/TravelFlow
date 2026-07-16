@@ -48,7 +48,7 @@ export default function BrandingSettingsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="bg-[var(--tf-surface-2)] text-tf-text-primary border-tf-border"
+                  className="bg-tf-surface-2 text-tf-text-primary border-tf-border"
                 >
                   <Upload className="w-4 h-4 mr-2" /> Upload New Logo
                 </Button>
@@ -72,11 +72,10 @@ export default function BrandingSettingsPage() {
               ].map((theme) => (
                 <div
                   key={theme.name}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                    theme.active
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${theme.active
                       ? "border-[var(--tf-primary)] ring-1 ring-[var(--tf-primary)] bg-tf-primary/5"
                       : "border-tf-border hover:border-[var(--tf-text-muted)]"
-                  }`}
+                    }`}
                 >
                   <div
                     className={`w-full h-8 rounded-md mb-2 ${theme.color}`}

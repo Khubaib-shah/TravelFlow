@@ -73,7 +73,7 @@ export function DataTableViewOptions<TData>({
           {columns.map((column) => (
             <label
               key={column.id}
-              className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-[var(--tf-surface-2)]"
+              className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 hover:bg-tf-surface-2"
             >
               <Checkbox
                 checked={column.getIsVisible()}

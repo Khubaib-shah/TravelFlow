@@ -225,13 +225,13 @@ export function SearchCommand() {
 
   const filtered = searchQuery.trim()
     ? allItems.filter((item) => {
-        const q = searchQuery.toLowerCase();
-        return (
-          item.label.toLowerCase().includes(q) ||
-          item.description?.toLowerCase().includes(q) ||
-          item.keywords?.some((k) => k.includes(q))
-        );
-      })
+      const q = searchQuery.toLowerCase();
+      return (
+        item.label.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q) ||
+        item.keywords?.some((k) => k.includes(q))
+      );
+    })
     : allItems;
 
   // Group filtered items
@@ -331,7 +331,7 @@ export function SearchCommand() {
                 aria-label="Command search"
               />
               <kbd
-                className="ml-2 inline-flex h-6 items-center gap-1 rounded bg-tf-surface-2 px-2 font-mono text-[10px] font-medium text-tf-text-muted cursor-pointer hover:bg-[var(--tf-border)]"
+                className="ml-2 inline-flex h-6 items-center gap-1 rounded bg-tf-surface-2 px-2 font-mono text-[10px] font-medium text-tf-text-muted cursor-pointer hover:bg-tf-border"
                 onClick={() => {
                   setIsOpen(false);
                   setSearchQuery("");
@@ -363,18 +363,16 @@ export function SearchCommand() {
                           data-index={idx}
                           onClick={item.action}
                           onMouseEnter={() => setSelectedIndex(idx)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group ${
-                            isSelected
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group ${isSelected
                               ? "bg-tf-primary text-white"
                               : "text-tf-text-primary hover:bg-tf-surface-2"
-                          }`}
+                            }`}
                         >
                           <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
-                              isSelected
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${isSelected
                                 ? "bg-white/20 text-white"
                                 : "bg-tf-surface-2 text-tf-text-secondary"
-                            }`}
+                              }`}
                           >
                             <Icon className="h-4 w-4" />
                           </div>

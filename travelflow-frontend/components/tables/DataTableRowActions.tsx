@@ -48,7 +48,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex h-8 w-8 p-0 data-[state=open]:bg-[var(--tf-surface-2)] text-tf-text-secondary hover:text-tf-text-primary hover:bg-[var(--tf-surface-2)]"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-tf-surface-2 text-tf-text-secondary hover:text-tf-text-primary hover:bg-tf-surface-2"
           >
             <MoreHorizontal className="h-4 w-4" />
             <span className="sr-only">Open menu</span>
@@ -61,7 +61,7 @@ export function DataTableRowActions<TData>({
           {onView && (
             <DropdownMenuItem
               onClick={() => onView(row)}
-              className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+              className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
             >
               <Eye className="mr-2 h-4 w-4" />
               View
@@ -70,7 +70,7 @@ export function DataTableRowActions<TData>({
           {onEdit && (
             <DropdownMenuItem
               onClick={() => onEdit(row)}
-              className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+              className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
             >
               <Edit className="mr-2 h-4 w-4" />
               Edit
@@ -79,10 +79,10 @@ export function DataTableRowActions<TData>({
           {customActions && customActions(row)}
           {onDelete && (
             <>
-              <DropdownMenuSeparator className="bg-[var(--tf-border)]" />
+              <DropdownMenuSeparator className="bg-tf-border" />
               <DropdownMenuItem
                 onClick={() => setShowDeleteAlert(true)}
-                className="text-[var(--tf-danger)] focus:bg-[var(--tf-danger-soft)] focus:text-[var(--tf-danger)] cursor-pointer font-medium"
+                className="text-tf-danger focus:bg-[var(--tf-danger-soft)] focus:text-tf-danger cursor-pointer font-medium"
               >
                 <Trash className="mr-2 h-4 w-4" />
                 Delete
@@ -105,7 +105,7 @@ export function DataTableRowActions<TData>({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)]">
+              <AlertDialogCancel className="border-tf-border text-tf-text-secondary hover:bg-tf-surface-2">
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction

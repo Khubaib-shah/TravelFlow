@@ -2,18 +2,15 @@
 
 import { use } from "react";
 import { ArrowLeft, Printer, Send, FileText, Download } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 
-export default function InvoiceDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function InvoiceDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
 
   return (
     <div className="space-y-6 pb-12">

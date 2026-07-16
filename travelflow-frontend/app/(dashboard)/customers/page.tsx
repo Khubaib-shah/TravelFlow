@@ -32,6 +32,7 @@ import {
 import { Controller } from "react-hook-form";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function CustomersPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function CustomersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
+  const { hasPermission } = usePermissions();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -82,6 +84,16 @@ export default function CustomersPage() {
       await loadData();
     } catch (error: any) {
       toast.error(error.message || "Failed to save customer");
+    }
+  };
+
+  const handleDelete = async (row: any) => {
+    try {
+      await API.deleteCustomer(row.original.id);
+      toast.success("Customer deleted successfully");
+      await loadData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete customer");
     }
   };
 
@@ -174,11 +186,13 @@ export default function CustomersPage() {
       cell: ({ row }) => (
         <DataTableRowActions
           row={row}
-          onView={() => router.push(`/customers/${row.original.id}`)}
-          onEdit={() => {
+          onView={(row) => router.push(`/customers/${row.original.id}`)}
+          onEdit={hasPermission("Customers: Edit") ? (row) => {
             form.reset(mapCustomerToForm(row.original));
             openEdit(row.original.id);
-          }}
+          } : undefined}
+          onDelete={hasPermission("Customers: Delete") ? handleDelete : undefined}
+          deleteLabel="this customer"
         />
       ),
     },
@@ -190,15 +204,14 @@ export default function CustomersPage() {
         <div>
           <h1 className="tf-h2 text-tf-text-primary">Customers</h1>
           <p className="tf-body text-tf-text-secondary mt-1">
-            Manage your customer database and booking history.
+            Manage your customer database and profiles.
           </p>
         </div>
-        <Button
-          onClick={handleOpenCreate}
-          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add Customer
-        </Button>
+        {hasPermission("Customers: Create") && (
+          <Button onClick={openCreate} className="bg-tf-primary hover:bg-tf-primary-hover text-white">
+            <Plus className="w-4 h-4 mr-2" /> Add Customer
+          </Button>
+        )}
       </div>
 
       {!isLoading && data.length === 0 ? (

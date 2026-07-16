@@ -12,15 +12,22 @@ export function RevenueChart({
   isLoading: boolean;
 }) {
   const [period, setPeriod] = useState("6m");
-  // Generate dummy monthly data from sparklines for demonstration
-  const chartData = [
-    { name: "Jan", revenue: 2400000, profit: 400000 },
-    { name: "Feb", revenue: 1398000, profit: 300000 },
-    { name: "Mar", revenue: 4800000, profit: 600000 },
-    { name: "Apr", revenue: 3908000, profit: 500000 },
-    { name: "May", revenue: 4800000, profit: 680000 },
-    { name: "Jun", revenue: 3800000, profit: 580000 },
-  ];
+  // Generate monthly data from sparklines
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const currentMonth = new Date().getMonth();
+  const chartData = [];
+
+  if (data && data.revenue && data.profit) {
+    for (let i = 0; i < 7; i++) {
+      // data.revenue is an array of last 7 months, where index 0 is 6 months ago, and index 6 is current month
+      const monthIndex = (currentMonth - 6 + i + 12) % 12;
+      chartData.push({
+        name: monthNames[monthIndex],
+        revenue: data.revenue[i] || 0,
+        profit: data.profit[i] || 0,
+      });
+    }
+  }
 
   return (
     <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full shadow-sm">
@@ -38,12 +45,12 @@ export function RevenueChart({
             { value: "6m", label: "Last 6 Months" },
             { value: "year", label: "This Year" },
           ]}
-          triggerClassName="bg-[var(--tf-surface-2)] rounded-md"
+          triggerClassName="bg-tf-surface-2 rounded-md"
         />
       </div>
 
       {isLoading ? (
-        <div className="w-full h-[300px] bg-[var(--tf-surface-2)] animate-pulse rounded-md" />
+        <div className="w-full h-[300px] bg-tf-surface-2 animate-pulse rounded-md" />
       ) : (
         <AreaChart
           data={chartData}

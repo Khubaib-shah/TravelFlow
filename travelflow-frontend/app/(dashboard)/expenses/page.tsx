@@ -255,7 +255,7 @@ export default function ExpensesPage() {
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-tf-text-secondary">
-                Date<span className="text-[var(--tf-danger)] ml-0.5">*</span>
+                Date<span className="text-tf-danger ml-0.5">*</span>
               </Label>
               <Controller
                 control={form.control}

@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Download,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,13 +20,10 @@ import { Expense } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 
-export default function ExpenseDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ExpenseDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [expense, setExpense] = useState<Expense | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

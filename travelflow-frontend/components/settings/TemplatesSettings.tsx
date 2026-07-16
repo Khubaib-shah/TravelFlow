@@ -122,7 +122,7 @@ export function TemplatesSettings() {
 
   return (
     <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-tf-border bg-[var(--tf-surface-2)]/30 flex justify-between items-center">
+      <div className="p-6 border-b border-tf-border bg-tf-surface-2/30 flex justify-between items-center">
         <div>
           <h2 className="tf-h3 text-tf-text-primary">Global Templates</h2>
           <p className="tf-body-sm text-tf-text-secondary mt-1">
@@ -141,7 +141,7 @@ export function TemplatesSettings() {
           <div className="p-6 text-center text-tf-text-secondary">No templates found.</div>
         ) : (
           <table className="w-full text-sm text-left">
-            <thead className="bg-[var(--tf-surface-2)]/50 text-tf-text-secondary font-medium">
+            <thead className="bg-tf-surface-2/50 text-tf-text-secondary font-medium">
               <tr>
                 <th className="px-6 py-4">Name</th>
                 <th className="px-6 py-4">Type</th>
@@ -170,7 +170,7 @@ export function TemplatesSettings() {
                       size="sm"
                       onClick={() => setDeleteId(t.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-[var(--tf-danger)]" />
+                      <Trash2 className="w-4 h-4 text-tf-danger" />
                     </Button>
                   </td>
                 </tr>

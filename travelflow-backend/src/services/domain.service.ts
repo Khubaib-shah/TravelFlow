@@ -69,19 +69,19 @@ export interface TenantContext {
  */
 export function tenant(ctx: string | TenantContext) {
   if (typeof ctx === "string") {
-    return { agencyId: ctx, isDeleted: false };
+    return { agencyId: new mongoose.Types.ObjectId(ctx), isDeleted: false };
   }
-  const filter: Record<string, unknown> = { agencyId: ctx.agencyId, isDeleted: false };
+  const filter: Record<string, unknown> = { agencyId: new mongoose.Types.ObjectId(ctx.agencyId), isDeleted: false };
 
   if (ctx.userRole === "admin") {
     // Admin can optionally filter by a specific branch
     if (ctx.branchId && ctx.branchId !== "all") {
-      filter.branchId = ctx.branchId;
+      filter.branchId = new mongoose.Types.ObjectId(ctx.branchId);
     }
   } else {
     // ALL non-admin roles are scoped to their own branch
     if (ctx.userBranchId) {
-      filter.branchId = ctx.userBranchId;
+      filter.branchId = new mongoose.Types.ObjectId(ctx.userBranchId);
     }
     // If userBranchId is missing for a non-admin, we still scope by agencyId only
     // (the user simply hasn't been assigned to a branch yet — admin needs to fix this)
@@ -234,6 +234,7 @@ export async function getDashboardStats(ctx: TenantContext) {
     monthlyCustomerAgg,
     monthlyExpenseAgg,
     branches,
+    branchUserCounts,
   ] = await Promise.all([
     Lead.countDocuments(base),
     Customer.countDocuments(base),
@@ -269,6 +270,10 @@ export async function getDashboardStats(ctx: TenantContext) {
       { $sort: { "_id.y": 1, "_id.m": 1 } },
     ]),
     Branch.find(base),
+    User.aggregate([
+      { $match: base },
+      { $group: { _id: "$branchId", count: { $sum: 1 } } }
+    ]),
   ]);
 
   // Current month calculations
@@ -312,6 +317,8 @@ export async function getDashboardStats(ctx: TenantContext) {
     return result;
   }
 
+  const staffMap = new Map(branchUserCounts.map((u: any) => [String(u._id), u.count]));
+
   // Branch Performance
   const branchPerformance = branches.map((branch) => {
     const branchId = String(branch._id);
@@ -330,7 +337,7 @@ export async function getDashboardStats(ctx: TenantContext) {
       revenue,
       profit,
       expenses: expensesTotal,
-      staff: 0, // Simplified for now, or could aggregate User model
+      staff: staffMap.get(branchId) || 0,
       growth: trendPct(revenue, prevRevenue),
     };
   }).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
@@ -381,7 +388,7 @@ export async function getAnalyticsStats(ctx: TenantContext, timeRange: string) {
   else startDate.setFullYear(2000); // "all"
 
   const dateFilter = { createdAt: { $gte: startDate, $lte: now } };
-  const bookingDateFilter = { date: { $gte: startDate, $lte: now } };
+  const bookingDateFilter = { createdAt: { $gte: startDate, $lte: now } };
 
   // 1. KPI Cards (Total Revenue, Profit, Bookings, Margin)
   const bookings = await Booking.find({ ...baseFilter, ...bookingDateFilter });
@@ -395,7 +402,7 @@ export async function getAnalyticsStats(ctx: TenantContext, timeRange: string) {
     { $match: { ...baseFilter, ...bookingDateFilter } },
     {
       $group: {
-        _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
         revenue: { $sum: "$salePrice" },
         profit: { $sum: "$profit" },
       },
@@ -1254,7 +1261,6 @@ export async function updateUser(ctx: TenantContext, id: string, values: UserInp
 export async function listExpenses(ctx: TenantContext, pagination?: PaginationOptions) {
   const filter = tenant(ctx);
   const query = Expense.find(filter)
-    .populate("recordedBy", "name email")
     .sort({ date: -1 });
 
   if (!pagination) {

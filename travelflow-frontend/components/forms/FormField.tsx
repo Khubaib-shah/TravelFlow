@@ -38,7 +38,7 @@ function FieldLabel({
   return (
     <FormLabel className="text-sm font-medium text-tf-text-secondary">
       {label}
-      {required && <span className="text-[var(--tf-danger)] ml-0.5">*</span>}
+      {required && <span className="text-tf-danger ml-0.5">*</span>}
     </FormLabel>
   );
 }
@@ -102,7 +102,7 @@ export function FormField<T extends FieldValues = FieldValues>({
             </FormDescription>
           )}
           {fieldState.error && (
-            <FormMessage className="text-sm font-medium text-[var(--tf-danger)] mt-1.5 flex items-center gap-1">
+            <FormMessage className="text-sm font-medium text-tf-danger mt-1.5 flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               {fieldState.error.message}
             </FormMessage>
@@ -153,7 +153,7 @@ export function FormTextArea<T extends FieldValues = FieldValues>({
             </FormDescription>
           )}
           {fieldState.error && (
-            <FormMessage className="text-sm font-medium text-[var(--tf-danger)] mt-1.5 flex items-center gap-1">
+            <FormMessage className="text-sm font-medium text-tf-danger mt-1.5 flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               {fieldState.error.message}
             </FormMessage>
@@ -211,7 +211,7 @@ export function FormSelect<T extends FieldValues = FieldValues>({
             </FormDescription>
           )}
           {fieldState.error && (
-            <FormMessage className="text-sm font-medium text-[var(--tf-danger)] mt-1.5 flex items-center gap-1">
+            <FormMessage className="text-sm font-medium text-tf-danger mt-1.5 flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               {fieldState.error.message}
             </FormMessage>
@@ -283,26 +283,26 @@ export function FormCombobox<T extends FieldValues = FieldValues>({
                     {options
                       .filter((o) => o.value !== "NEW_CUSTOMER")
                       .map((option) => (
-                      <CommandItem
-                        value={option.label}
-                        key={option.value}
-                        onSelect={() => {
-                          field.onChange(option.value);
-                          setOpen(false);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            option.value === field.value ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <span className="truncate">
-                          {option.label}
-                        </span>
-                      </CommandItem>
-                    ))}
+                        <CommandItem
+                          value={option.label}
+                          key={option.value}
+                          onSelect={() => {
+                            field.onChange(option.value);
+                            setOpen(false);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              option.value === field.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="truncate">
+                            {option.label}
+                          </span>
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                 </CommandList>
               </Command>
@@ -314,7 +314,7 @@ export function FormCombobox<T extends FieldValues = FieldValues>({
             </FormDescription>
           )}
           {fieldState.error && (
-            <FormMessage className="text-sm font-medium text-[var(--tf-danger)] mt-1.5 flex items-center gap-1">
+            <FormMessage className="text-sm font-medium text-tf-danger mt-1.5 flex items-center gap-1">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
               {fieldState.error.message}
             </FormMessage>

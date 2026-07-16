@@ -99,7 +99,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 pb-12">
       <div className="bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-[var(--tf-surface-2)] flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-tf-surface-2 flex items-center justify-center">
           <Settings className="w-6 h-6 text-tf-text-secondary" />
         </div>
         <div className="flex-1">
@@ -122,7 +122,7 @@ export default function SettingsPage() {
         <TabsList className="bg-tf-surface border border-tf-border p-1 rounded-lg w-full justify-start h-auto flex-wrap sm:flex-nowrap mb-6 shadow-sm">
           <TabsTrigger
             value="company"
-            className="flex-1 sm:flex-none data-[state=active]:bg-[var(--tf-primary-soft)] data-[state=active]:text-tf-primary py-2.5 px-4 rounded-md"
+            className="flex-1 sm:flex-none data-[state=active]:bg-tf-primary-soft data-[state=active]:text-tf-primary py-2.5 px-4 rounded-md"
           >
             <Building2 className="w-4 h-4 mr-2" />
             Company
@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
         <TabsContent value="company" className="space-y-6 mt-0">
           <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-tf-border bg-[var(--tf-surface-2)]/30">
+            <div className="p-6 border-b border-tf-border bg-tf-surface-2/30">
               <h2 className="tf-h3 text-tf-text-primary">Company Details</h2>
               <p className="tf-body-sm text-tf-text-secondary mt-1">
                 Basic information about your travel agency.
@@ -222,7 +222,7 @@ export default function SettingsPage() {
               <div>
                 <Label className="text-tf-text-primary font-medium block mb-4">Agency Logo</Label>
                 <div className="flex items-start gap-6">
-                  <div className="w-24 h-24 rounded-lg bg-[var(--tf-surface-2)] border border-tf-border flex items-center justify-center overflow-hidden">
+                  <div className="w-24 h-24 rounded-lg bg-tf-surface-2 border border-tf-border flex items-center justify-center overflow-hidden">
                     {branding.logoUrl ? (
                       <img src={branding.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                     ) : (
@@ -233,7 +233,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                       <Input
+                      <Input
                         placeholder="Image URL (e.g., https://example.com/logo.png)"
                         value={branding.logoUrl}
                         onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Separator className="bg-[var(--tf-border)]" />
+              <Separator className="bg-tf-border" />
 
               <div>
                 <Label className="text-tf-text-primary font-medium block mb-4">Brand Color</Label>

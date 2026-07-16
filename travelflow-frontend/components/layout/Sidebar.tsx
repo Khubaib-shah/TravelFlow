@@ -13,19 +13,30 @@ import {
   LogOut,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth.store";
+import { useBranchStore } from "@/store/branch.store";
 import { IconButton } from "@/components/shared/IconButton";
 import { Button } from "@/components/ui/button";
+import { ApiClient as API } from "@/lib/api-client";
+import type { Branch } from "@/types";
 
 export function Sidebar() {
   const { resolvedTheme } = useTheme();
   const { isOpen, toggle } = useSidebarStore();
   const [isAgencyOpen, setIsAgencyOpen] = useState(false);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const router = useRouter();
   const { logout, user } = useAuthStore();
+  const { activeBranchId, setActiveBranchId } = useBranchStore();
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      API.getBranches().then(setBranches).catch(console.error);
+    }
+  }, [user?.role]);
 
   const logo =
     resolvedTheme === "dark" ? appData["logo-light"] : appData["logo-dark"];
@@ -36,11 +47,11 @@ export function Sidebar() {
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
     : displayName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
   const handleLogout = async () => {
     toast.success("Signing out...");
@@ -50,11 +61,10 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-tf-border bg-[var(--tf-sidebar-bg)] transition-all duration-300 ease-out ${
-        isOpen
-          ? "w-[var(--tf-sidebar-width)]"
-          : "w-[var(--tf-sidebar-collapsed-width)]"
-      }`}
+      className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-tf-border bg-tf-sidebar-bg transition-all duration-300 ease-out ${isOpen
+        ? "w-[var(--tf-sidebar-width)]"
+        : "w-[var(--tf-sidebar-collapsed-width)]"
+        }`}
     >
       {/* Logo Area */}
       <div className="flex h-[var(--tf-topbar-height)] shrink-0 items-center justify-between border-b border-tf-border px-4">
@@ -102,19 +112,23 @@ export function Sidebar() {
           <Button
             variant="outline"
             onClick={() => setIsAgencyOpen(!isAgencyOpen)}
-            className={`flex h-auto w-full items-center gap-3 rounded-lg border border-tf-border bg-tf-surface p-2 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal ${!isOpen && "justify-center"}`}
+            className={`flex h-auto w-full items-center gap-3 rounded-lg border border-tf-border bg-tf-surface p-2 hover:bg-tf-surface-2 normal-case tracking-normal ${!isOpen && "justify-center"}`}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--tf-primary-soft)] text-tf-primary">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-tf-primary-soft text-tf-primary">
               <Building className="h-4 w-4" />
             </div>
             {isOpen && (
               <>
                 <div className="flex flex-1 flex-col items-start overflow-hidden text-left">
                   <span className="tf-body-sm w-full truncate font-semibold text-tf-text-primary">
-                    Prestige Travel HQ
+                    {activeBranchId === "all"
+                      ? (user?.agency?.name || "TravelFlow Agency")
+                      : (branches.find(b => b.id === activeBranchId)?.name || "TravelFlow Agency")}
                   </span>
                   <span className="tf-caption w-full truncate text-tf-text-muted">
-                    Karachi
+                    {activeBranchId === "all"
+                      ? "All Branches"
+                      : (branches.find(b => b.id === activeBranchId)?.city || "Branch")}
                   </span>
                 </div>
                 <ChevronDown
@@ -123,6 +137,45 @@ export function Sidebar() {
               </>
             )}
           </Button>
+
+          {isOpen && isAgencyOpen && (
+            <div className="mt-2 space-y-1 animate-in slide-in-from-top-2 duration-200">
+              <div
+                onClick={() => {
+                  setActiveBranchId("all");
+                  window.location.reload();
+                }}
+                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm text-tf-text-secondary hover:bg-tf-surface-2 cursor-pointer transition-colors ${activeBranchId === "all" ? "bg-tf-surface-2" : ""}`}
+              >
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-tf-surface border border-tf-border text-xs font-medium text-tf-text-primary">
+                  HQ
+                </div>
+                <div className="flex flex-col overflow-hidden">
+                  <span className="truncate font-medium leading-tight">All Branches</span>
+                  <span className="truncate text-[10px] text-tf-text-muted">Entire Agency</span>
+                </div>
+              </div>
+
+              {branches.map(branch => (
+                <div
+                  key={branch.id}
+                  onClick={() => {
+                    setActiveBranchId(branch.id);
+                    window.location.reload();
+                  }}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm text-tf-text-secondary hover:bg-tf-surface-2 cursor-pointer transition-colors ${activeBranchId === branch.id ? "bg-tf-surface-2" : ""}`}
+                >
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-tf-surface border border-tf-border text-xs font-medium text-tf-text-primary">
+                    {branch.name.charAt(0)}
+                  </div>
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="truncate font-medium leading-tight">{branch.name}</span>
+                    <span className="truncate text-[10px] text-tf-text-muted">{branch.city}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -136,7 +189,7 @@ export function Sidebar() {
         <div
           className={`flex items-center gap-3 ${!isOpen && "justify-center"}`}
         >
-          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-[var(--tf-surface-2)] border border-tf-border flex items-center justify-center font-semibold text-tf-text-secondary">
+          <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-tf-surface-2 border border-tf-border flex items-center justify-center font-semibold text-tf-text-secondary">
             {initials}
           </div>
           {isOpen && (

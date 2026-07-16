@@ -11,7 +11,7 @@ import {
   Plane,
   Edit,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
@@ -35,13 +35,10 @@ const roleColors: Record<string, { bg: string; text: string }> = {
   accountant: { bg: "var(--tf-success-soft)", text: "var(--tf-success)" },
 };
 
-export default function UserDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function UserDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [user, setUser] = useState<User | null>(null);
   const [branch, setBranch] = useState<Branch | null>(null);
   const [leadCount, setLeadCount] = useState(0);
@@ -109,9 +106,9 @@ export default function UserDetailPage({
   const roleStyle = roleDef
     ? { bg: roleDef.color, text: roleDef.textColor }
     : (roleColors[user.role] ?? {
-        bg: "var(--tf-surface-2)",
-        text: "var(--tf-text-secondary)",
-      });
+      bg: "var(--tf-surface-2)",
+      text: "var(--tf-text-secondary)",
+    });
 
   return (
     <div className="space-y-6 pb-12">
@@ -126,7 +123,7 @@ export default function UserDetailPage({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[var(--tf-primary-soft)] flex items-center justify-center text-tf-primary font-bold text-2xl">
+            <div className="w-16 h-16 rounded-full bg-tf-primary-soft flex items-center justify-center text-tf-primary font-bold text-2xl">
               {user.firstName.charAt(0)}
               {user.lastName.charAt(0)}
             </div>
@@ -145,7 +142,7 @@ export default function UserDetailPage({
                   {user.role}
                 </span>
                 <span
-                  className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize ${user.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-surface-2)] text-tf-text-secondary"}`}
+                  className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize ${user.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-tf-surface-2 text-tf-text-secondary"}`}
                 >
                   {user.status}
                 </span>

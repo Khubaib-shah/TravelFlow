@@ -46,7 +46,7 @@ export function DataTableColumnHeader<TData, TValue>({
           <Button
             variant="ghost"
             size="sm"
-            className="-ml-3 h-8 data-[state=open]:bg-[var(--tf-surface-2)] hover:bg-[var(--tf-surface-2)] text-xs font-semibold uppercase tracking-wider text-tf-text-muted"
+            className="-ml-3 h-8 data-[state=open]:bg-tf-surface-2 hover:bg-tf-surface-2 text-xs font-semibold uppercase tracking-wider text-tf-text-muted"
           >
             <span>{title}</span>
             {column.getIsSorted() === "desc" ? (
@@ -64,22 +64,22 @@ export function DataTableColumnHeader<TData, TValue>({
         >
           <DropdownMenuItem
             onClick={() => column.toggleSorting(false)}
-            className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)]"
+            className="text-tf-text-secondary focus:bg-tf-surface-2"
           >
             <ArrowUp className="mr-2 h-3.5 w-3.5 text-tf-text-muted" />
             Asc
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => column.toggleSorting(true)}
-            className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)]"
+            className="text-tf-text-secondary focus:bg-tf-surface-2"
           >
             <ArrowDown className="mr-2 h-3.5 w-3.5 text-tf-text-muted" />
             Desc
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-[var(--tf-border)]" />
+          <DropdownMenuSeparator className="bg-tf-border" />
           <DropdownMenuItem
             onClick={() => column.toggleVisibility(false)}
-            className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)]"
+            className="text-tf-text-secondary focus:bg-tf-surface-2"
           >
             <EyeOff className="mr-2 h-3.5 w-3.5 text-tf-text-muted" />
             Hide

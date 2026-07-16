@@ -89,7 +89,7 @@ export function ActivityFeed({
             { value: "week", label: "This Week" },
             { value: "all", label: "All Time" },
           ]}
-          triggerClassName="bg-[var(--tf-surface-2)] rounded-lg"
+          triggerClassName="bg-tf-surface-2 rounded-lg"
         />
       </div>
 
@@ -97,10 +97,10 @@ export function ActivityFeed({
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--tf-surface-2)] animate-pulse flex-shrink-0" />
+              <div className="w-8 h-8 rounded-full bg-tf-surface-2 animate-pulse flex-shrink-0" />
               <div className="flex-1 space-y-2 pt-1">
-                <div className="h-3.5 w-3/4 bg-[var(--tf-surface-2)] animate-pulse rounded" />
-                <div className="h-3 w-1/2 bg-[var(--tf-surface-2)] animate-pulse rounded" />
+                <div className="h-3.5 w-3/4 bg-tf-surface-2 animate-pulse rounded" />
+                <div className="h-3 w-1/2 bg-tf-surface-2 animate-pulse rounded" />
               </div>
             </div>
           ))}
@@ -123,11 +123,10 @@ export function ActivityFeed({
                 <div
                   key={activity.id}
                   onClick={() => activity.href && router.push(activity.href)}
-                  className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors ${
-                    activity.href
-                      ? "cursor-pointer hover:bg-[var(--tf-surface-2)]"
-                      : ""
-                  }`}
+                  className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors ${activity.href
+                    ? "cursor-pointer hover:bg-tf-surface-2"
+                    : ""
+                    }`}
                 >
                   {/* Timeline dot + line */}
                   <div className="flex flex-col items-center shrink-0">
@@ -141,7 +140,7 @@ export function ActivityFeed({
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     {!isLast && (
-                      <div className="w-px h-full min-h-[12px] mt-1 bg-[var(--tf-border)]" />
+                      <div className="w-px h-full min-h-[12px] mt-1 bg-tf-border" />
                     )}
                   </div>
 

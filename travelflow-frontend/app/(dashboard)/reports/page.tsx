@@ -74,19 +74,19 @@ export default function ReportsPage() {
   if (loading || !data) {
     return (
       <div className="space-y-6 pb-12 animate-pulse">
-        <div className="bg-[var(--tf-surface-2)] h-24 rounded-xl border border-tf-border w-full"></div>
+        <div className="bg-tf-surface-2 h-24 rounded-xl border border-tf-border w-full"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-[var(--tf-surface-2)] h-32 rounded-xl"
+              className="bg-tf-surface-2 h-32 rounded-xl"
             ></div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-[var(--tf-surface-2)] h-96 rounded-xl"></div>
-          <div className="bg-[var(--tf-surface-2)] h-96 rounded-xl"></div>
-          <div className="lg:col-span-3 bg-[var(--tf-surface-2)] h-96 rounded-xl"></div>
+          <div className="lg:col-span-2 bg-tf-surface-2 h-96 rounded-xl"></div>
+          <div className="bg-tf-surface-2 h-96 rounded-xl"></div>
+          <div className="lg:col-span-3 bg-tf-surface-2 h-96 rounded-xl"></div>
         </div>
       </div>
     );

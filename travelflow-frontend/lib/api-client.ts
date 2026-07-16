@@ -110,8 +110,28 @@ async function request<T>(
   path: string,
   body?: unknown,
   retried = false,
+  options?: { skipBranchScope?: boolean }
 ): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  let finalPath = path;
+
+  // Global branch scoping for admins
+  if (!options?.skipBranchScope && typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("tf-active-branch");
+      if (stored) {
+        const state = JSON.parse(stored).state;
+        const activeBranchId = state?.activeBranchId;
+        if (activeBranchId && activeBranchId !== "all") {
+          const separator = finalPath.includes("?") ? "&" : "?";
+          finalPath = `${finalPath}${separator}branchId=${activeBranchId}`;
+        }
+      }
+    } catch (e) {
+      // Ignore local storage parsing errors
+    }
+  }
+
+  const res = await fetch(`${BASE}${finalPath}`, {
     method,
     headers: body ? { "Content-Type": "application/json" } : {},
     body: body ? JSON.stringify(body) : undefined,
@@ -181,7 +201,7 @@ async function request<T>(
   return (json as { data: T }).data;
 }
 
-const get = <T>(path: string) => request<T>("GET", path);
+const get = <T>(path: string, options?: { skipBranchScope?: boolean }) => request<T>("GET", path, undefined, false, options);
 const post = async <T>(path: string, body: unknown) => {
   const res = await request<T>("POST", path, body);
   if (!path.startsWith("/auth")) notifyInvalidation();
@@ -397,7 +417,7 @@ export const ApiClient = {
   deleteSupplier: (id: string) => del<{ deleted: boolean }>(`/suppliers/${id}`),
 
   // ── Branches ──
-  getBranches: () => get<unknown[]>("/branches").then(reviveList<Branch>),
+  getBranches: () => get<unknown[]>("/branches", { skipBranchScope: true }).then(reviveList<Branch>),
 
   getBranch: (id: string) =>
     get<unknown>(`/branches/${id}`).then(reviveItem<Branch>),

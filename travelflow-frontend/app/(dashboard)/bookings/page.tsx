@@ -34,6 +34,7 @@ import {
   bookingDefaultValues,
   mapBookingToForm,
 } from "@/features/bookings/utils/mapBookingToForm";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function BookingsPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
+  const { hasPermission } = usePermissions();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -189,10 +191,20 @@ export default function BookingsPage() {
         <DataTableRowActions
           row={row}
           onView={() => router.push(`/bookings/${row.original.id}`)}
-          onEdit={() => {
+          onEdit={hasPermission("Bookings: Edit") ? () => {
             form.reset(mapBookingToForm(row.original));
             openEdit(row.original.id);
-          }}
+          } : undefined}
+          onDelete={hasPermission("Bookings: Delete") ? async (r) => {
+            if (!confirm(`Delete booking "${r.original.bookingRef}"?`)) return;
+            try {
+              await API.deleteBooking(r.original.id);
+              toast.success("Booking deleted");
+              await loadData();
+            } catch (e: any) {
+              toast.error(e.message || "Failed to delete booking");
+            }
+          } : undefined}
         />
       ),
     },
@@ -207,12 +219,14 @@ export default function BookingsPage() {
             Manage flight and package bookings, tracking revenue and margins.
           </p>
         </div>
-        <Button
-          onClick={handleOpenCreate}
-          className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
-        >
-          <Plus className="mr-2 h-4 w-4" /> Create Booking
-        </Button>
+        {hasPermission("Bookings: Create") && (
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Create Booking
+          </Button>
+        )}
       </div>
 
       {!isLoading && data.length === 0 ? (
@@ -321,7 +335,7 @@ export default function BookingsPage() {
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-tf-text-secondary">
                   Departure Date
-                  <span className="text-[var(--tf-danger)] ml-0.5">*</span>
+                  <span className="text-tf-danger ml-0.5">*</span>
                 </Label>
                 <Controller
                   control={form.control}

@@ -115,7 +115,7 @@ export default function SuppliersPage() {
         <DataTableColumnHeader column={column} title="Balance Owed" />
       ),
       cell: ({ row }) => (
-        <div className="text-[var(--tf-danger)] font-medium">
+        <div className="text-tf-danger font-medium">
           ₨ {row.original.balance.toLocaleString()}
         </div>
       ),
@@ -125,7 +125,7 @@ export default function SuppliersPage() {
       header: "Status",
       cell: ({ row }) => (
         <span
-          className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-surface-2)] text-tf-text-secondary"}`}
+          className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${row.original.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-tf-surface-2 text-tf-text-secondary"}`}
         >
           {row.original.status}
         </span>

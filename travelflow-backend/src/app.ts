@@ -15,7 +15,7 @@ import { errorMiddleware, notFoundMiddleware } from "./middleware/error.middlewa
 /** 5 login attempts per 15 minutes per IP */
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: "Too many requests, please try again later.", code: "RATE_LIMITED" },

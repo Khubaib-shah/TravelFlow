@@ -26,7 +26,7 @@ export function ProfitChart({
       <p className="text-sm text-tf-text-secondary mb-6">By service category</p>
 
       {isLoading ? (
-        <div className="flex-1 bg-[var(--tf-surface-2)] animate-pulse rounded-full aspect-square max-h-[250px] mx-auto mt-4" />
+        <div className="flex-1 bg-tf-surface-2 animate-pulse rounded-full aspect-square max-h-[250px] mx-auto mt-4" />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center">
           <DonutChart

@@ -13,7 +13,7 @@ import {
   ChevronDown,
   Users,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API } from "@/lib/data-source";
@@ -31,13 +31,10 @@ import { FollowUpDrawer } from "@/components/leads/FollowUpDrawer";
 import { ConvertToBookingDrawer } from "@/components/leads/ConvertToBookingDrawer";
 import { formatTimeAgo } from "@/lib/utils";
 
-export default function LeadDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function LeadDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [lead, setLead] = useState<Lead | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [followUpOpen, setFollowUpOpen] = useState(false);
@@ -236,7 +233,7 @@ export default function LeadDetailPage({
               <span className="text-tf-text-secondary block mb-2">
                 Lead Notes
               </span>
-              <p className="text-sm text-tf-text-primary bg-[var(--tf-surface-2)] p-3 rounded-lg border border-tf-border">
+              <p className="text-sm text-tf-text-primary bg-tf-surface-2 p-3 rounded-lg border border-tf-border">
                 {lead.notes || "No initial notes provided."}
               </p>
             </div>
@@ -278,10 +275,10 @@ export default function LeadDetailPage({
                 <div key={activity.id} className="flex gap-4">
                   <div className="flex flex-col items-center">
                     <div
-                      className={`w-3 h-3 rounded-full ${index === 0 ? "bg-tf-primary" : "bg-[var(--tf-border)]"}`}
+                      className={`w-3 h-3 rounded-full ${index === 0 ? "bg-tf-primary" : "bg-tf-border"}`}
                     />
                     {index < lead.activities.length - 1 && (
-                      <div className="w-0.5 h-full bg-[var(--tf-border)] my-1" />
+                      <div className="w-0.5 h-full bg-tf-border my-1" />
                     )}
                   </div>
                   <div className="pb-4 flex-1">
@@ -313,7 +310,7 @@ export default function LeadDetailPage({
         >
           <div className="max-w-2xl space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-[var(--tf-surface-2)] rounded-lg">
+              <div className="p-4 bg-tf-surface-2 rounded-lg">
                 <p className="text-xs text-tf-text-muted uppercase mb-1">
                   Adults
                 </p>
@@ -321,7 +318,7 @@ export default function LeadDetailPage({
                   {lead.adults}
                 </p>
               </div>
-              <div className="p-4 bg-[var(--tf-surface-2)] rounded-lg">
+              <div className="p-4 bg-tf-surface-2 rounded-lg">
                 <p className="text-xs text-tf-text-muted uppercase mb-1">
                   Children
                 </p>

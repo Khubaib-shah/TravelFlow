@@ -51,11 +51,10 @@ export function Topbar() {
         {/* Focus Mode */}
         <IconButton
           onClick={handleFocusMode}
-          className={`hidden sm:flex ${
-            isFocusMode
-              ? "bg-[var(--tf-primary-soft)] text-tf-primary hover:bg-[var(--tf-primary-soft)] hover:text-tf-primary"
+          className={`hidden sm:flex ${isFocusMode
+              ? "bg-tf-primary-soft text-tf-primary hover:bg-tf-primary-soft hover:text-tf-primary"
               : ""
-          }`}
+            }`}
           aria-label="Toggle Focus Mode"
           title="Focus Mode — collapses sidebar"
         >

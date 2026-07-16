@@ -189,7 +189,7 @@ export function QuotationDrawer({
       onClose={onClose}
       onSubmit={(e) => {
         e.preventDefault();
-        
+
         if (isViewMode && onEditFromView) {
           onEditFromView();
           return;
@@ -253,7 +253,7 @@ export function QuotationDrawer({
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <div className="text-sm font-medium text-tf-text-secondary">Customer Name <span className="text-[var(--tf-danger)]">*</span></div>
+                      <div className="text-sm font-medium text-tf-text-secondary">Customer Name <span className="text-tf-danger">*</span></div>
                       <Input
                         value={newCustomer.name}
                         onChange={(e) =>
@@ -265,7 +265,7 @@ export function QuotationDrawer({
                       />
                     </div>
                     <div className="space-y-2">
-                      <div className="text-sm font-medium text-tf-text-secondary">Phone <span className="text-[var(--tf-danger)]">*</span></div>
+                      <div className="text-sm font-medium text-tf-text-secondary">Phone <span className="text-tf-danger">*</span></div>
                       <Input
                         value={newCustomer.phone}
                         onChange={(e) =>

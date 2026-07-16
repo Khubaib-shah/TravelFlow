@@ -159,7 +159,7 @@ export default function QuotationsPage() {
                 onClick={() => {
                   window.open(`/print/quotation/${row.original.id}`, "_blank");
                 }}
-                className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+                className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
               >
                 <FileText className="mr-2 h-4 w-4" />
                 View PDF
@@ -168,7 +168,7 @@ export default function QuotationsPage() {
                 onClick={() => {
                   toast.success("Sharing option will be available soon!");
                 }}
-                className="text-tf-text-secondary focus:bg-[var(--tf-surface-2)] cursor-pointer"
+                className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
               >
                 <Share2 className="mr-2 h-4 w-4" />
                 Share

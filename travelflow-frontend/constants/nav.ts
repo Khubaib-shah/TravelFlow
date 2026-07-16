@@ -47,7 +47,6 @@ export const sidebarNav: NavGroup[] = [
         title: "Leads",
         href: "/leads",
         icon: UserPlus,
-        badge: "12 new",
       },
       {
         title: "Customers",

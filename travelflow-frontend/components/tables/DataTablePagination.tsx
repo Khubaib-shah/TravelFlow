@@ -60,7 +60,7 @@ export function DataTablePagination<TData>({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 rounded-md lg:flex border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="hidden h-8 w-8 p-0 rounded-md lg:flex border-tf-border text-tf-text-secondary hover:bg-tf-surface-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
@@ -69,7 +69,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0 rounded-md border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 p-0 rounded-md border-tf-border text-tf-text-secondary hover:bg-tf-surface-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -78,7 +78,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0 rounded-md border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 p-0 rounded-md border-tf-border text-tf-text-secondary hover:bg-tf-surface-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
@@ -87,7 +87,7 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             variant="outline"
-            className="hidden h-8 w-8 p-0 rounded-md lg:flex border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="hidden h-8 w-8 p-0 rounded-md lg:flex border-tf-border text-tf-text-secondary hover:bg-tf-surface-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >

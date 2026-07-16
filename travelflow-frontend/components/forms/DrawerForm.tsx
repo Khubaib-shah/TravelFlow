@@ -92,7 +92,7 @@ export function DrawerForm({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="border-tf-border text-tf-text-secondary hover:bg-[var(--tf-surface-2)] hover:text-tf-text-primary"
+            className="border-tf-border text-tf-text-secondary hover:bg-tf-surface-2 hover:text-tf-text-primary"
           >
             Cancel
           </Button>

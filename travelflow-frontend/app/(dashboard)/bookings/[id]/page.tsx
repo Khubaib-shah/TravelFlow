@@ -11,7 +11,7 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,12 +23,9 @@ import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 import { RecordPaymentDrawer } from "@/components/bookings/RecordPaymentDrawer";
 import { BookingDocumentsPanel } from "@/components/bookings/BookingDocumentsPanel";
 
-export default function BookingDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function BookingDetailPage() {
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [documents, setDocuments] = useState<BookingDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -244,7 +241,7 @@ export default function BookingDetailPage({
                   className="text-tf-text-primary"
                 />
               </div>
-              <div className="w-full bg-[var(--tf-border)] rounded-full h-2">
+              <div className="w-full bg-tf-border rounded-full h-2">
                 <div
                   className="bg-[var(--tf-success)] h-2 rounded-full"
                   style={{
@@ -253,12 +250,12 @@ export default function BookingDetailPage({
                 ></div>
               </div>
               <div className="flex justify-between items-center mt-2">
-                <span className="text-[var(--tf-danger)] text-sm font-medium">
+                <span className="text-tf-danger text-sm font-medium">
                   Balance Due
                 </span>
                 <CurrencyDisplay
                   amount={booking.balance}
-                  className="text-[var(--tf-danger)] font-bold"
+                  className="text-tf-danger font-bold"
                 />
               </div>
             </div>
@@ -371,7 +368,7 @@ export default function BookingDetailPage({
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-tf-primary"></div>
                       {i !== 2 && (
-                        <div className="w-0.5 h-full bg-[var(--tf-border)] my-1"></div>
+                        <div className="w-0.5 h-full bg-tf-border my-1"></div>
                       )}
                     </div>
                     <div>

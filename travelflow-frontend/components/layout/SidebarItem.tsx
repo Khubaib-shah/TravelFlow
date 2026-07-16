@@ -18,11 +18,10 @@ export function SidebarItem({ item, isOpen }: SidebarItemProps) {
   return (
     <Link
       href={item.href}
-      className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ease-out hover:bg-[var(--tf-surface-2)] ${
-        isActive
+      className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ease-out hover:bg-tf-surface-2 ${isActive
           ? "bg-[var(--tf-sidebar-active)] text-[var(--tf-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--tf-sidebar-accent)] rounded-l-none pl-[9px]"
           : "text-[var(--tf-sidebar-text)]"
-      }`}
+        }`}
       title={!isOpen ? item.title : undefined}
     >
       <item.icon

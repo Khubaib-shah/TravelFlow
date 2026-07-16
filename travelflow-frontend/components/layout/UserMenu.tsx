@@ -32,21 +32,21 @@ export function UserMenu() {
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
     : displayName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="rounded-full p-1 hover:bg-[var(--tf-surface-2)] normal-case tracking-normal"
+          className="rounded-full p-1 hover:bg-tf-surface-2 normal-case tracking-normal"
           aria-label="User menu"
         >
-          <div className="h-8 w-8 rounded-full bg-[var(--tf-primary-soft)] text-tf-primary flex items-center justify-center border border-tf-border">
+          <div className="h-8 w-8 rounded-full bg-tf-primary-soft text-tf-primary flex items-center justify-center border border-tf-border">
             <span className="text-sm font-semibold">{initials}</span>
           </div>
         </Button>

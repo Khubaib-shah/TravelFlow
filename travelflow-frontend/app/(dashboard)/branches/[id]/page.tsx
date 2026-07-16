@@ -11,7 +11,7 @@ import {
   Building,
   UserPlus,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
@@ -32,13 +32,10 @@ import {
 } from "@/features/users/schemas/user.schema";
 import { userDefaultValues } from "@/features/users/utils/mapUserToForm";
 
-export default function BranchDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function BranchDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [branch, setBranch] = useState<Branch | null>(null);
   const [agents, setAgents] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -159,7 +156,7 @@ export default function BranchDetailPage({
             <div className="flex items-center gap-3">
               <h1 className="tf-h2 text-tf-text-primary">{branch.name}</h1>
               <span
-                className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${branch.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)]"}`}
+                className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${branch.status === "active" ? "bg-[var(--tf-success-soft)] text-tf-success" : "bg-[var(--tf-danger-soft)] text-tf-danger"}`}
               >
                 {branch.status}
               </span>
@@ -276,7 +273,7 @@ export default function BranchDetailPage({
               {agents.map((agent) => (
                 <div
                   key={agent.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-tf-surface-2 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-tf-primary/10 flex items-center justify-center text-tf-primary font-semibold">
@@ -328,9 +325,9 @@ export default function BranchDetailPage({
           addMode === "create"
             ? form.handleSubmit(handleCreateAgent)
             : (e) => {
-                e.preventDefault();
-                handleAssignAgent();
-              }
+              e.preventDefault();
+              handleAssignAgent();
+            }
         }
         isSubmitting={isSubmitting}
         size="md"
@@ -362,7 +359,7 @@ export default function BranchDetailPage({
             <div className="space-y-2">
               <Label className="text-sm font-medium text-tf-text-secondary">
                 Select User
-                <span className="text-[var(--tf-danger)] ml-0.5">*</span>
+                <span className="text-tf-danger ml-0.5">*</span>
               </Label>
               <select
                 className="w-full h-10 rounded-lg border border-tf-border bg-tf-surface px-3 text-sm"

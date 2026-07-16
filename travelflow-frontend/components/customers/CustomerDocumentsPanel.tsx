@@ -78,7 +78,7 @@ export function CustomerDocumentsPanel({
         {documents.map((doc) => (
           <div
             key={doc.id}
-            className="flex items-start justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] transition-colors"
+            className="flex items-start justify-between p-4 rounded-lg border border-tf-border hover:bg-tf-surface-2 transition-colors"
           >
             <div className="flex items-start gap-3 min-w-0">
               <div className="w-10 h-10 rounded bg-tf-primary/10 flex items-center justify-center text-tf-primary shrink-0">

@@ -35,6 +35,7 @@ import {
   leadDefaultValues,
   mapLeadToForm,
 } from "@/features/leads/utils/mapLeadToForm";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function LeadsPage() {
   const router = useRouter();
@@ -44,8 +45,7 @@ export default function LeadsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
-  const { user } = useAuthStore();
-  const isAdminOrManager = user?.role === "admin" || user?.role === "manager";
+  const { hasPermission } = usePermissions();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -155,24 +155,20 @@ export default function LeadsPage() {
         <DataTableRowActions
           row={row}
           onView={() => router.push(`/leads/${row.original.id}`)}
-          onEdit={() => {
+          onEdit={hasPermission("Leads: Edit") ? () => {
             form.reset(mapLeadToForm(row.original));
             openEdit(row.original.id);
-          }}
-          onDelete={
-            isAdminOrManager
-              ? async (r) => {
-                  if (!confirm(`Delete lead "${r.original.name}"?`)) return;
-                  try {
-                    await API.deleteLead(r.original.id);
-                    toast.success("Lead deleted");
-                    await loadData();
-                  } catch (e: any) {
-                    toast.error(e.message || "Failed to delete lead");
-                  }
-                }
-              : undefined
-          }
+          } : undefined}
+          onDelete={hasPermission("Leads: Delete") ? async (r) => {
+            if (!confirm(`Delete lead "${r.original.name}"?`)) return;
+            try {
+              await API.deleteLead(r.original.id);
+              toast.success("Lead deleted");
+              await loadData();
+            } catch (e: any) {
+              toast.error(e.message || "Failed to delete lead");
+            }
+          } : undefined}
         />
       ),
     },
@@ -188,18 +184,22 @@ export default function LeadsPage() {
           </p>
         </div>
         <div className="flex gap-4">
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Create Quatation
-          </Button>
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Add New Lead
-          </Button>
+          {hasPermission("Quotations: Create") && (
+            <Button
+              onClick={handleOpenCreate}
+              className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Create Quotation
+            </Button>
+          )}
+          {hasPermission("Leads: Create") && (
+            <Button
+              onClick={handleOpenCreate}
+              className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Add New Lead
+            </Button>
+          )}
         </div>
       </div>
 

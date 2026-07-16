@@ -1,4 +1,4 @@
-import { User, TokenBlacklist } from "../models";
+import { User, TokenBlacklist, Agency, Branch, Role } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { signToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { toJSON } from "../utils/serialize";
@@ -26,8 +26,8 @@ export async function login(email: string, password: string) {
 
   const refreshToken = signRefreshToken({ userId: String(user._id) });
 
-  const safeUser = await User.findById(user._id);
-  return { accessToken, refreshToken, user: toJSON(safeUser!.toObject()) };
+  const populatedUser = await getMe(String(user._id));
+  return { accessToken, refreshToken, user: populatedUser };
 }
 
 export async function refreshAccessToken(refreshToken: string) {
@@ -68,5 +68,31 @@ export async function logout(accessToken?: string) {
 export async function getMe(userId: string) {
   const user = await User.findOne({ _id: userId, isDeleted: false });
   if (!user) throw ApiError.notFound("User");
-  return toJSON(user.toObject());
+  
+  const userObj = user.toObject();
+  if (userObj.agencyId) {
+    const agency = await Agency.findOne({ _id: userObj.agencyId });
+    if (agency) {
+      (userObj as any).agency = agency.toObject();
+    }
+  }
+  if (userObj.branchId) {
+    const branch = await Branch.findOne({ _id: userObj.branchId });
+    if (branch) {
+      (userObj as any).branch = branch.toObject();
+    }
+  }
+  
+  if (userObj.role === "admin") {
+    (userObj as any).permissions = ["admin"]; // admin bypassing flag
+  } else {
+    const role = await Role.findOne({ agencyId: userObj.agencyId, name: userObj.role });
+    if (role) {
+      (userObj as any).permissions = role.permissions;
+    } else {
+      (userObj as any).permissions = [];
+    }
+  }
+  
+  return toJSON(userObj);
 }

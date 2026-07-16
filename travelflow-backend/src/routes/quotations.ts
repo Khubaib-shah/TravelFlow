@@ -8,7 +8,7 @@ import * as quotation from "../controllers/quotation.controller";
 
 const router = Router();
 
-router.use(authMiddleware, tenantMiddleware, requirePermission("Manage Quotations"));
+router.use(authMiddleware, tenantMiddleware, requirePermission("Quotations: View"));
 
 router.get("/", quotation.listQuotations);
 router.get("/:id", validate(idParamSchema, "params"), quotation.getQuotation);

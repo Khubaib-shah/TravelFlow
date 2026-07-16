@@ -93,11 +93,11 @@ export function DataTable<TData, TValue>({
       />
       <div className="rounded-md border border-tf-border bg-tf-surface overflow-hidden">
         <Table>
-          <TableHeader className="bg-[var(--tf-surface-2)]">
+          <TableHeader className="bg-tf-surface-2">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="hover:bg-[var(--tf-surface-2)]"
+                className="hover:bg-tf-surface-2"
               >
                 {headerGroup.headers.map((header) => {
                   return (
@@ -108,9 +108,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   );
                 })}
@@ -137,7 +137,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`h-[52px] hover:bg-[var(--tf-primary-soft)] transition-colors ${i % 2 === 1 ? "bg-[var(--tf-surface-2)]/50" : "bg-transparent"}`}
+                  className={`h-[52px] hover:bg-tf-primary-soft transition-colors ${i % 2 === 1 ? "bg-tf-surface-2/50" : "bg-transparent"}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

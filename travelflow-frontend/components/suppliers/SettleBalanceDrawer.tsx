@@ -80,11 +80,11 @@ export function SettleBalanceDrawer({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-[var(--tf-surface-2)] rounded-lg border border-tf-border">
+            <div className="flex items-center justify-between p-4 bg-tf-surface-2 rounded-lg border border-tf-border">
               <span className="text-sm text-tf-text-secondary">
                 Current Balance
               </span>
-              <span className="text-lg font-bold text-[var(--tf-danger)]">
+              <span className="text-lg font-bold text-tf-danger">
                 Rs {supplier.balance.toLocaleString()}
               </span>
             </div>

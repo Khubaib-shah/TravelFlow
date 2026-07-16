@@ -48,7 +48,7 @@ export default function CompanySettingsPage() {
                 </label>
                 <Input
                   defaultValue="TravelFlow PK"
-                  className="bg-[var(--tf-surface-2)] border-tf-border text-tf-text-primary"
+                  className="bg-tf-surface-2 border-tf-border text-tf-text-primary"
                 />
               </div>
               <div className="space-y-2">
@@ -57,7 +57,7 @@ export default function CompanySettingsPage() {
                 </label>
                 <Input
                   defaultValue="TX-987654321"
-                  className="bg-[var(--tf-surface-2)] border-tf-border text-tf-text-primary"
+                  className="bg-tf-surface-2 border-tf-border text-tf-text-primary"
                 />
               </div>
             </div>
@@ -75,7 +75,7 @@ export default function CompanySettingsPage() {
                 <Input
                   type="email"
                   defaultValue="contact@travelflow.pk"
-                  className="bg-[var(--tf-surface-2)] border-tf-border text-tf-text-primary"
+                  className="bg-tf-surface-2 border-tf-border text-tf-text-primary"
                 />
               </div>
               <div className="space-y-2">
@@ -84,7 +84,7 @@ export default function CompanySettingsPage() {
                 </label>
                 <Input
                   defaultValue="+92 21 111 222 333"
-                  className="bg-[var(--tf-surface-2)] border-tf-border text-tf-text-primary"
+                  className="bg-tf-surface-2 border-tf-border text-tf-text-primary"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -93,7 +93,7 @@ export default function CompanySettingsPage() {
                 </label>
                 <Input
                   defaultValue="Suite 400, Business Avenue, Shahrah-e-Faisal, Karachi"
-                  className="bg-[var(--tf-surface-2)] border-tf-border text-tf-text-primary"
+                  className="bg-tf-surface-2 border-tf-border text-tf-text-primary"
                 />
               </div>
             </div>

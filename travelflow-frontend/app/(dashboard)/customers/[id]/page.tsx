@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
   User,
   Phone,
   Mail,
@@ -13,7 +12,7 @@ import {
   ArrowRight,
   CreditCard,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +38,6 @@ import {
   customerSchema,
   CustomerFormValues,
   PAKISTAN_CITIES,
-  countryForCity,
 } from "@/features/customers/schemas/customer.schema";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -47,13 +45,10 @@ import { mapCustomerToForm } from "@/features/customers/utils/mapCustomerToForm"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { RecordPaymentDrawer } from "@/components/bookings/RecordPaymentDrawer";
 
-export default function CustomerDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CustomerDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notes, setNotes] = useState<CustomerNote[]>([]);

@@ -45,15 +45,15 @@ const typeIcon: Record<Notification["type"], React.ElementType> = {
 };
 
 const typeColor: Record<Notification["type"], string> = {
-  booking: "text-tf-primary bg-[var(--tf-primary-soft)]",
+  booking: "text-tf-primary bg-tf-primary-soft",
   lead: "text-[var(--tf-warning)] bg-[var(--tf-warning-soft)]",
   customer: "text-tf-success bg-[var(--tf-success-soft)]",
-  expense: "text-[var(--tf-danger)] bg-[var(--tf-danger-soft)]",
+  expense: "text-tf-danger bg-[var(--tf-danger-soft)]",
   system: "text-[var(--tf-info)] bg-[var(--tf-info-soft)]",
   info: "text-[var(--tf-info)] bg-[var(--tf-info-soft)]",
   success: "text-tf-success bg-[var(--tf-success-soft)]",
   warning: "text-[var(--tf-warning)] bg-[var(--tf-warning-soft)]",
-  error: "text-[var(--tf-danger)] bg-[var(--tf-danger-soft)]",
+  error: "text-tf-danger bg-[var(--tf-danger-soft)]",
   receipt: "text-tf-success bg-[var(--tf-success-soft)]",
 };
 
@@ -97,7 +97,7 @@ export function NotificationsDropdown() {
       prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n)),
     );
     setIsOpen(false);
-    
+
     // Fallback links if entityType is known but href is missing from backend
     let href = notification.href || "/dashboard";
     if (notification.entityType === "lead" && notification.entityId) href = `/leads/${notification.entityId}`;
@@ -179,9 +179,8 @@ export function NotificationsDropdown() {
                   <div
                     key={notification._id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`relative flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--tf-surface-2)] transition-colors group ${
-                      !notification.read ? "bg-[var(--tf-primary-soft)]/30" : ""
-                    }`}
+                    className={`relative flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-tf-surface-2 transition-colors group ${!notification.read ? "bg-tf-primary-soft/30" : ""
+                      }`}
                   >
                     {/* Unread indicator */}
                     {!notification.read && (

@@ -14,7 +14,7 @@ export function KpiRow({ data, isLoading }: KpiRowProps) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-[7.5rem] rounded-xl bg-[var(--tf-surface-2)] animate-pulse" />
+          <div key={i} className="h-[7.5rem] rounded-xl bg-tf-surface-2 animate-pulse" />
         ))}
       </div>
     );

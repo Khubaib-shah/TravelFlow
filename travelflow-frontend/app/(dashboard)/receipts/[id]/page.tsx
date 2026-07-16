@@ -1,19 +1,15 @@
 "use client";
 
-import { use } from "react";
-import { ArrowLeft, Printer, Send, FileText, Download } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, Printer, Send, Download } from "lucide-react";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 
-export default function ReceiptDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ReceiptDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
 
   return (
     <div className="space-y-6 pb-12">

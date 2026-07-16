@@ -54,9 +54,9 @@ export function CustomerNotesPanel({
       {notes.map((note) => (
         <div
           key={note.id}
-          className="flex gap-3 bg-[var(--tf-surface-2)] p-4 rounded-lg border border-tf-border"
+          className="flex gap-3 bg-tf-surface-2 p-4 rounded-lg border border-tf-border"
         >
-          <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--tf-primary-soft)] text-tf-primary flex items-center justify-center text-sm font-semibold">
+          <div className="h-9 w-9 shrink-0 rounded-full bg-tf-primary-soft text-tf-primary flex items-center justify-center text-sm font-semibold">
             {note.addedBy
               .split(" ")
               .map((n) => n[0])

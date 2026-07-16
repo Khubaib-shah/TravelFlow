@@ -1,16 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldCheck, Check, Pencil, Plus, Trash2 } from "lucide-react";
+import { ShieldCheck, Check, Pencil, Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@/lib/zod-resolver";
 import { toast } from "sonner";
 
 import { User } from "@/types";
-import { Role, ALL_PERMISSIONS } from "@/types/role";
+import { Role, ALL_PERMISSIONS, PERMISSION_GROUPS } from "@/types/role";
 import { API } from "@/lib/data-source";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -25,6 +36,56 @@ const roleSchema = z.object({
 });
 type RoleFormValues = z.infer<typeof roleSchema>;
 
+function PermissionGroupRow({ group, selectedPermissions, togglePermission, toggleGroup }: {
+  group: typeof PERMISSION_GROUPS[number];
+  selectedPermissions: string[];
+  togglePermission: (perm: string) => void;
+  toggleGroup: (groupActions: readonly string[], isAllSelected: boolean) => void;
+}) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const groupPermissions = group.actions;
+  const selectedCount = groupPermissions.filter(p => selectedPermissions.includes(p as string)).length;
+  const isAllSelected = selectedCount === groupPermissions.length;
+  const isIndeterminate = selectedCount > 0 && !isAllSelected;
+
+  return (
+    <div className="border border-tf-border rounded-lg overflow-hidden bg-tf-surface">
+      <div
+        className="flex items-center justify-between p-3 cursor-pointer hover:bg-tf-surface-2 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-2">
+          {isExpanded ? <ChevronDown className="w-4 h-4 text-tf-text-muted" /> : <ChevronRight className="w-4 h-4 text-tf-text-muted" />}
+          <span className="text-sm font-medium">{group.module}</span>
+        </div>
+        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <span className="text-xs text-tf-text-muted">{selectedCount} / {groupPermissions.length}</span>
+          <Checkbox
+            checked={isAllSelected || (isIndeterminate ? "indeterminate" : false)}
+            onCheckedChange={() => toggleGroup(groupPermissions, isAllSelected)}
+          />
+        </div>
+      </div>
+      {isExpanded && (
+        <div className="p-3 bg-tf-surface-2 border-t border-tf-border grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {groupPermissions.map(perm => (
+            <div key={perm} className="flex items-center gap-2">
+              <Checkbox
+                id={`perm-${perm}`}
+                checked={selectedPermissions.includes(perm)}
+                onCheckedChange={() => togglePermission(perm)}
+              />
+              <Label htmlFor={`perm-${perm}`} className="text-sm font-normal cursor-pointer">
+                {perm.replace(`${group.module}: `, '')}
+              </Label>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -32,6 +93,7 @@ export default function RolesPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -77,6 +139,17 @@ export default function RolesPage() {
     );
   };
 
+  const toggleGroup = (groupActions: readonly string[], isAllSelected: boolean) => {
+    setSelectedPermissions((prev) => {
+      if (isAllSelected) {
+        return prev.filter((p) => !groupActions.includes(p));
+      } else {
+        const set = new Set([...prev, ...groupActions]);
+        return Array.from(set);
+      }
+    });
+  };
+
   const handleSave = async () => {
     if (!editingRole) return;
     setIsSaving(true);
@@ -100,10 +173,14 @@ export default function RolesPage() {
   };
 
   const handleDeleteRole = async (role: Role) => {
-    if (confirm(`Are you sure you want to delete the role ${role.name}?`)) {
+    try {
       await API.deleteRole(role.id);
       toast.success("Role deleted");
       await loadData();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete role");
+    } finally {
+      setRoleToDelete(null);
     }
   };
 
@@ -135,72 +212,84 @@ export default function RolesPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {roles.map((role) => (
-          <div
-            key={role.id}
-            className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm flex flex-col"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: role.color }}
-              >
-                <ShieldCheck
-                  className="w-5 h-5"
-                  style={{ color: role.textColor }}
-                />
-              </div>
-              <span
-                className="text-xs font-semibold px-2 py-1 rounded-full"
-                style={{ backgroundColor: role.color, color: role.textColor }}
-              >
-                {getUserCount(role.name)} user
-                {getUserCount(role.name) !== 1 ? "s" : ""}
-              </span>
-            </div>
-            <h3 className="tf-h3 text-tf-text-primary mb-1">{role.name}</h3>
-            <p className="tf-body-sm text-tf-text-secondary mb-5">
-              {role.description}
-            </p>
-
-            <div className="space-y-2 flex-1">
-              {role.permissions.map((perm) => (
-                <div key={perm} className="flex items-center gap-2">
-                  <div
-                    className="w-4 h-4 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: role.color }}
-                  >
-                    <Check
-                      className="w-2.5 h-2.5"
-                      style={{ color: role.textColor }}
-                    />
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Role</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Permissions Count</TableHead>
+              <TableHead>Users</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {roles.map((role) => (
+              <TableRow key={role.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: role.color }}
+                    >
+                      <ShieldCheck
+                        className="w-4 h-4"
+                        style={{ color: role.textColor }}
+                      />
+                    </div>
+                    <span className="font-medium text-tf-text-primary">{role.name}</span>
                   </div>
-                  <span className="text-sm text-tf-text-secondary">{perm}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-tf-border"
-                onClick={() => openEditPermissions(role)}
-              >
-                <Pencil className="w-3.5 h-3.5 mr-2" /> Permissions
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full border-tf-border text-tf-danger hover:text-tf-danger hover:bg-tf-danger-soft"
-                onClick={() => handleDeleteRole(role)}
-              >
-                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
-              </Button>
-            </div>
-          </div>
-        ))}
+                </TableCell>
+                <TableCell>
+                  <span className="text-sm text-tf-text-secondary">{role.description || "—"}</span>
+                </TableCell>
+                <TableCell>
+                  <span className="text-sm text-tf-text-secondary">
+                    {role.permissions.length} permissions
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span
+                    className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: role.color, color: role.textColor }}
+                  >
+                    {getUserCount(role.name)} user{getUserCount(role.name) !== 1 ? "s" : ""}
+                  </span>
+                </TableCell>
+                <TableCell className="text-right">
+                  {role.name.toLowerCase() === "admin" ? (
+                    <span className="text-xs text-tf-text-muted italic px-2">System Default</span>
+                  ) : (
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditPermissions(role)}
+                      >
+                        <Pencil className="w-4 h-4 mr-2" /> Permissions
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-tf-danger hover:text-tf-danger hover:bg-tf-danger-soft"
+                        onClick={() => setRoleToDelete(role)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+            {roles.length === 0 && !isLoading && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-tf-text-muted">
+                  No roles found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <DrawerForm
@@ -216,24 +305,15 @@ export default function RolesPage() {
         size="md"
         submitLabel="Save Permissions"
       >
-        <div className="grid grid-cols-1 gap-3">
-          {ALL_PERMISSIONS.map((perm) => (
-            <div
-              key={perm}
-              className="flex items-center gap-3 p-3 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)]"
-            >
-              <Checkbox
-                id={`edit-${perm}`}
-                checked={selectedPermissions.includes(perm)}
-                onCheckedChange={() => togglePermission(perm)}
-              />
-              <Label
-                htmlFor={`edit-${perm}`}
-                className="text-sm font-normal normal-case tracking-normal cursor-pointer flex-1"
-              >
-                {perm}
-              </Label>
-            </div>
+        <div className="grid grid-cols-1 gap-3 overflow-y-auto pr-2">
+          {PERMISSION_GROUPS.map((group) => (
+            <PermissionGroupRow
+              key={group.module}
+              group={group}
+              selectedPermissions={selectedPermissions}
+              togglePermission={togglePermission}
+              toggleGroup={toggleGroup}
+            />
           ))}
         </div>
       </DrawerForm>
@@ -279,29 +359,40 @@ export default function RolesPage() {
             <div className="pt-4 border-t border-tf-border mt-6">
               <h3 className="text-sm font-medium mb-3">Permissions</h3>
               <div className="grid grid-cols-1 gap-3 max-h-[40vh] overflow-y-auto pr-2">
-                {ALL_PERMISSIONS.map((perm) => (
-                  <div
-                    key={perm}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)]"
-                  >
-                    <Checkbox
-                      id={`create-${perm}`}
-                      checked={selectedPermissions.includes(perm)}
-                      onCheckedChange={() => togglePermission(perm)}
-                    />
-                    <Label
-                      htmlFor={`create-${perm}`}
-                      className="text-sm font-normal normal-case tracking-normal cursor-pointer flex-1"
-                    >
-                      {perm}
-                    </Label>
-                  </div>
+                {PERMISSION_GROUPS.map((group) => (
+                  <PermissionGroupRow
+                    key={group.module}
+                    group={group}
+                    selectedPermissions={selectedPermissions}
+                    togglePermission={togglePermission}
+                    toggleGroup={toggleGroup}
+                  />
                 ))}
               </div>
             </div>
           </div>
         </Form>
       </DrawerForm>
+
+      <AlertDialog open={!!roleToDelete} onOpenChange={(open) => !open && setRoleToDelete(null)}>
+        <AlertDialogContent className="rounded-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the role "{roleToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => roleToDelete && handleDeleteRole(roleToDelete)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

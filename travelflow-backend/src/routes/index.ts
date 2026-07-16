@@ -67,22 +67,22 @@ protectedRouter.get(
 );
 
 // Leads
-protectedRouter.get("/leads", requirePermission("Manage Leads"), asyncHandler(domain.listLeads));
+protectedRouter.get("/leads", requirePermission("Leads: View"), asyncHandler(domain.listLeads));
 protectedRouter.post(
   "/leads",
-  requirePermission("Manage Leads"),
+  requirePermission("Leads: Create"),
   validate(leadSchema),
   asyncHandler(domain.createLead),
 );
 protectedRouter.get(
   "/leads/:id",
-  requirePermission("Manage Leads"),
+  requirePermission("Leads: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getLead),
 );
 protectedRouter.patch(
   "/leads/:id",
-  requirePermission("Manage Leads"),
+  requirePermission("Leads: Edit"),
   validate(idParamSchema, "params"),
   validate(leadSchema.partial()),
   asyncHandler(domain.updateLead),
@@ -95,42 +95,42 @@ protectedRouter.delete(
 );
 protectedRouter.post(
   "/leads/:id/activities",
-  requirePermission("Manage Leads"),
+  requirePermission("Leads: Create"),
   validate(idParamSchema, "params"),
   validate(leadActivitySchema),
   asyncHandler(domain.addLeadActivity),
 );
 protectedRouter.post(
   "/leads/:id/convert",
-  requirePermission("Manage Leads"),
+  requirePermission("Leads: Create"),
   validate(idParamSchema, "params"),
   validate(convertLeadSchema),
   asyncHandler(domain.convertLead),
 );
 
 // Customers
-protectedRouter.get("/customers", requirePermission("Manage Customers"), asyncHandler(domain.listCustomers));
+protectedRouter.get("/customers", requirePermission("Customers: View"), asyncHandler(domain.listCustomers));
 protectedRouter.post(
   "/customers",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Create"),
   validate(customerSchema),
   asyncHandler(domain.createCustomer),
 );
 protectedRouter.post(
   "/customers/from-lead/:leadId",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Create"),
   validate(leadIdParamSchema, "params"),
   asyncHandler(domain.findOrCreateCustomerFromLead),
 );
 protectedRouter.get(
   "/customers/:id",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getCustomer),
 );
 protectedRouter.patch(
   "/customers/:id",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Edit"),
   validate(idParamSchema, "params"),
   validate(customerSchema),
   asyncHandler(domain.updateCustomer),
@@ -143,31 +143,31 @@ protectedRouter.delete(
 );
 protectedRouter.get(
   "/customers/:id/notes",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listCustomerNotes),
 );
 protectedRouter.post(
   "/customers/:id/notes",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Create"),
   validate(idParamSchema, "params"),
   validate(customerNoteSchema),
   asyncHandler(domain.createCustomerNote),
 );
 protectedRouter.delete(
   "/customers/notes/:noteId",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Delete"),
   asyncHandler(domain.deleteCustomerNote),
 );
 protectedRouter.get(
   "/customers/:id/documents",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listCustomerDocuments),
 );
 protectedRouter.post(
   "/customers/:id/documents",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: Create"),
   validate(idParamSchema, "params"),
   validate(customerDocumentSchema),
   asyncHandler(domain.createCustomerDocument),
@@ -179,63 +179,63 @@ protectedRouter.delete(
 );
 protectedRouter.get(
   "/customers/:id/ledger",
-  requirePermission("Manage Customers"),
+  requirePermission("Customers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getCustomerLedger),
 );
 
 // Bookings
-protectedRouter.get("/bookings", requirePermission("Manage Bookings"), asyncHandler(domain.listBookings));
+protectedRouter.get("/bookings", requirePermission("Bookings: View"), asyncHandler(domain.listBookings));
 protectedRouter.post(
   "/bookings",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: Create"),
   validate(bookingSchema),
   asyncHandler(domain.createBooking),
 );
 protectedRouter.get(
   "/bookings/:id",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getBooking),
 );
 protectedRouter.patch(
   "/bookings/:id",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: Edit"),
   validate(idParamSchema, "params"),
   validate(bookingSchema),
   asyncHandler(domain.updateBooking),
 );
 protectedRouter.delete(
   "/bookings/:id",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: Delete"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteBooking),
 );
 
 // Suppliers
-protectedRouter.get("/suppliers", requirePermission("Manage Suppliers"), asyncHandler(domain.listSuppliers));
+protectedRouter.get("/suppliers", requirePermission("Suppliers: View"), asyncHandler(domain.listSuppliers));
 protectedRouter.post(
   "/suppliers",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: Create"),
   validate(supplierSchema),
   asyncHandler(domain.createSupplier),
 );
 protectedRouter.get(
   "/suppliers/:id",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getSupplier),
 );
 protectedRouter.patch(
   "/suppliers/:id",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: Edit"),
   validate(idParamSchema, "params"),
   validate(supplierSchema),
   asyncHandler(domain.updateSupplier),
 );
 protectedRouter.delete(
   "/suppliers/:id",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: Delete"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteSupplier),
 );
@@ -243,58 +243,58 @@ protectedRouter.delete(
 // Branches
 protectedRouter.get(
   "/branches",
-  requirePermission("All Branches"),
+  requirePermission("Branches: Access All"),
   asyncHandler(domain.listBranches),
 );
 protectedRouter.post(
   "/branches",
-  requirePermission("All Branches"),
+  requirePermission("Branches: Access All"),
   validate(branchSchema),
   asyncHandler(domain.createBranch),
 );
 protectedRouter.get(
   "/branches/:id",
-  requirePermission("All Branches"),
+  requirePermission("Branches: Access All"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getBranch),
 );
 protectedRouter.patch(
   "/branches/:id",
-  requirePermission("All Branches"),
+  requirePermission("Branches: Access All"),
   validate(idParamSchema, "params"),
   validate(branchSchema),
   asyncHandler(domain.updateBranch),
 );
 
 // Users — /agents must come BEFORE /:id to avoid route collision
-protectedRouter.get("/users/agents", requirePermission("Manage Users"), asyncHandler(domain.listAgents));
+protectedRouter.get("/users/agents", requirePermission("Users: View"), asyncHandler(domain.listAgents));
 protectedRouter.get(
   "/users",
-  requirePermission("Manage Users"),
+  requirePermission("Users: View"),
   asyncHandler(domain.listUsers),
 );
 protectedRouter.post(
   "/users",
-  requirePermission("Manage Users"),
+  requirePermission("Users: Create"),
   validate(userSchema),
   asyncHandler(domain.createUser),
 );
 protectedRouter.get(
   "/users/:id",
-  requirePermission("Manage Users"),
+  requirePermission("Users: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getUser),
 );
 protectedRouter.patch(
   "/users/:id",
-  requirePermission("Manage Users"),
+  requirePermission("Users: Edit"),
   validate(idParamSchema, "params"),
   validate(userSchema),
   asyncHandler(domain.updateUser),
 );
 protectedRouter.delete(
   "/users/:id",
-  requirePermission("Manage Users"),
+  requirePermission("Users: Delete"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteUser),
 );
@@ -302,31 +302,31 @@ protectedRouter.delete(
 // Expenses
 protectedRouter.get(
   "/expenses",
-  requirePermission("Manage Expenses"),
+  requirePermission("Expenses: View"),
   asyncHandler(domain.listExpenses),
 );
 protectedRouter.post(
   "/expenses",
-  requirePermission("Manage Expenses"),
+  requirePermission("Expenses: Create"),
   validate(expenseSchema),
   asyncHandler(domain.createExpense),
 );
 protectedRouter.get(
   "/expenses/:id",
-  requirePermission("Manage Expenses"),
+  requirePermission("Expenses: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getExpense),
 );
 protectedRouter.patch(
   "/expenses/:id",
-  requirePermission("Manage Expenses"),
+  requirePermission("Expenses: Edit"),
   validate(idParamSchema, "params"),
   validate(expenseSchema),
   asyncHandler(domain.updateExpense),
 );
 protectedRouter.delete(
   "/expenses/:id",
-  requirePermission("Manage Expenses"),
+  requirePermission("Expenses: Delete"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteExpense),
 );
@@ -360,37 +360,37 @@ protectedRouter.delete(
 // Supplier Payments
 protectedRouter.post(
   "/suppliers/:id/payments",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: Create"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.recordSupplierPayment),
 );
 protectedRouter.get(
   "/suppliers/:id/statement",
-  requirePermission("Manage Suppliers"),
+  requirePermission("Suppliers: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getSupplierStatement),
 );
 
 // Receipts (Customer Payments)
-protectedRouter.get("/receipts", requirePermission("Manage Finances"), asyncHandler(domain.listReceipts));
-protectedRouter.post("/receipts", requirePermission("Manage Finances"), asyncHandler(domain.createReceipt));
+protectedRouter.get("/receipts", requirePermission("Expenses: View"), asyncHandler(domain.listReceipts));
+protectedRouter.post("/receipts", requirePermission("Expenses: Create"), asyncHandler(domain.createReceipt));
 
 // Booking Documents
 protectedRouter.get(
   "/bookings/:id/documents",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: View"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listBookingDocuments),
 );
 protectedRouter.post(
   "/bookings/:id/documents",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: Create"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.createBookingDocument),
 );
 protectedRouter.delete(
   "/bookings/documents/:docId",
-  requirePermission("Manage Bookings"),
+  requirePermission("Bookings: Delete"),
   asyncHandler(domain.deleteBookingDocument),
 );
 

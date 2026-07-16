@@ -12,7 +12,7 @@ import {
   CreditCard,
   ArrowRight,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,13 +40,10 @@ import {
   supplierDefaultValues,
 } from "@/features/suppliers/utils/mapSupplierToForm";
 
-export default function SupplierDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function SupplierDetailPage() {
   const router = useRouter();
-  const { id } = use(params);
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +143,7 @@ export default function SupplierDetailPage({
       accessorKey: "costPrice",
       header: "Payable",
       cell: ({ row }) => (
-        <div className="font-semibold text-sm text-[var(--tf-danger)]">
+        <div className="font-semibold text-sm text-tf-danger">
           {formatCurrencyPKR(row.original.costPrice)}
         </div>
       ),
@@ -296,7 +293,7 @@ export default function SupplierDetailPage({
               </span>
               <CurrencyDisplay
                 amount={supplier.balance}
-                className="font-bold text-[var(--tf-danger)] text-xl"
+                className="font-bold text-tf-danger text-xl"
               />
             </div>
             <p className="text-sm text-tf-text-muted pt-2">
@@ -343,7 +340,7 @@ export default function SupplierDetailPage({
             </Button>
           </div>
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 border border-tf-border rounded-lg bg-[var(--tf-surface-2)]">
+            <div className="flex justify-between items-center p-4 border border-tf-border rounded-lg bg-tf-surface-2">
               <div>
                 <p className="font-semibold text-sm text-tf-text-primary">
                   Booking Payable - BK-2024-001
@@ -352,11 +349,11 @@ export default function SupplierDetailPage({
                   {new Date().toLocaleDateString()}
                 </p>
               </div>
-              <span className="text-[var(--tf-danger)] font-mono font-bold text-sm">
+              <span className="text-tf-danger font-mono font-bold text-sm">
                 + {formatCurrencyPKR(85000)}
               </span>
             </div>
-            <div className="flex justify-between items-center p-4 border border-tf-border rounded-lg bg-[var(--tf-surface-2)]">
+            <div className="flex justify-between items-center p-4 border border-tf-border rounded-lg bg-tf-surface-2">
               <div>
                 <p className="font-semibold text-sm text-tf-text-primary">
                   Bank Transfer - Settle
@@ -401,7 +398,7 @@ export default function SupplierDetailPage({
           className="mt-4 bg-tf-surface rounded-xl border border-tf-border p-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-[var(--tf-surface-2)] cursor-pointer transition-colors">
+            <div className="flex items-center justify-between p-4 rounded-lg border border-tf-border hover:bg-tf-surface-2 cursor-pointer transition-colors">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-10 h-10 rounded bg-tf-primary/10 flex items-center justify-center text-tf-primary shrink-0">
                   <Building className="w-5 h-5" />

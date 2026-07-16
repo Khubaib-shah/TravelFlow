@@ -110,7 +110,7 @@ export function RecordPaymentDrawer({
             <span className="font-medium text-tf-text-primary">
               Balance Due:
             </span>
-            <span className="font-bold text-[var(--tf-danger)]">
+            <span className="font-bold text-tf-danger">
               ₨ {booking.balance.toLocaleString()}
             </span>
           </div>

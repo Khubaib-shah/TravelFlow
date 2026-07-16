@@ -136,7 +136,7 @@ export function ConvertToBookingDrawer({
     >
       {step === 1 && (
         <div className="space-y-4 text-sm">
-          <div className="grid grid-cols-2 gap-4 rounded-lg border border-tf-border p-4 bg-[var(--tf-surface-2)]">
+          <div className="grid grid-cols-2 gap-4 rounded-lg border border-tf-border p-4 bg-tf-surface-2">
             <div>
               <p className="text-tf-text-muted">Customer</p>
               <p className="font-medium">{lead.name}</p>

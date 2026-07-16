@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plane, Mail, Lock, ArrowRight } from "lucide-react";
+import { Plane, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading } = useAuthStore();
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -166,7 +167,7 @@ export default function LoginPage() {
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[var(--tf-danger)]" />
+                    <FormMessage className="text-tf-danger" />
                   </FormItem>
                 )}
               />
@@ -191,14 +192,26 @@ export default function LoginPage() {
                       <div className="relative">
                         <Lock className="absolute left-3 top-2.5 h-5 w-5 text-tf-text-muted" />
                         <Input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-10 bg-tf-surface border-tf-border h-11 text-tf-text-primary"
+                          className="pl-10 pr-10 bg-tf-surface border-tf-border h-11 text-tf-text-primary"
                           {...field}
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-2.5 text-tf-text-muted hover:text-tf-text-primary focus:outline-none"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
-                    <FormMessage className="text-[var(--tf-danger)]" />
+                    <FormMessage className="text-tf-danger" />
                   </FormItem>
                 )}
               />
