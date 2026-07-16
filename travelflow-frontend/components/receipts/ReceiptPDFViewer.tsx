@@ -25,21 +25,21 @@ const styles = StyleSheet.create({
     zIndex: -1,
   },
   
-  // Header / Invoice Number
-  invoiceNumberLabel: {
+  // Header / Receipt Number
+  receiptNumberLabel: {
     fontSize: 9,
     fontStyle: "italic",
     color: "#666",
     marginBottom: 4,
   },
-  invoiceNumberBox: {
+  receiptNumberBox: {
     backgroundColor: THEME_COLOR,
     paddingVertical: 4,
     paddingHorizontal: 12,
     width: 140,
     marginBottom: 30,
   },
-  invoiceNumberText: {
+  receiptNumberText: {
     color: "#fff",
     fontSize: 11,
     fontWeight: "bold",
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function InvoicePDFViewer({ data }: { data: any }) {
+export default function ReceiptPDFViewer({ data }: { data: any }) {
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
@@ -247,29 +247,29 @@ export default function InvoicePDFViewer({ data }: { data: any }) {
   const bgUrl = `${origin}/assets/invoice/triptrails-letter-head.png`;
 
   const Doc = () => (
-    <Document title={`Invoice-${data.invoiceRef}`}>
+    <Document title={`Receipt-${data.receiptRef}`}>
       <Page size="A4" style={styles.page}>
         <Image src={bgUrl} style={styles.background} fixed />
         
         <View style={styles.content}>
-          {/* Invoice Number */}
+          {/* Receipt Number */}
           <View>
-            <Text style={styles.invoiceNumberLabel}>Invoice Number:</Text>
-            <View style={styles.invoiceNumberBox}>
-              <Text style={styles.invoiceNumberText}>{data.invoiceRef || "N/A"}</Text>
+            <Text style={styles.receiptNumberLabel}>Receipt Number:</Text>
+            <View style={styles.receiptNumberBox}>
+              <Text style={styles.receiptNumberText}>{data.receiptRef || "N/A"}</Text>
             </View>
           </View>
 
           {/* Details Grid */}
           <View style={styles.detailsContainer}>
-            {/* Left: Bill To Details */}
+            {/* Left: Received From */}
             <View style={styles.detailsCol}>
-              <Text style={styles.sectionTitle}>Bill To</Text>
-              {(data.customerId?.name || data.customerId?.firstName) ? (
+              <Text style={styles.sectionTitle}>Received From</Text>
+              {(data.customerId?.name || data.customerId?.firstName || data.customerName) ? (
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Client Name:</Text>
                   <Text style={styles.detailValue}>
-                    {data.customerId?.name || `${data.customerId?.firstName || ""} ${data.customerId?.lastName || ""}`.trim()}
+                    {data.customerName || data.customerId?.name || `${data.customerId?.firstName || ""} ${data.customerId?.lastName || ""}`}
                   </Text>
                 </View>
               ) : null}
@@ -287,41 +287,25 @@ export default function InvoicePDFViewer({ data }: { data: any }) {
                   <Text style={styles.detailValue}>{data.customerId?.phone}</Text>
                 </View>
               ) : null}
-              
-              {data.customerId?.email ? (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Email:</Text>
-                  <Text style={styles.detailValue}>{data.customerId?.email}</Text>
-                </View>
-              ) : null}
-
-              {data.customerId?.address ? (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Address:</Text>
-                  <Text style={styles.detailValue}>{data.customerId?.address}</Text>
-                </View>
-              ) : null}
             </View>
 
-            {/* Right: Invoice Info */}
+            {/* Right: Payment Details */}
             <View style={styles.detailsCol}>
-              <Text style={styles.sectionTitle}>Invoice Details</Text>
+              <Text style={styles.sectionTitle}>Payment Details</Text>
               
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Date:</Text>
                 <Text style={styles.detailValue}>
-                  {new Date(data.createdAt).toLocaleDateString()}
+                  {new Date(data.date || data.createdAt).toLocaleDateString()}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Due Date:</Text>
-                <Text style={styles.detailValue}>
-                  {new Date(data.dueDate).toLocaleDateString()}
+                <Text style={styles.detailLabel}>Method:</Text>
+                <Text style={[styles.detailValue, { textTransform: "capitalize" }]}>
+                  {data.paymentMethod?.replace("_", " ")}
                 </Text>
               </View>
-
-
 
               {data.bookingId?.bookingRef ? (
                 <View style={styles.detailRow}>
@@ -343,31 +327,21 @@ export default function InvoicePDFViewer({ data }: { data: any }) {
             </View>
           </View>
 
-          {/* Services Table */}
+          {/* Payment Info Table */}
           <View style={styles.table}>
             <View style={styles.tableHeader}>
               <Text style={styles.tableColHeaderLeft}>Description</Text>
-              <Text style={styles.tableColHeaderCenter}>Qty</Text>
-              <Text style={styles.tableColHeaderRight}>Unit Price</Text>
-              <Text style={styles.tableColHeaderRight}>Amount</Text>
+              <Text style={styles.tableColHeaderRight}>Amount Received</Text>
             </View>
 
-            {(data.items || []).map((item: any, idx: number) => (
-              <View key={idx} style={styles.tableRow}>
-                <Text style={styles.tableCellLeft}>
-                  {item.description}
-                </Text>
-                <Text style={styles.tableCellCenter}>
-                  {item.quantity}
-                </Text>
-                <Text style={styles.tableCellRight}>
-                  {item.unitPrice?.toLocaleString()}
-                </Text>
-                <Text style={styles.tableCellRight}>
-                  {item.amount?.toLocaleString()}
-                </Text>
-              </View>
-            ))}
+            <View style={styles.tableRow}>
+              <Text style={styles.tableCellLeft}>
+                Payment received for booking {data.bookingId?.bookingRef || ""}
+              </Text>
+              <Text style={styles.tableCellRight}>
+                Rs {data.amount?.toLocaleString()}
+              </Text>
+            </View>
           </View>
 
           {/* Totals & Notes Section */}
@@ -388,48 +362,18 @@ export default function InvoicePDFViewer({ data }: { data: any }) {
               </View>
             </View>
 
-            {/* Summary & Big Total (Right) */}
+            {/* Big Total (Right) */}
             <View style={styles.summarySection}>
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Subtotal :</Text>
-                <Text style={styles.summaryValue}>
-                  Rs {data.subtotal?.toLocaleString()}
-                </Text>
-              </View>
-              
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Tax :</Text>
-                <Text style={styles.summaryValue}>
-                  Rs {data.tax?.toLocaleString()}
-                </Text>
-              </View>
-              
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Total :</Text>
-                <Text style={styles.summaryValue}>
-                  Rs {data.total?.toLocaleString()}
-                </Text>
-              </View>
-
-              {(data.bookingId?.amountReceived || 0) > 0 && (
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Amount Paid :</Text>
-                  <Text style={styles.summaryValue}>
-                    Rs {data.bookingId.amountReceived.toLocaleString()}
-                  </Text>
-                </View>
-              )}
-              
               <View style={styles.totalBoxContainer}>
                 <Text style={styles.totalBoxAmount}>
-                  Rs {data.bookingId?.balance !== undefined ? data.bookingId.balance.toLocaleString() : data.total?.toLocaleString()}
+                  Rs {data.amount?.toLocaleString()}
                 </Text>
-                <Text style={styles.totalBoxLabel}>BALANCE DUE</Text>
+                <Text style={styles.totalBoxLabel}>AMOUNT PAID</Text>
               </View>
             </View>
           </View>
 
-          {/* Background overlay manager info (specific to letterhead) */}
+          {/* Background overlay manager info */}
           {data.managerContact && (
             <View style={styles.managerInfo} fixed>
               <Text style={{ marginBottom: 10 }}>

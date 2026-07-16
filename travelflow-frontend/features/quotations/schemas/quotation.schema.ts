@@ -38,7 +38,7 @@ export const quotationSchema = z
 
     // Link quotation to an existing customer.
     // NOTE: for UI in this step we will use customerId via a customer name input.
-    customerId: z.string().min(1),
+    customerId: z.string().optional().default(""),
 
     // Owner/agency context is derived elsewhere.
     branchId: z.string().optional(),
@@ -53,6 +53,11 @@ export const quotationSchema = z
     children: z.coerce.number().min(0).default(0),
     infants: z.coerce.number().min(0).default(0),
     validUntil: z.string().optional(),
+
+    // Temporary customer details (deferred creation)
+    customerName: z.string().optional().default(""),
+    customerPhone: z.string().optional().default(""),
+    customerEmail: z.string().optional().default(""),
 
     items: z.array(quotationItemSchema).min(1, "Add at least one item"),
     taxes: z.array(quotationTaxSchema).optional().default([]),
@@ -108,6 +113,10 @@ export const quotationDefaultValues: QuotationFormValues = {
   children: 0,
   infants: 0,
   validUntil: "",
+
+  customerName: "",
+  customerPhone: "",
+  customerEmail: "",
 
   items: [
     {

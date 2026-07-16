@@ -40,6 +40,8 @@ interface DataTableProps<TData, TValue> {
   enableBulkActions?: boolean;
   enableExport?: boolean;
   isLoading?: boolean;
+  extraToolbar?: React.ReactNode;
+  emptyState?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -51,6 +53,8 @@ export function DataTable<TData, TValue>({
   enableBulkActions = false,
   enableExport = false,
   isLoading = false,
+  extraToolbar,
+  emptyState,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -90,6 +94,7 @@ export function DataTable<TData, TValue>({
         searchPlaceholder={searchPlaceholder}
         filters={filters}
         enableExport={enableExport}
+        extraToolbar={extraToolbar}
       />
       <div className="rounded-md border border-tf-border bg-tf-surface overflow-hidden">
         <Table>
@@ -156,9 +161,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center text-tf-text-muted"
+                  className="h-24 text-center text-tf-text-muted border-none p-0"
                 >
-                  No results found.
+                  {emptyState ? emptyState : <div className="py-8">No results found.</div>}
                 </TableCell>
               </TableRow>
             )}

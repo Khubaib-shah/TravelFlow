@@ -50,6 +50,9 @@ export async function createQuotation(
     currency: req.body.currency || "PKR",
     customerNotes: req.body.notes || req.body.customerNotes,
     terms: req.body.terms,
+    customerName: req.body.customerName,
+    customerPhone: req.body.customerPhone,
+    customerEmail: req.body.customerEmail,
     items: req.body.items?.map((it: any) => ({
       ...it,
       serviceCategory: it.serviceCategory || "general",
@@ -87,6 +90,9 @@ export async function updateQuotation(
     currency: req.body.currency || "PKR",
     customerNotes: req.body.notes || req.body.customerNotes,
     terms: req.body.terms,
+    customerName: req.body.customerName,
+    customerPhone: req.body.customerPhone,
+    customerEmail: req.body.customerEmail,
     items: req.body.items?.map((it: any) => ({
       ...it,
       serviceCategory: it.serviceCategory || "general",

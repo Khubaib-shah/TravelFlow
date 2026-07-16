@@ -3,6 +3,12 @@
 import { NavItem } from "@/constants/nav";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarItemProps {
   item: NavItem;
@@ -15,17 +21,19 @@ export function SidebarItem({ item, isOpen }: SidebarItemProps) {
   const isActive =
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-  return (
+  const link = (
     <Link
       href={item.href}
-      className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ease-out hover:bg-tf-surface-2 ${isActive
+      className={`group relative flex items-center ${isOpen ? "gap-3 px-3 py-2.5" : "justify-center py-2.5 px-0"} rounded-lg transition-all duration-200 ease-out hover:bg-tf-surface-2 ${isActive && isOpen
           ? "bg-[var(--tf-sidebar-active)] text-[var(--tf-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--tf-sidebar-accent)] rounded-l-none pl-[9px]"
+          : isActive && !isOpen
+          ? "bg-[var(--tf-sidebar-active)] text-[var(--tf-sidebar-active-text)] font-semibold border-l-[3px] border-[var(--tf-sidebar-accent)] rounded-l-none"
           : "text-[var(--tf-sidebar-text)]"
         }`}
-      title={!isOpen ? item.title : undefined}
+      aria-label={!isOpen ? item.title : undefined}
     >
       <item.icon
-        className={`h-5 w-5 shrink-0 ${isActive ? "text-[var(--tf-sidebar-active-text)]" : "text-tf-text-muted group-hover:text-tf-text-primary transition-colors"}`}
+        className={`h-5 w-5 shrink-0 ${isActive && isOpen ? "text-[var(--tf-sidebar-active-text)]" : "text-[var(--tf-sidebar-text)] transition-colors"}`}
       />
 
       {isOpen && (
@@ -37,8 +45,23 @@ export function SidebarItem({ item, isOpen }: SidebarItemProps) {
           {item.badge}
         </span>
       )}
-
-      {/* Tooltip for collapsed state could go here, but native title attr is used above for simplicity in Phase 1 */}
     </Link>
+  );
+
+  if (isOpen) {
+    return link;
+  }
+
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {link}
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={15} className="bg-tf-primary text-white border-tf-primary text-sm font-medium shadow-md">
+          {item.title}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

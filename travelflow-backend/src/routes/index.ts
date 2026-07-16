@@ -198,6 +198,12 @@ protectedRouter.get(
   validate(idParamSchema, "params"),
   asyncHandler(domain.getBooking),
 );
+protectedRouter.get(
+  "/bookings/:id/activities",
+  requirePermission("Bookings: View"),
+  validate(idParamSchema, "params"),
+  asyncHandler(domain.getBookingActivities),
+);
 protectedRouter.patch(
   "/bookings/:id",
   requirePermission("Bookings: Edit"),

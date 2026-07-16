@@ -60,6 +60,10 @@ export interface IQuotation extends Document {
   customerNotes?: string;
   internalNotes?: string;
 
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+
   termsTemplateId?: Types.ObjectId;
   terms?: string;
 
@@ -128,6 +132,10 @@ const QuotationSchema = new Schema<IQuotation>(
 
     customerNotes: { type: String },
     internalNotes: { type: String },
+
+    customerName: { type: String },
+    customerPhone: { type: String },
+    customerEmail: { type: String },
 
     termsTemplateId: { type: Schema.Types.ObjectId },
     terms: { type: String },

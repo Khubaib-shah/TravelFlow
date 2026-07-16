@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Printer, CreditCard } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,9 @@ import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { RecordPaymentDrawer } from "@/components/bookings/RecordPaymentDrawer";
+import { showError } from "@/lib/toast-utils";
 import { API } from "@/lib/data-source";
 import { Booking } from "@/types";
 
@@ -18,19 +21,21 @@ export default function InvoicesPage() {
   const router = useRouter();
   const [data, setData] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [paymentBooking, setPaymentBooking] = useState<Booking | null>(null);
+
+  const load = async () => {
+    setIsLoading(true);
+    try {
+      const bookings = await API.getBookings();
+      setData(bookings);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      try {
-        const bookings = await API.getBookings();
-        setData(bookings);
-      } catch {
-        // ignore
-      } finally {
-        setIsLoading(false);
-      }
-    };
     load();
   }, []);
 
@@ -80,18 +85,57 @@ export default function InvoicesPage() {
     {
       accessorKey: "paymentStatus",
       header: "Status",
+      filterFn: (row, id, value) => {
+        const rawRowValue = row.getValue(id) as any;
+        const rowValue = typeof rawRowValue === 'object' && rawRowValue !== null 
+          ? (rawRowValue.id || rawRowValue.value || rawRowValue.name || String(rawRowValue))
+          : (rawRowValue || "");
+        const filterValue = (value as string) || "";
+        return String(rowValue).toLowerCase().replace(/[-_ ]/g, '') === filterValue.toLowerCase().replace(/[-_ ]/g, '');
+      },
       cell: ({ row }) => (
         <StatusBadge status={row.original.paymentStatus as any} />
       ),
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <DataTableRowActions
-          row={row}
-          onView={() => router.push(`/bookings/${row.original.id}`)}
-        />
-      ),
+      cell: ({ row }) => {
+        const handleViewPDF = async () => {
+          try {
+            const invoice = await API.generateInvoiceFromBooking(row.original.id);
+            window.open(`/print/invoice/${invoice.id}`, "_blank");
+          } catch (error: any) {
+            showError(error.message || "Failed to view invoice");
+          }
+        };
+
+        return (
+          <DataTableRowActions
+            row={row}
+            onView={() => router.push(`/bookings/${row.original.id}`)}
+            customActions={(row) => (
+              <>
+                <DropdownMenuItem
+                  onClick={handleViewPDF}
+                  className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Print PDF
+                </DropdownMenuItem>
+                {row.original.balance > 0 && (
+                  <DropdownMenuItem
+                    onClick={() => setPaymentBooking(row.original)}
+                    className="text-tf-success focus:bg-tf-success/10 focus:text-tf-success cursor-pointer"
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Record Payment
+                  </DropdownMenuItem>
+                )}
+              </>
+            )}
+          />
+        );
+      },
     },
   ];
 
@@ -130,9 +174,27 @@ export default function InvoicesPage() {
             searchKey="bookingRef"
             searchPlaceholder="Search invoices..."
             isLoading={isLoading}
+            filters={[
+              {
+                column: "paymentStatus",
+                title: "Payment",
+                options: [
+                  { label: "Unpaid", value: "unpaid" },
+                  { label: "Partial", value: "partial" },
+                  { label: "Paid", value: "paid" },
+                ],
+              },
+            ]}
           />
         </div>
       )}
+
+      <RecordPaymentDrawer
+        isOpen={!!paymentBooking}
+        onClose={() => setPaymentBooking(null)}
+        booking={paymentBooking}
+        onSuccess={load}
+      />
     </div>
   );
 }

@@ -53,13 +53,13 @@ export default function ReportsPage() {
     async function loadData() {
       setLoading(true);
       try {
-        const [analyticsRes, settingsRes] = await Promise.all([
+        const [analyticsRes, branchesRes] = await Promise.all([
           ApiClient.getAnalytics({ timeRange, branchId }),
-          isAdmin ? ApiClient.getSettings() : Promise.resolve(null)
+          isAdmin ? ApiClient.getBranches() : Promise.resolve([])
         ]);
         setData(analyticsRes as AnalyticsResponse);
-        if (settingsRes && settingsRes.branches) {
-          setBranches(settingsRes.branches);
+        if (isAdmin && branchesRes) {
+          setBranches(branchesRes);
         }
       } catch (error) {
         console.error("Failed to load analytics", error);
@@ -121,7 +121,7 @@ export default function ReportsPage() {
                   name="branchId"
                   options={[
                     { label: "All Branches", value: "all" },
-                    ...branches.map(b => ({ label: b.name, value: b._id }))
+                    ...branches.map(b => ({ label: b.name, value: b.id || b._id }))
                   ]}
                 />
               </div>

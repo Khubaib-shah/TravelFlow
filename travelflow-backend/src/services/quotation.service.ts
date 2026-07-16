@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Booking } from "../models/Booking.model";
+import { Customer } from "../models/Customer.model";
 import { Quotation } from "../models/Quotation.model";
 import { QuotationAttachment } from "../models/QuotationAttachment.model";
 import { QuotationItem } from "../models/QuotationItem.model";
@@ -38,6 +39,10 @@ export type QuotationServiceQuotationInput = {
   termsTemplateId?: string;
   terms?: string;
   authorizedSignature?: string;
+
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
 
   items?: Array<{
     serviceCategory: string;
@@ -131,6 +136,12 @@ export async function listQuotations({
   if (query?.destination)
     q.destination = { $regex: String(query.destination), $options: "i" };
 
+  if (query?.startDate || query?.endDate) {
+    q.createdAt = {};
+    if (query?.startDate) q.createdAt.$gte = new Date(query.startDate);
+    if (query?.endDate) q.createdAt.$lte = new Date(query.endDate);
+  }
+
   const page = Number(query?.page ?? 1);
   const limit = Math.min(Number(query?.limit ?? 20), 100);
   const skip = (page - 1) * limit;
@@ -148,7 +159,18 @@ export async function listQuotations({
     grandTotal: doc.total,
     subtotalAmount: doc.subtotal,
     taxAmount: doc.taxTotal,
-    customer: doc.customerId ? toJSON(doc.customerId) : undefined,
+    customer: doc.customerId
+      ? toJSON(doc.customerId)
+      : doc.customerName
+        ? {
+            id: null,
+            firstName: doc.customerName.split(" ")[0] || "",
+            lastName: doc.customerName.split(" ").slice(1).join(" ") || "",
+            phone: doc.customerPhone || "",
+            email: doc.customerEmail || "",
+            _pending: true,
+          }
+        : undefined,
   }));
 
   return {
@@ -200,6 +222,16 @@ export async function getQuotation(agencyId: string, quotationId: string) {
   if (quotationDoc.customerId) {
     q.customer = toJSON(quotationDoc.customerId);
     q.customerId = quotationDoc.customerId._id ? String(quotationDoc.customerId._id) : String(quotationDoc.customerId);
+  } else if (quotationDoc.customerName) {
+    // No real customer yet – construct a mock from stored temp details
+    q.customer = {
+      id: null,
+      firstName: quotationDoc.customerName.split(" ")[0] || "",
+      lastName: quotationDoc.customerName.split(" ").slice(1).join(" ") || "",
+      phone: quotationDoc.customerPhone || "",
+      email: quotationDoc.customerEmail || "",
+      _pending: true,
+    };
   }
 
   const mappedItems = toJSONList(items).map((it: any) => ({
@@ -266,7 +298,7 @@ export async function createQuotation({
     quotationNumber,
     title: input.title,
     leadId: input.leadId,
-    customerId: input.customerId,
+    customerId: input.customerId || undefined,
     branchId: input.branchId,
     consultantId: input.consultantId,
     travelType: input.travelType,
@@ -292,6 +324,10 @@ export async function createQuotation({
     termsTemplateId: input.termsTemplateId,
     terms: input.terms,
     authorizedSignature: input.authorizedSignature,
+    // Temporary customer details (used until quotation is accepted)
+    customerName: input.customerName,
+    customerPhone: input.customerPhone,
+    customerEmail: input.customerEmail,
     isDeleted: false,
   });
 
@@ -422,7 +458,10 @@ export async function updateQuotation({
       ? input.quotationNumber.trim()
       : quotation.quotationNumber,
     leadId: input.leadId ?? quotation.leadId,
-    customerId: input.customerId ?? quotation.customerId,
+    customerId: input.customerId || quotation.customerId,
+    customerName: input.customerName ?? quotation.customerName,
+    customerPhone: input.customerPhone ?? quotation.customerPhone,
+    customerEmail: input.customerEmail ?? quotation.customerEmail,
     branchId: input.branchId ?? quotation.branchId,
     consultantId: input.consultantId ?? quotation.consultantId,
     travelType: input.travelType ?? quotation.travelType,
@@ -453,6 +492,17 @@ export async function updateQuotation({
     authorizedSignature:
       input.authorizedSignature ?? quotation.authorizedSignature,
   });
+
+  // If status is being changed to "accepted" and no real customer, auto-create one
+  const incomingStatus = (input as any).status;
+  if (
+    incomingStatus === "accepted" &&
+    !quotation.customerId &&
+    quotation.customerName
+  ) {
+    const customer = await createCustomerFromQuotation(agencyId, quotation);
+    quotation.customerId = customer._id as any;
+  }
 
   await quotation.save();
 
@@ -537,6 +587,34 @@ export async function updateQuotation({
   return getQuotation(agencyId, quotationId);
 }
 
+/**
+ * Helper: create a Customer record from the temporary customer details
+ * stored on a Quotation. Called automatically when quotation is accepted
+ * or converted to a booking.
+ */
+async function createCustomerFromQuotation(agencyId: string, quotation: any) {
+  const nameParts = (quotation.customerName || "").trim().split(" ");
+  const firstName = nameParts[0] || "Unknown";
+  const lastName = nameParts.slice(1).join(" ") || " ";
+
+  const customerRef = await generateRef("CU" as RefPrefix, agencyId);
+
+  const customer = await Customer.create({
+    agencyId,
+    customerRef,
+    type: "individual",
+    firstName,
+    lastName,
+    phone: quotation.customerPhone || "N/A",
+    email: quotation.customerEmail || undefined,
+    city: "N/A",
+    status: "active",
+    isDeleted: false,
+  });
+
+  return customer;
+}
+
 export async function setQuotationStatus({
   agencyId,
   quotationId,
@@ -550,6 +628,12 @@ export async function setQuotationStatus({
     isDeleted: false,
   });
   if (!quotation) return null;
+
+  // Auto-create customer when quotation is accepted and no customer exists yet
+  if (status === "accepted" && !quotation.customerId && quotation.customerName) {
+    const customer = await createCustomerFromQuotation(agencyId, quotation);
+    quotation.customerId = customer._id as any;
+  }
 
   quotation.status = status;
   await quotation.save();
@@ -589,10 +673,22 @@ export async function convertQuotationToBooking({
   });
   if (!quotation) return null;
 
-  if (!quotation.customerId || !quotation.branchId || !quotation.consultantId) {
+  if (!quotation.branchId || !quotation.consultantId) {
     throw ApiError.badRequest(
       "Quotation missing required fields for conversion",
     );
+  }
+
+  // Auto-create customer if not yet linked
+  if (!quotation.customerId) {
+    if (!quotation.customerName) {
+      throw ApiError.badRequest(
+        "Quotation has no customer information for conversion",
+      );
+    }
+    const customer = await createCustomerFromQuotation(agencyId, quotation);
+    quotation.customerId = customer._id as any;
+    await quotation.save();
   }
 
   const bookingRef = await generateRef("BK" as RefPrefix, agencyId);

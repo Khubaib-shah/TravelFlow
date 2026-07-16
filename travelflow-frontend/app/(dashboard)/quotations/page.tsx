@@ -8,6 +8,8 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -29,6 +31,7 @@ export default function QuotationsPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [agents, setAgents] = useState<User[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
@@ -70,7 +73,7 @@ export default function QuotationsPage() {
     try {
       const [quotations, customerList, supplierList, agentList] =
         await Promise.all([
-          API.getQuotations(),
+          API.getQuotations(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
           API.getCustomers(),
           API.getSuppliers(),
           API.getAgents(),
@@ -96,7 +99,7 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const initialValues = {
     customerId: customers[0]?.id ?? "",
@@ -197,24 +200,29 @@ export default function QuotationsPage() {
         </Button>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={Plus}
-          title="No quotations found"
-          description="Create your first quotation to get started."
-          action={{ label: "Create Quotation", onClick: () => openCreate() }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="quotationRef"
             searchPlaceholder="Search by reference..."
             isLoading={isLoading}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={Plus}
+                title="No quotations found"
+                description={dateRange ? "No quotations found in the selected date range." : "Create your first quotation to get started."}
+                action={{ label: "Create Quotation", onClick: () => openCreate() }}
+              />
+            }
           />
         </div>
-      )}
 
       <QuotationDrawer
         title={

@@ -22,23 +22,59 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 import { RecordPaymentDrawer } from "@/components/bookings/RecordPaymentDrawer";
 import { BookingDocumentsPanel } from "@/components/bookings/BookingDocumentsPanel";
+import { showError } from "@/lib/toast-utils";
 
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [documents, setDocuments] = useState<BookingDocument[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaymentDrawerOpen, setIsPaymentDrawerOpen] = useState(false);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+
+  const handleViewInvoice = async () => {
+    if (!booking) return;
+    setIsGeneratingInvoice(true);
+    try {
+      const invoice = await API.generateInvoiceFromBooking(booking.id);
+      window.open(`/print/invoice/${invoice.id}`, "_blank");
+    } catch (error: any) {
+      showError(error.message || "Failed to view invoice");
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
+
+  const handleViewReceipt = async () => {
+    if (!booking) return;
+    try {
+      const receipts = await API.getReceipts();
+      const receipt = receipts.find((r: any) => 
+        (typeof r.bookingId === 'object' ? r.bookingId.id : r.bookingId) === booking.id
+      );
+      if (receipt) {
+        window.open(`/print/receipt/${receipt.id}`, "_blank");
+      } else {
+        showError("No receipt found for this booking. Please record a payment first.");
+      }
+    } catch (error: any) {
+      showError(error.message || "Failed to view receipt");
+    }
+  };
 
   const loadAll = async () => {
     setIsLoading(true);
     try {
+      if (!id) return;
       const data = await API.getBooking(id);
       setBooking(data);
       if (data) {
         const docs = await API.getBookingDocuments(id);
         setDocuments(docs);
+        const actData = await API.getBookingActivities(id);
+        setActivities(actData);
       }
     } finally {
       setIsLoading(false);
@@ -93,8 +129,19 @@ export default function BookingDetailPage() {
             <Button
               variant="outline"
               className="bg-tf-surface text-tf-text-primary"
+              onClick={handleViewInvoice}
+              disabled={isGeneratingInvoice}
             >
-              <FileText className="w-4 h-4 mr-2" /> View Invoice
+              <FileText className="w-4 h-4 mr-2" /> 
+              {isGeneratingInvoice ? "Opening..." : "View Invoice"}
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-tf-surface text-tf-text-primary"
+              onClick={handleViewReceipt}
+            >
+              <FileText className="w-4 h-4 mr-2" /> 
+              View Receipt
             </Button>
             <Button className="bg-tf-primary text-white hover:bg-tf-primary-hover">
               <Download className="w-4 h-4 mr-2" /> E-Ticket
@@ -345,29 +392,22 @@ export default function BookingDetailPage() {
           <Card className="border-tf-border bg-tf-surface shadow-sm">
             <CardContent className="pt-6">
               <div className="space-y-6">
-                {[
-                  {
-                    title: "Booking Confirmed",
-                    desc: "Ticket issued and sent to customer",
-                    date: booking.updatedAt,
-                  },
-                  {
-                    title: "Payment Received",
-                    desc: `Received partial payment of Rs ${booking.amountReceived}`,
-                    date: new Date(
-                      new Date(booking.createdAt).getTime() + 86400000,
-                    ),
-                  },
-                  {
-                    title: "Booking Created",
-                    desc: "Initial reservation made in system",
-                    date: booking.createdAt,
-                  },
-                ].map((event, i) => (
+                {
+                  (activities.length > 0 ? activities.map(a => ({
+                    title: a.title,
+                    desc: a.description,
+                    date: a.createdAt,
+                  })) : [
+                    {
+                      title: "Booking Created",
+                      desc: "Initial reservation made in system",
+                      date: booking.createdAt,
+                    }
+                  ]).map((event, i, arr) => (
                   <div key={i} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-tf-primary"></div>
-                      {i !== 2 && (
+                      {i !== arr.length - 1 && (
                         <div className="w-0.5 h-full bg-tf-border my-1"></div>
                       )}
                     </div>

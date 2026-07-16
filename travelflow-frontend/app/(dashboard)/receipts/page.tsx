@@ -4,23 +4,28 @@ import { useState, useEffect } from "react";
 import { Receipt } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
+import { Printer } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { API } from "@/lib/data-source";
 
 export default function ReceiptsPage() {
   const router = useRouter();
   const [data, setData] = useState<any[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
       try {
-        const receipts = await API.getReceipts();
+        const receipts = await API.getReceipts(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
         setData(receipts);
       } catch {
         // ignore
@@ -29,7 +34,7 @@ export default function ReceiptsPage() {
       }
     };
     load();
-  }, []);
+  }, [dateRange]);
 
   const columns: ColumnDef<any>[] = [
     {
@@ -47,7 +52,7 @@ export default function ReceiptsPage() {
       cell: ({ row }) => {
         const customer = row.original.customerId;
         const customerName = typeof customer === 'object' && customer !== null
-          ? customer.name
+          ? customer.companyName || `${customer.firstName || ""} ${customer.lastName || ""}`.trim()
           : customer;
 
         return (
@@ -92,12 +97,27 @@ export default function ReceiptsPage() {
     },
     {
       id: "actions",
-      cell: ({ row }) => (
-        <DataTableRowActions
-          row={row}
-          onView={() => router.push(`/bookings/${row.original.bookingId}`)}
-        />
-      ),
+      cell: ({ row }) => {
+        const bookingId = typeof row.original.bookingId === 'object' && row.original.bookingId !== null
+          ? (row.original.bookingId as any).id
+          : row.original.bookingId;
+          
+        return (
+          <DataTableRowActions
+            row={row}
+            onView={() => router.push(`/bookings/${bookingId}`)}
+            customActions={(row) => (
+              <DropdownMenuItem
+                onClick={() => window.open(`/print/receipt/${row.original.id}`, "_blank")}
+                className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print Receipt
+              </DropdownMenuItem>
+            )}
+          />
+        );
+      },
     },
   ];
 
@@ -112,23 +132,28 @@ export default function ReceiptsPage() {
         </div>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={Receipt}
-          title="No receipts recorded"
-          description="You haven't recorded any payments yet. Add a payment to a booking to generate a receipt."
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="receiptRef"
             searchPlaceholder="Search receipts..."
             isLoading={isLoading}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={Receipt}
+                title="No receipts recorded"
+                description={dateRange ? "No receipts found in the selected date range." : "You haven't recorded any payments yet. Add a payment to a booking to generate a receipt."}
+              />
+            }
           />
         </div>
-      )}
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { Customer } from "@/types";
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -37,6 +39,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 export default function CustomersPage() {
   const router = useRouter();
   const [data, setData] = useState<Customer[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -45,7 +48,7 @@ export default function CustomersPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const customers = await API.getCustomers();
+      const customers = await API.getCustomers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
       setData(customers);
     } catch (error: unknown) {
       showError(error, { context: "Loading customers" });
@@ -56,7 +59,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -215,24 +218,29 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="No customers yet"
-          description="Your customer database is empty. Add a customer to start managing their profiles and bookings."
-          action={{ label: "Add Customer", onClick: handleOpenCreate }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="firstName"
             searchPlaceholder="Search customers by name..."
             isLoading={isLoading}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={Users}
+                title="No customers yet"
+                description={dateRange ? "No customers found in the selected date range." : "Your customer database is empty. Add a customer to start managing their profiles and bookings."}
+                action={{ label: "Add Customer", onClick: handleOpenCreate }}
+              />
+            }
           />
         </div>
-      )}
 
       <DrawerForm
         title={isEditing ? "Edit Customer" : "Add Customer"}

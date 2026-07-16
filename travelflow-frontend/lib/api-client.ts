@@ -249,6 +249,17 @@ async function login(email: string, password: string): Promise<User> {
 
 async function logoutApi(): Promise<void> {
   await post("/auth/logout", {});
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+}
+
+function buildDateQuery(path: string, dates?: { from?: Date; to?: Date }) {
+  if (!dates?.from && !dates?.to) return path;
+  const params = new URLSearchParams();
+  if (dates.from) params.append("startDate", dates.from.toISOString());
+  if (dates.to) params.append("endDate", dates.to.toISOString());
+  return `${path}?${params.toString()}`;
 }
 
 async function getMe(): Promise<User> {
@@ -276,7 +287,7 @@ export const ApiClient = {
   },
 
   // ── Leads ──
-  getLeads: () => get<Lead[]>("/leads").then(reviveList<Lead>),
+  getLeads: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/leads", dates)).then(reviveList<Lead>),
 
   getLead: (id: string) => get<unknown>(`/leads/${id}`).then(reviveItem<Lead>),
 
@@ -307,7 +318,7 @@ export const ApiClient = {
   deleteLead: (id: string) => del<{ deleted: boolean }>(`/leads/${id}`),
 
   // ── Customers ──
-  getCustomers: () => get<unknown[]>("/customers").then(reviveList<Customer>),
+  getCustomers: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/customers", dates)).then(reviveList<Customer>),
 
   getCustomer: (id: string) =>
     get<unknown>(`/customers/${id}`).then(reviveItem<Customer>),
@@ -357,10 +368,14 @@ export const ApiClient = {
     del<boolean>(`/customers/documents/${id}`),
 
   // ── Bookings ──
-  getBookings: () => get<unknown[]>("/bookings").then(reviveList<Booking>),
+  getBookings: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/bookings", dates)).then(reviveList<Booking>),
 
   getBooking: (id: string) =>
     get<unknown>(`/bookings/${id}`).then(reviveItem<Booking>),
+
+  getBookingActivities: (id: string) =>
+    get<any[]>(`/bookings/${id}/activities`).then(reviveList<any>),
+
 
   createBooking: (input: CreateBookingInput) =>
     post<unknown>("/bookings", input).then(reviveItem<Booking>),
@@ -405,7 +420,7 @@ export const ApiClient = {
   deleteBooking: (id: string) => del<{ deleted: boolean }>(`/bookings/${id}`),
 
   // ── Suppliers ──
-  getSuppliers: () => get<unknown[]>("/suppliers").then(reviveList<Supplier>),
+  getSuppliers: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/suppliers", dates)).then(reviveList<Supplier>),
 
   getSupplier: (id: string) =>
     get<unknown>(`/suppliers/${id}`).then(reviveItem<Supplier>),
@@ -454,7 +469,7 @@ export const ApiClient = {
   getAgents: () => get<unknown[]>("/users/agents").then(reviveList<User>),
 
   // ── Expenses ──
-  getExpenses: () => get<unknown[]>("/expenses").then(reviveList<Expense>),
+  getExpenses: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/expenses", dates)).then(reviveList<Expense>),
 
   getExpense: (id: string) =>
     get<unknown>(`/expenses/${id}`).then(reviveItem<Expense>),
@@ -494,7 +509,7 @@ export const ApiClient = {
   deleteRole: (roleId: string) => del<{ deleted: boolean }>(`/roles/${roleId}`),
 
   // ── Receipts ──
-  getReceipts: () => get<unknown[]>("/receipts").then(reviveList<Receipt>),
+  getReceipts: (dates?: { from?: Date; to?: Date }) => get<unknown[]>(buildDateQuery("/receipts", dates)).then(reviveList<Receipt>),
 
   createReceipt: (data: {
     bookingId: string;
@@ -522,8 +537,8 @@ export const ApiClient = {
     del<{ deleted: boolean }>(`/bookings/documents/${docId}`),
 
   // ── Quotations ──
-  getQuotations: () =>
-    get<{ items: unknown[] }>("/quotations").then((res) =>
+  getQuotations: (dates?: { from?: Date; to?: Date }) =>
+    get<{ items: unknown[] }>(buildDateQuery("/quotations", dates)).then((res) =>
       reviveList<Quotation>(res.items as any),
     ),
 

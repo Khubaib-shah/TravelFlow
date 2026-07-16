@@ -14,6 +14,7 @@ import {
   RecentActivity,
   Receipt,
   BookingDocument,
+  BookingActivity,
 } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { generateRef } from "../utils/refGenerator";
@@ -47,6 +48,11 @@ type BranchInput = z.infer<typeof branchSchema>;
 export interface PaginationOptions {
   page: number;
   limit: number;
+}
+
+export interface DateFilterOptions {
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface TenantContext {
@@ -108,9 +114,9 @@ async function enrichLead(doc: unknown) {
 async function enrichLeadsBatch(docs: any[]) {
   const jsons = docs.map((doc) => toJSON(doc)!);
   const leadIds = jsons.map((j) => String(j.id));
-  
+
   const activities = await LeadActivity.find({ leadId: { $in: leadIds } }).sort({ createdAt: -1 });
-  
+
   const activitiesMap = new Map();
   for (const act of activities) {
     const leadId = String(act.leadId);
@@ -119,7 +125,7 @@ async function enrichLeadsBatch(docs: any[]) {
     }
     activitiesMap.get(leadId).push(act.toObject());
   }
-  
+
   return jsons.map((json) => {
     return {
       ...json,
@@ -144,17 +150,17 @@ async function enrichCustomer(doc: unknown, ctx: string | TenantContext) {
 async function enrichCustomersBatch(docs: any[], ctx: string | TenantContext) {
   const jsons = docs.map((doc) => toJSON(doc)!);
   const customerIds = jsons.map((j) => new mongoose.Types.ObjectId(j.id as string));
-  
+
   const stats = await Booking.aggregate([
     { $match: { ...tenant(ctx), customerId: { $in: customerIds } } },
     { $group: { _id: "$customerId", totalBookings: { $sum: 1 }, totalSpent: { $sum: "$salePrice" } } }
   ]);
-  
+
   const statsMap = new Map();
   for (const stat of stats) {
     statsMap.set(String(stat._id), stat);
   }
-  
+
   return jsons.map((json) => {
     const stat = statsMap.get(String(json.id)) || { totalBookings: 0, totalSpent: 0 };
     return {
@@ -174,7 +180,7 @@ async function enrichBooking(doc: unknown, ctx: string | TenantContext) {
     json.agentId ? User.findOne({ _id: json.agentId, ...tenant(ctx) }) : Promise.resolve(null),
     json.branchId ? Branch.findOne({ _id: json.branchId, ...tenant(ctx) }) : Promise.resolve(null),
   ]);
-  
+
   return {
     ...json,
     customer: customer ? toJSON(customer.toObject()) : undefined,
@@ -190,7 +196,7 @@ function formatPopulatedBooking(doc: any) {
   const s = doc.supplierId;
   const a = doc.agentId;
   const b = doc.branchId;
-  
+
   return {
     ...json,
     customerId: c ? c._id.toString() : undefined,
@@ -205,6 +211,14 @@ function formatPopulatedBooking(doc: any) {
 }
 
 // --- Dashboard ---
+
+export function applyDateFilter(filter: any, dates?: DateFilterOptions, field: string = "createdAt") {
+  if (dates?.startDate || dates?.endDate) {
+    filter[field] = {};
+    if (dates.startDate) filter[field].$gte = new Date(dates.startDate);
+    if (dates.endDate) filter[field].$lte = new Date(dates.endDate);
+  }
+}
 
 export async function getDashboardStats(ctx: TenantContext) {
   const base = tenant(ctx);
@@ -330,7 +344,7 @@ export async function getDashboardStats(ctx: TenantContext) {
     const profit = branchBookings.reduce((s, b) => s + b.profit, 0);
     const prevRevenue = branchPrevBookings.reduce((s, b) => s + b.salePrice, 0);
     const expensesTotal = branchExpenses.reduce((s, e) => s + e.amount, 0);
-    
+
     return {
       name: branch.name,
       code: branch.code,
@@ -378,7 +392,7 @@ export async function getDashboardStats(ctx: TenantContext) {
 
 export async function getAnalyticsStats(ctx: TenantContext, timeRange: string) {
   const baseFilter = tenant(ctx);
-  
+
   // Calculate date range
   const now = new Date();
   const startDate = new Date();
@@ -460,8 +474,9 @@ export async function getAnalyticsStats(ctx: TenantContext, timeRange: string) {
 
 // --- Leads ---
 
-export async function listLeads(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listLeads(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates);
   const query = Lead.find(filter)
     .populate("assignedAgentId", "name email")
     .sort({ createdAt: -1 });
@@ -580,7 +595,7 @@ export async function updateLead(ctx: TenantContext, idOrRef: string, values: Pa
     { new: true }
   );
   if (!lead) return null;
-  
+
   // Also log the note if it's being updated
   if (values.notes) {
     await LeadActivity.create({
@@ -591,7 +606,7 @@ export async function updateLead(ctx: TenantContext, idOrRef: string, values: Pa
       createdBy: actor || "System",
     });
   }
-  
+
   return enrichLead(lead.toObject());
 }
 
@@ -613,6 +628,7 @@ export async function addLeadActivity(
   });
   lead.lastContactedAt = new Date();
   await lead.save();
+
   return toJSON(activity.toObject());
 }
 
@@ -752,8 +768,9 @@ export async function findOrCreateCustomerFromLead(ctx: TenantContext, idOrRef: 
   return enrichCustomer(customer.toObject(), ctx);
 }
 
-export async function listCustomers(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listCustomers(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates);
   const query = Customer.find(filter).sort({ createdAt: -1 });
 
   if (!pagination) {
@@ -900,8 +917,9 @@ export async function deleteCustomerDocument(ctx: TenantContext, docId: string) 
 
 // --- Bookings ---
 
-export async function listBookings(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listBookings(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates);
   const query = Booking.find(filter)
     .populate("customerId")
     .populate("supplierId")
@@ -985,12 +1003,21 @@ export async function createBooking(
     });
   }
 
+  await BookingActivity.create({
+    agencyId,
+    bookingId: booking._id,
+    type: "created",
+    title: "Booking Created",
+    description: `Initial reservation made`,
+    createdBy: actor,
+  });
+
   // Notify manager or admin about new booking
   try {
     const manager = await User.findOne({ agencyId, branchId, role: "manager", isDeleted: false });
     const admin = await User.findOne({ agencyId, role: "admin", isDeleted: false });
     const recipientId = manager ? manager._id : (admin ? admin._id : null);
-    
+
     if (recipientId) {
       await notificationService.createNotification(ctx, {
         recipientId: String(recipientId),
@@ -1008,7 +1035,7 @@ export async function createBooking(
   return enrichBooking(booking.toObject(), ctx);
 }
 
-export async function updateBooking(ctx: TenantContext, idOrRef: string, values: BookingInput) {
+export async function updateBooking(ctx: TenantContext, idOrRef: string, values: BookingInput, actor: string) {
   const amountReceived = values.amountReceived ?? 0;
   const profit = values.salePrice - values.costPrice;
   const profitMargin = values.salePrice > 0 ? (profit / values.salePrice) * 100 : 0;
@@ -1036,13 +1063,24 @@ export async function updateBooking(ctx: TenantContext, idOrRef: string, values:
     { new: true }
   );
   if (!booking) return null;
+
+  await BookingActivity.create({
+    agencyId: ctx.agencyId,
+    bookingId: booking._id,
+    type: "updated",
+    title: "Booking Updated",
+    description: `Booking details were updated`,
+    createdBy: actor,
+  });
+
   return enrichBooking(booking.toObject(), ctx);
 }
 
 // --- Suppliers ---
 
-export async function listSuppliers(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listSuppliers(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates);
   const query = Supplier.find(filter).sort({ createdAt: -1 });
 
   if (!pagination) {
@@ -1258,8 +1296,9 @@ export async function updateUser(ctx: TenantContext, id: string, values: UserInp
 
 // --- Expenses ---
 
-export async function listExpenses(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listExpenses(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates, "date");
   const query = Expense.find(filter)
     .sort({ date: -1 });
 
@@ -1449,29 +1488,55 @@ export async function recordSupplierPayment(
 
 // --- Receipts (Customer Payments) ---
 
-export async function listReceipts(ctx: TenantContext, pagination?: PaginationOptions) {
-  const filter = tenant(ctx);
+export async function listReceipts(ctx: TenantContext, pagination?: PaginationOptions, dates?: DateFilterOptions) {
+  const filter: any = tenant(ctx);
+  applyDateFilter(filter, dates, "date");
   const query = Receipt.find(filter)
-    .populate("customerId", "name")
+    .populate("customerId", "firstName lastName companyName")
     .populate("bookingId", "bookingRef")
     .sort({ createdAt: -1 });
 
+  let receipts;
+  let total;
+  let page = 1;
+  let limit = 0;
+
   if (!pagination) {
-    const receipts = await query.exec();
-    const data = toJSONList(receipts.map((r) => r.toObject()));
-    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+    receipts = await query.exec();
+    limit = receipts.length;
+    total = receipts.length;
+  } else {
+    page = pagination.page;
+    limit = pagination.limit;
+    const skip = (page - 1) * limit;
+    [receipts, total] = await Promise.all([
+      query.skip(skip).limit(limit).exec(),
+      Receipt.countDocuments(filter),
+    ]);
   }
 
-  const { page, limit } = pagination;
-  const skip = (page - 1) * limit;
+  const branchIds = [...new Set(receipts.map(r => r.branchId).filter(Boolean))];
+  const managers = await User.find({
+    agencyId: ctx.agencyId,
+    $or: [
+      { branchId: { $in: branchIds }, role: { $in: ["manager", "branch_manager", "admin"] } },
+      { role: "admin" }
+    ]
+  });
 
-  const [receipts, total] = await Promise.all([
-    query.skip(skip).limit(limit).exec(),
-    Receipt.countDocuments(filter),
-  ]);
+  const getManagerForBranch = (bId: any) => {
+    let mgr = managers.find(m => String(m.branchId) === String(bId) && ["manager", "branch_manager", "admin"].includes(m.role));
+    if (!mgr) mgr = managers.find(m => m.role === "admin");
+    return mgr ? { name: `${mgr.firstName} ${mgr.lastName}`, phone: mgr.phone, email: mgr.email } : null;
+  };
 
-  const data = toJSONList(receipts.map((r) => r.toObject()));
-  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  const data = toJSONList(receipts.map((r) => {
+    const obj = r.toObject() as any;
+    obj.managerContact = getManagerForBranch(r.branchId);
+    return obj;
+  }));
+
+  return { data, total, page, limit, totalPages: limit ? Math.ceil(total / limit) : 1 };
 }
 
 export async function createReceipt(
@@ -1537,6 +1602,15 @@ export async function createReceipt(
     createdBy: actor,
   });
 
+  await BookingActivity.create({
+    agencyId,
+    bookingId: booking._id,
+    type: "payment",
+    title: "Payment Received",
+    description: `Received payment of Rs ${data.amount.toLocaleString()} via ${data.paymentMethod} (${receiptRef})`,
+    createdBy: actor,
+  });
+
   return toJSON(receipt.toObject());
 }
 
@@ -1563,12 +1637,27 @@ export async function createBookingDocument(
     type: doc.type,
     uploadedBy: actor,
   });
+
+  await BookingActivity.create({
+    agencyId: ctx.agencyId,
+    bookingId: booking._id,
+    type: "document",
+    title: "Document Uploaded",
+    description: `Uploaded ${doc.name}`,
+    createdBy: actor,
+  });
+
   return toJSON(record.toObject());
 }
 
 export async function deleteBookingDocument(ctx: TenantContext, docId: string) {
   const result = await BookingDocument.deleteOne({ _id: docId, agencyId: ctx.agencyId });
   return result.deletedCount > 0;
+}
+
+export async function getBookingActivities(ctx: TenantContext, bookingId: string) {
+  const activities = await BookingActivity.find({ agencyId: ctx.agencyId, bookingId }).sort({ createdAt: -1 });
+  return toJSONList(activities.map(a => a.toObject()));
 }
 
 // --- Ledger and Statements ---

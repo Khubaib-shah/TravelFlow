@@ -4,7 +4,8 @@ import type { QuotationFormValues } from "../schemas/quotation.schema";
 export function mapQuotationToForm(q: Quotation): QuotationFormValues {
   return {
     title: (q as any).title ?? "",
-    customerId: q.customerId ?? q.customer?.id ?? "",
+    // If there's no real customerId but temp customer details exist, show as NEW_CUSTOMER
+    customerId: q.customerId ?? q.customer?.id ?? (q.customerName ? "NEW_CUSTOMER" : ""),
     branchId: q.branchId ?? q.branch?.id,
 
     leadId: q.leadId ?? q.lead?.id,
@@ -18,6 +19,10 @@ export function mapQuotationToForm(q: Quotation): QuotationFormValues {
     children: q.children ?? 0,
     infants: q.infants ?? 0,
     validUntil: q.validUntil ? new Date(q.validUntil).toISOString().split("T")[0] : "",
+
+    customerName: q.customerName ?? "",
+    customerPhone: q.customerPhone ?? "",
+    customerEmail: q.customerEmail ?? "",
 
     items: (Array.isArray(q.items) ? q.items : []).map((it) => ({
       id: it.id,

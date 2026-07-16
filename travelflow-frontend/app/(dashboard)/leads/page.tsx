@@ -12,6 +12,8 @@ import { Lead, Branch, User } from "@/types";
 import { API } from "@/lib/data-source";
 import { useAuthStore } from "@/store/auth.store";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -42,6 +44,7 @@ export default function LeadsPage() {
   const [data, setData] = useState<Lead[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [agents, setAgents] = useState<User[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -51,7 +54,7 @@ export default function LeadsPage() {
     setIsLoading(true);
     try {
       const [leads, agentList] = await Promise.all([
-        API.getLeads(),
+        API.getLeads(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
         API.getAgents(),
       ]);
       setData(leads);
@@ -72,7 +75,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
@@ -203,18 +206,10 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={UserPlus}
-          title="No leads found"
-          description="You haven't added any leads yet. Create your first lead to start tracking your sales pipeline."
-          action={{ label: "Add New Lead", onClick: handleOpenCreate }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="name"
             searchPlaceholder="Search leads by name..."
             isLoading={isLoading}
@@ -228,9 +223,22 @@ export default function LeadsPage() {
                 })),
               },
             ]}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={UserPlus}
+                title="No leads found"
+                description={dateRange ? "No leads found in the selected date range." : "You haven't added any leads yet. Create your first lead to start tracking your sales pipeline."}
+                action={{ label: "Add New Lead", onClick: handleOpenCreate }}
+              />
+            }
           />
         </div>
-      )}
 
       <DrawerForm
         title={isEditing ? "Edit Lead" : "Add New Lead"}

@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { Expense } from "@/types";
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -33,6 +35,7 @@ import {
 export default function ExpensesPage() {
   const router = useRouter();
   const [data, setData] = useState<Expense[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -40,7 +43,7 @@ export default function ExpensesPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const expenses = await API.getExpenses();
+      const expenses = await API.getExpenses(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
       setData(expenses);
     } catch (error: unknown) {
       showError(error, { context: "Loading expenses" });
@@ -51,7 +54,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -184,21 +187,19 @@ export default function ExpensesPage() {
         </Button>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={CreditCard}
-          title="No expenses recorded"
-          description="Log your first operational expense to keep your profit calculations accurate."
-          action={{ label: "Log Expense", onClick: handleOpenCreate }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="title"
             searchPlaceholder="Search expenses..."
             isLoading={isLoading}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
             filters={[
               {
                 column: "status",
@@ -210,9 +211,16 @@ export default function ExpensesPage() {
                 ],
               },
             ]}
+            emptyState={
+              <EmptyState
+                icon={CreditCard}
+                title="No expenses recorded"
+                description={dateRange ? "No expenses found in the selected date range." : "Log your first operational expense to keep your profit calculations accurate."}
+                action={{ label: "Log Expense", onClick: handleOpenCreate }}
+              />
+            }
           />
         </div>
-      )}
 
       <DrawerForm
         title={isEditing ? "Edit Expense" : "Log Expense"}

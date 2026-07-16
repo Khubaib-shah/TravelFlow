@@ -83,6 +83,11 @@ export interface Quotation {
   customer?: Customer;
   customerId?: string;
 
+  // Temporary customer details (before acceptance)
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+
   lead?: Lead;
   leadId?: string;
 

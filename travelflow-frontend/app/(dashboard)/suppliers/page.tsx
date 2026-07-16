@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { Supplier } from "@/types";
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -31,6 +33,7 @@ import {
 export default function SuppliersPage() {
   const router = useRouter();
   const [data, setData] = useState<Supplier[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -38,7 +41,7 @@ export default function SuppliersPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const suppliers = await API.getSuppliers();
+      const suppliers = await API.getSuppliers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
       setData(suppliers);
     } catch (error: unknown) {
       showError(error, { context: "Loading suppliers" });
@@ -49,7 +52,7 @@ export default function SuppliersPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierSchema),
@@ -172,24 +175,29 @@ export default function SuppliersPage() {
         </Button>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="No suppliers found"
-          description="Add your first supplier to track payables and booking sources."
-          action={{ label: "Add Supplier", onClick: handleOpenCreate }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="name"
             searchPlaceholder="Search suppliers..."
             isLoading={isLoading}
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={Building2}
+                title="No suppliers found"
+                description={dateRange ? "No suppliers found in the selected date range." : "Add your first supplier to track payables and booking sources."}
+                action={{ label: "Add Supplier", onClick: handleOpenCreate }}
+              />
+            }
           />
         </div>
-      )}
 
       <DrawerForm
         title={isEditing ? "Edit Supplier" : "Add Supplier"}

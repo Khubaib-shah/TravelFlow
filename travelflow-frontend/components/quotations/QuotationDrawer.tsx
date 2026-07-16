@@ -133,6 +133,16 @@ export function QuotationDrawer({
   useEffect(() => {
     if (!isOpen) return;
     form.reset({ ...quotationDefaultValues, ...initialValues });
+    // Pre-populate new customer fields when editing a quotation with deferred customer details
+    if (initialValues?.customerName) {
+      setNewCustomer({
+        name: initialValues.customerName || "",
+        phone: initialValues.customerPhone || "",
+        email: initialValues.customerEmail || "",
+      });
+    } else {
+      setNewCustomer({ name: "", phone: "", email: "" });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingId, mode]);
 
@@ -143,23 +153,25 @@ export function QuotationDrawer({
       console.log("[QuotationDrawer] Submitting validated payload:", values);
 
       let finalCustomerId = values.customerId;
-      if (finalCustomerId === "NEW_CUSTOMER") {
-        const parts = newCustomer.name.trim().split(" ");
-        const firstName = parts[0] || "Unknown";
-        const lastName = parts.slice(1).join(" ") || " ";
+      let customerName: string | undefined;
+      let customerPhone: string | undefined;
+      let customerEmail: string | undefined;
 
-        const createdCustomer = await API.createCustomer({
-          type: "individual",
-          firstName,
-          lastName,
-          phone: newCustomer.phone,
-          email: newCustomer.email || undefined,
-          city: "Karachi",
-        } as any);
-        finalCustomerId = createdCustomer.id;
+      if (finalCustomerId === "NEW_CUSTOMER") {
+        // Defer customer creation – pass temporary details to the backend
+        customerName = newCustomer.name.trim();
+        customerPhone = newCustomer.phone.trim();
+        customerEmail = newCustomer.email.trim() || undefined;
+        finalCustomerId = undefined; // No real customer yet
       }
 
-      const payload = { ...values, customerId: finalCustomerId };
+      const payload = {
+        ...values,
+        customerId: finalCustomerId || undefined,
+        customerName,
+        customerPhone,
+        customerEmail,
+      };
       let finalQuotation: any = null;
 
       if (editingId) {

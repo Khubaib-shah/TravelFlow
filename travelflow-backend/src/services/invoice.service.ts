@@ -1,4 +1,4 @@
-import { Invoice, Booking } from "../models";
+import { Invoice, Booking, User } from "../models";
 import { TenantContext, PaginationOptions } from "./domain.service";
 import { generateRef } from "../utils/refGenerator";
 import { ApiError } from "../utils/ApiError";
@@ -7,7 +7,7 @@ import { toJSON, toJSONList } from "../utils/serialize";
 export async function listInvoices(ctx: TenantContext, pagination?: PaginationOptions) {
   const filter = { agencyId: ctx.agencyId, ...(ctx.userBranchId ? { branchId: ctx.userBranchId } : {}) };
   const query = Invoice.find(filter)
-    .populate("customerId", "name email phone companyName")
+    .populate("customerId", "firstName lastName email phone companyName")
     .populate("bookingId", "bookingRef")
     .sort({ createdAt: -1 });
 
@@ -36,11 +36,31 @@ export async function listInvoices(ctx: TenantContext, pagination?: PaginationOp
 export async function getInvoice(ctx: TenantContext, id: string) {
   const filter = { agencyId: ctx.agencyId, _id: id };
   const invoice = await Invoice.findOne(filter)
-    .populate("customerId", "name email phone companyName address city country")
-    .populate("bookingId", "bookingRef pnr airline departureDate returnDate departureCity arrivalCity");
+    .populate("customerId", "firstName lastName email phone companyName address city country")
+    .populate("bookingId", "bookingRef pnr airline departureDate returnDate departureCity arrivalCity amountReceived balance");
     
   if (!invoice) throw ApiError.notFound("Invoice");
-  return toJSON(invoice.toObject());
+
+  let branchManager = invoice.branchId ? await User.findOne({
+    agencyId: ctx.agencyId,
+    branchId: invoice.branchId,
+    role: { $in: ["manager", "branch_manager", "admin"] }
+  }) : null;
+  
+  if (!branchManager) {
+    branchManager = await User.findOne({
+      agencyId: ctx.agencyId,
+      role: "admin"
+    });
+  }
+
+  const managerContact = branchManager ? {
+    name: `${branchManager.firstName} ${branchManager.lastName}`,
+    phone: branchManager.phone,
+    email: branchManager.email,
+  } : null;
+
+  return toJSON({ ...invoice.toObject(), managerContact });
 }
 
 export async function generateInvoiceFromBooking(ctx: TenantContext, bookingId: string) {

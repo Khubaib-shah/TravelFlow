@@ -18,6 +18,7 @@ interface DataTableToolbarProps<TData> {
     options: { label: string; value: string }[];
   }[];
   enableExport?: boolean;
+  extraToolbar?: React.ReactNode;
 }
 
 export function DataTableToolbar<TData>({
@@ -26,6 +27,7 @@ export function DataTableToolbar<TData>({
   searchPlaceholder,
   filters,
   enableExport,
+  extraToolbar,
 }: DataTableToolbarProps<TData>) {
   const handleExport = () => {
     try {
@@ -93,6 +95,7 @@ export function DataTableToolbar<TData>({
             />
           );
         })}
+        {extraToolbar && extraToolbar}
       </div>
 
       <div className="flex items-center space-x-2">

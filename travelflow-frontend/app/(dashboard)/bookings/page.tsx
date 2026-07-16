@@ -11,6 +11,8 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { Booking, Customer, Supplier } from "@/types";
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -42,6 +44,7 @@ export default function BookingsPage() {
   const [data, setData] = useState<Booking[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -51,7 +54,7 @@ export default function BookingsPage() {
     setIsLoading(true);
     try {
       const [bookings, customerList, supplierList] = await Promise.all([
-        API.getBookings(),
+        API.getBookings(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
         API.getCustomers(),
         API.getSuppliers(),
       ]);
@@ -67,7 +70,7 @@ export default function BookingsPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [dateRange]);
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -246,18 +249,10 @@ export default function BookingsPage() {
         )}
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={Plane}
-          title="No bookings found"
-          description="Create your first booking to start tracking revenue and profit."
-          action={{ label: "Create Booking", onClick: handleOpenCreate }}
-        />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
             searchKey="pnr"
             searchPlaceholder="Search by PNR..."
             isLoading={isLoading}
@@ -274,11 +269,33 @@ export default function BookingsPage() {
                   { label: "Cancelled", value: "cancelled" },
                 ],
               },
+              {
+                column: "paymentStatus",
+                title: "Payment",
+                options: [
+                  { label: "Unpaid", value: "unpaid" },
+                  { label: "Partial", value: "partial" },
+                  { label: "Paid", value: "paid" },
+                ],
+              },
             ]}
             enableExport
+            extraToolbar={
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+              />
+            }
+            emptyState={
+              <EmptyState
+                icon={Plane}
+                title="No bookings found"
+                description={dateRange ? "No bookings found in the selected date range." : "Create your first booking to start tracking revenue and profit."}
+                action={{ label: "Create Booking", onClick: handleOpenCreate }}
+              />
+            }
           />
         </div>
-      )}
 
       <DrawerForm
         title={isEditing ? "Edit Booking" : "Create Booking"}

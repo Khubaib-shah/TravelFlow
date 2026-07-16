@@ -41,6 +41,15 @@ function getPagination(req: Request): domain.PaginationOptions | undefined {
   return undefined;
 }
 
+function getDateFilter(req: Request): domain.DateFilterOptions | undefined {
+  const startDate = req.query.startDate as string | undefined;
+  const endDate = req.query.endDate as string | undefined;
+  if (startDate || endDate) {
+    return { startDate, endDate };
+  }
+  return undefined;
+}
+
 export async function dashboardStats(req: Request, res: Response) {
   const stats = await domain.getDashboardStats(buildContext(req));
   ApiResponse.success(res, stats);
@@ -53,7 +62,7 @@ export async function analyticsStats(req: Request, res: Response) {
 }
 
 export async function listLeads(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listLeads(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listLeads(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function getLead(req: Request, res: Response) {
@@ -114,7 +123,7 @@ export async function findOrCreateCustomerFromLead(
 }
 
 export async function listCustomers(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listCustomers(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listCustomers(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function getCustomer(req: Request, res: Response) {
@@ -213,13 +222,18 @@ export async function getCustomerLedger(req: Request, res: Response) {
 }
 
 export async function listBookings(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listBookings(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listBookings(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function getBooking(req: Request, res: Response) {
   const booking = await domain.getBooking(buildContext(req), req.params.id);
   if (!booking) throw ApiError.notFound("Booking");
   ApiResponse.success(res, booking);
+}
+
+export async function getBookingActivities(req: Request, res: Response) {
+  const activities = await domain.getBookingActivities(buildContext(req), req.params.id);
+  ApiResponse.success(res, activities);
 }
 
 export async function createBooking(req: Request, res: Response) {
@@ -239,13 +253,14 @@ export async function updateBooking(req: Request, res: Response) {
     buildContext(req),
     req.params.id,
     req.body,
+    actor(req),
   );
   if (!booking) throw ApiError.notFound("Booking");
   ApiResponse.success(res, booking);
 }
 
 export async function listSuppliers(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listSuppliers(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listSuppliers(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function getSupplier(req: Request, res: Response) {
@@ -330,7 +345,7 @@ export async function updateUser(req: Request, res: Response) {
 }
 
 export async function listExpenses(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listExpenses(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listExpenses(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function getExpense(req: Request, res: Response) {
@@ -440,7 +455,7 @@ export async function recordSupplierPayment(
 // ─── Receipts ─────────────────────────────────────────────────────────────────
 
 export async function listReceipts(req: Request, res: Response) {
-  ApiResponse.success(res, await domain.listReceipts(buildContext(req), getPagination(req)));
+  ApiResponse.success(res, await domain.listReceipts(buildContext(req), getPagination(req), getDateFilter(req)));
 }
 
 export async function createReceipt(req: Request, res: Response) {

@@ -14,6 +14,7 @@ import {
   Settings,
   Plus,
   ArrowRight,
+  FileText,
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -104,6 +105,15 @@ export function SearchCommand() {
       action: () => navigate("/bookings"),
       group: "Navigate",
       keywords: ["flights", "tickets", "pnr"],
+    },
+    {
+      id: "nav-quotations",
+      label: "Quotations",
+      description: "Customer quotations",
+      icon: FileText,
+      action: () => navigate("/quotations"),
+      group: "Navigate",
+      keywords: ["quotes", "proposals"],
     },
     {
       id: "nav-suppliers",

@@ -17,3 +17,4 @@ export { QuotationItem } from "./QuotationItem.model";
 export { QuotationTax } from "./QuotationTax.model";
 export { QuotationAttachment } from "./QuotationAttachment.model";
 export { QuotationVersion } from "./QuotationVersion.model";
+export { BookingActivity } from "./BookingActivity.model";
