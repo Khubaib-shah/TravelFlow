@@ -4,36 +4,11 @@ import { BarChart } from "@/components/charts/BarChart";
 import { Users, TrendingUp, DollarSign, CreditCard } from "lucide-react";
 import { formatCurrencyPKR } from "@/lib/utils";
 
-export function BranchPerformance({ isLoading }: { isLoading: boolean }) {
-  const branchData = [
-    {
-      name: "KHI Main",
-      code: "KHI-HQ",
-      revenue: 4820000,
-      profit: 820000,
-      expenses: 320000,
-      staff: 15,
-      growth: 12.5,
-    },
-    {
-      name: "ISB Branch",
-      code: "ISB-01",
-      revenue: 2340000,
-      profit: 380000,
-      expenses: 180000,
-      staff: 6,
-      growth: -2.4,
-    },
-    {
-      name: "LHE Branch",
-      code: "LHE-01",
-      revenue: 1980000,
-      profit: 290000,
-      expenses: 160000,
-      staff: 5,
-      growth: 5.0,
-    },
+export function BranchPerformance({ isLoading, data }: { isLoading: boolean; data?: any[] }) {
+  const defaultData = [
+    { name: "KHI Main", code: "KHI-HQ", revenue: 4820000, profit: 820000, expenses: 320000, staff: 15, growth: 12.5 },
   ];
+  const branchData = data && data.length > 0 ? data : defaultData;
 
   return (
     <div className="bg-tf-surface border border-tf-border rounded-xl p-6 h-full min-h-[480px] max-h-[750px] shadow-sm flex flex-col">

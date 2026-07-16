@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-const phoneRegex = /^(\+92|0)3[0-9]{2}[-\s]?[0-9]{7}$/;
+// International phone: allows +, digits, spaces, dashes, parens. Min 7, max 20 chars.
+const phoneRegex = /^[+]?[\d\s\-().]{7,20}$/;
 
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -9,7 +10,7 @@ export const loginSchema = z.object({
 
 export const leadSchema = z.object({
   name: z.string().min(2).max(60),
-  phone: z.string().regex(phoneRegex, "Enter a valid Pakistani number (03XX-XXXXXXX)"),
+  phone: z.string().regex(phoneRegex, "Enter a valid phone number"),
   whatsapp: z.string().regex(phoneRegex).optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   destination: z.string().min(2),
@@ -78,7 +79,7 @@ export const bookingSchema = z.object({
   arrivalCity: z.string().min(3),
   departureDate: z.coerce.date(),
   returnDate: z.coerce.date().optional(),
-  pnr: z.string().length(6),
+  pnr: z.string().min(4).max(10),
   ticketNumber: z.string().optional(),
   costPrice: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : Number(val)),
@@ -168,7 +169,7 @@ export const customerDocumentSchema = z.object({
   fileName: z.string().min(1),
   fileSize: z.number().min(0),
   mimeType: z.string().min(1),
-  fileUrl: z.string().min(1),
+  fileUrl: z.string().url().refine((url) => url.startsWith("https://"), { message: "File URL must use HTTPS" }),
   notes: z.string().optional(),
 });
 

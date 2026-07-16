@@ -19,10 +19,10 @@ export function UserMenu() {
   const router = useRouter();
   const { logout, user } = useAuthStore();
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Signed out successfully");
-    router.push("/login");
+  const handleLogout = async () => {
+    toast.success("Signing out...");
+    await logout();
+    window.location.href = "/login";
   };
 
   const displayName = user

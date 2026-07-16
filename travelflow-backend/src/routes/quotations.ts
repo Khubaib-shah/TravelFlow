@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { tenantMiddleware } from "../middleware/tenant.middleware";
+import { requirePermission } from "../middleware/role.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { idParamSchema } from "../validators/schemas";
 import * as quotation from "../controllers/quotation.controller";
 
 const router = Router();
 
-router.use(authMiddleware, tenantMiddleware);
+router.use(authMiddleware, tenantMiddleware, requirePermission("Manage Quotations"));
 
 router.get("/", quotation.listQuotations);
 router.get("/:id", validate(idParamSchema, "params"), quotation.getQuotation);

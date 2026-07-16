@@ -1,4 +1,4 @@
-import { User } from "../models";
+import { User, TokenBlacklist } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { signToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { toJSON } from "../utils/serialize";
@@ -55,9 +55,13 @@ export async function refreshAccessToken(refreshToken: string) {
   return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 }
 
-export async function logout(_userId: string) {
-  // With stateless JWTs, logout is handled by clearing the cookies client-side.
-  // This endpoint exists as a clean server-side hook for future blacklisting.
+export async function logout(accessToken?: string) {
+  if (accessToken) {
+    try {
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Tokens live max 15m
+      await TokenBlacklist.create({ token: accessToken, expiresAt }).catch(() => {});
+    } catch {}
+  }
   return { success: true };
 }
 

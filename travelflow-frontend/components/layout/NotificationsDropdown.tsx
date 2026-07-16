@@ -9,20 +9,24 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/lib/utils";
+import { ApiClient as API } from "@/lib/api-client";
 import { IconButton } from "@/components/shared/IconButton";
 import { Button } from "@/components/ui/button";
 
 interface Notification {
-  id: string;
-  type: "booking" | "lead" | "customer" | "expense" | "system";
+  _id: string;
+  type: string;
   title: string;
-  description: string;
-  href: string;
+  body?: string;
+  description?: string;
+  href?: string;
+  entityType?: string;
+  entityId?: string;
   read: boolean;
-  createdAt: Date;
+  createdAt: string | Date;
 }
 
 const INITIAL_NOTIFICATIONS: Notification[] = [];
@@ -33,6 +37,11 @@ const typeIcon: Record<Notification["type"], React.ElementType> = {
   customer: Users,
   expense: CreditCard,
   system: CheckCircle,
+  info: CheckCircle,
+  success: CheckCircle,
+  warning: CheckCircle,
+  error: CheckCircle,
+  receipt: CreditCard,
 };
 
 const typeColor: Record<Notification["type"], string> = {
@@ -41,6 +50,11 @@ const typeColor: Record<Notification["type"], string> = {
   customer: "text-tf-success bg-[var(--tf-success-soft)]",
   expense: "text-[var(--tf-danger)] bg-[var(--tf-danger-soft)]",
   system: "text-[var(--tf-info)] bg-[var(--tf-info-soft)]",
+  info: "text-[var(--tf-info)] bg-[var(--tf-info-soft)]",
+  success: "text-tf-success bg-[var(--tf-success-soft)]",
+  warning: "text-[var(--tf-warning)] bg-[var(--tf-warning-soft)]",
+  error: "text-[var(--tf-danger)] bg-[var(--tf-danger-soft)]",
+  receipt: "text-tf-success bg-[var(--tf-success-soft)]",
 };
 
 export function NotificationsDropdown() {
@@ -50,25 +64,65 @@ export function NotificationsDropdown() {
   );
   const router = useRouter();
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await API.getNotifications(1, 20);
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Failed to fetch notifications", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAllRead = (e: React.MouseEvent) => {
+  const markAllRead = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await API.markAllNotificationsRead();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification) => {
     // Mark as read
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
+      prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n)),
     );
     setIsOpen(false);
-    router.push(notification.href);
+    
+    // Fallback links if entityType is known but href is missing from backend
+    let href = notification.href || "/dashboard";
+    if (notification.entityType === "lead" && notification.entityId) href = `/leads/${notification.entityId}`;
+    if (notification.entityType === "booking" && notification.entityId) href = `/bookings/${notification.entityId}`;
+    if (notification.entityType === "receipt" && notification.entityId) href = `/receipts`;
+
+    router.push(href);
+
+    if (!notification.read) {
+      try {
+        await API.markNotificationRead(notification._id);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
-  const dismissNotification = (e: React.MouseEvent, id: string) => {
+  const dismissNotification = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+    try {
+      await API.deleteNotification(id);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -119,11 +173,11 @@ export function NotificationsDropdown() {
                 No notifications
               </div>
             ) : (
-              notifications.map((notification) => {
-                const Icon = typeIcon[notification.type];
+              notifications.map((notification: any) => {
+                const Icon = typeIcon[notification.type as keyof typeof typeIcon] || Bell;
                 return (
                   <div
-                    key={notification.id}
+                    key={notification._id}
                     onClick={() => handleNotificationClick(notification)}
                     className={`relative flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-[var(--tf-surface-2)] transition-colors group ${
                       !notification.read ? "bg-[var(--tf-primary-soft)]/30" : ""
@@ -135,7 +189,7 @@ export function NotificationsDropdown() {
                     )}
 
                     <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs ${typeColor[notification.type]}`}
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs ${typeColor[notification.type as keyof typeof typeColor] || typeColor.info}`}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
@@ -147,15 +201,15 @@ export function NotificationsDropdown() {
                         {notification.title}
                       </p>
                       <p className="text-xs text-tf-text-muted truncate mt-0.5">
-                        {notification.description}
+                        {notification.body || notification.description}
                       </p>
                       <p className="text-[10px] text-tf-text-muted mt-1">
-                        {formatTimeAgo(notification.createdAt)}
+                        {formatTimeAgo(new Date(notification.createdAt))}
                       </p>
                     </div>
 
                     <IconButton
-                      onClick={(e) => dismissNotification(e, notification.id)}
+                      onClick={(e) => dismissNotification(e, notification._id)}
                       size="icon-xs"
                       className="opacity-0 group-hover:opacity-100 shrink-0"
                       aria-label="Dismiss notification"

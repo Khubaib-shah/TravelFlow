@@ -24,8 +24,6 @@ export interface ICustomer extends Document {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   internalNotes?: string;
-  totalBookings: number;
-  totalSpent: number;
   status: "active" | "inactive";
   isDeleted: boolean;
 }
@@ -55,8 +53,6 @@ const CustomerSchema = new Schema<ICustomer>(
     emergencyContactName: String,
     emergencyContactPhone: String,
     internalNotes: String,
-    totalBookings: { type: Number, default: 0 },
-    totalSpent: { type: Number, default: 0 },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     isDeleted: { type: Boolean, default: false },
   },
@@ -64,6 +60,7 @@ const CustomerSchema = new Schema<ICustomer>(
 );
 
 CustomerSchema.index({ agencyId: 1, customerRef: 1 }, { unique: true });
+CustomerSchema.index({ agencyId: 1, phone: 1 });
 
 export const Customer = mongoose.model<ICustomer>("Customer", CustomerSchema);
 

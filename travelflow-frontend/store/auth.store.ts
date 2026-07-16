@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types";
+import { toast } from "sonner";
 
 interface AuthState {
   user: User | null;
@@ -70,8 +71,15 @@ export const useAuthStore = create<AuthState>()(
         try {
           const user = await _getMeFn();
           set({ user, isAuthenticated: true });
-        } catch {
+        } catch (err: any) {
           set({ user: null, isAuthenticated: false });
+          // Show friendly error if backend is unavailable (ignore 401s as they just mean not logged in)
+          const isUnauthorized = err?.status === 401 || err?.message?.includes("401") || err?.message?.toLowerCase().includes("authentication required");
+          if (!isUnauthorized) {
+            toast.error("Unable to connect to the server. Please check your connection or try again later.", {
+              description: err?.message,
+            });
+          }
         } finally {
           set({ isLoading: false });
         }
@@ -79,7 +87,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "tf-auth-user",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

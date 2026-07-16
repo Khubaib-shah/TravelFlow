@@ -27,6 +27,9 @@ import * as auth from "../controllers/auth.controller";
 import * as domain from "../controllers/domain.controller";
 import quotationsRouter from "./quotations";
 import templateRouter from "./template.routes";
+import settingsRouter from "./settings";
+import notificationsRouter from "./notifications";
+import invoicesRouter from "./invoices";
 
 const router = Router();
 
@@ -64,19 +67,22 @@ protectedRouter.get(
 );
 
 // Leads
-protectedRouter.get("/leads", asyncHandler(domain.listLeads));
+protectedRouter.get("/leads", requirePermission("Manage Leads"), asyncHandler(domain.listLeads));
 protectedRouter.post(
   "/leads",
+  requirePermission("Manage Leads"),
   validate(leadSchema),
   asyncHandler(domain.createLead),
 );
 protectedRouter.get(
   "/leads/:id",
+  requirePermission("Manage Leads"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getLead),
 );
 protectedRouter.patch(
   "/leads/:id",
+  requirePermission("Manage Leads"),
   validate(idParamSchema, "params"),
   validate(leadSchema.partial()),
   asyncHandler(domain.updateLead),
@@ -89,36 +95,42 @@ protectedRouter.delete(
 );
 protectedRouter.post(
   "/leads/:id/activities",
+  requirePermission("Manage Leads"),
   validate(idParamSchema, "params"),
   validate(leadActivitySchema),
   asyncHandler(domain.addLeadActivity),
 );
 protectedRouter.post(
   "/leads/:id/convert",
+  requirePermission("Manage Leads"),
   validate(idParamSchema, "params"),
   validate(convertLeadSchema),
   asyncHandler(domain.convertLead),
 );
 
 // Customers
-protectedRouter.get("/customers", asyncHandler(domain.listCustomers));
+protectedRouter.get("/customers", requirePermission("Manage Customers"), asyncHandler(domain.listCustomers));
 protectedRouter.post(
   "/customers",
+  requirePermission("Manage Customers"),
   validate(customerSchema),
   asyncHandler(domain.createCustomer),
 );
 protectedRouter.post(
   "/customers/from-lead/:leadId",
+  requirePermission("Manage Customers"),
   validate(leadIdParamSchema, "params"),
   asyncHandler(domain.findOrCreateCustomerFromLead),
 );
 protectedRouter.get(
   "/customers/:id",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getCustomer),
 );
 protectedRouter.patch(
   "/customers/:id",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   validate(customerSchema),
   asyncHandler(domain.updateCustomer),
@@ -131,26 +143,31 @@ protectedRouter.delete(
 );
 protectedRouter.get(
   "/customers/:id/notes",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listCustomerNotes),
 );
 protectedRouter.post(
   "/customers/:id/notes",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   validate(customerNoteSchema),
   asyncHandler(domain.createCustomerNote),
 );
 protectedRouter.delete(
   "/customers/notes/:noteId",
+  requirePermission("Manage Customers"),
   asyncHandler(domain.deleteCustomerNote),
 );
 protectedRouter.get(
   "/customers/:id/documents",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listCustomerDocuments),
 );
 protectedRouter.post(
   "/customers/:id/documents",
+  requirePermission("Manage Customers"),
   validate(idParamSchema, "params"),
   validate(customerDocumentSchema),
   asyncHandler(domain.createCustomerDocument),
@@ -160,51 +177,65 @@ protectedRouter.delete(
   requireRole(["admin", "manager"]),
   asyncHandler(domain.deleteCustomerDocument),
 );
+protectedRouter.get(
+  "/customers/:id/ledger",
+  requirePermission("Manage Customers"),
+  validate(idParamSchema, "params"),
+  asyncHandler(domain.getCustomerLedger),
+);
 
 // Bookings
-protectedRouter.get("/bookings", asyncHandler(domain.listBookings));
+protectedRouter.get("/bookings", requirePermission("Manage Bookings"), asyncHandler(domain.listBookings));
 protectedRouter.post(
   "/bookings",
+  requirePermission("Manage Bookings"),
   validate(bookingSchema),
   asyncHandler(domain.createBooking),
 );
 protectedRouter.get(
   "/bookings/:id",
+  requirePermission("Manage Bookings"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getBooking),
 );
 protectedRouter.patch(
   "/bookings/:id",
+  requirePermission("Manage Bookings"),
   validate(idParamSchema, "params"),
   validate(bookingSchema),
   asyncHandler(domain.updateBooking),
 );
 protectedRouter.delete(
   "/bookings/:id",
+  requirePermission("Manage Bookings"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteBooking),
 );
 
 // Suppliers
-protectedRouter.get("/suppliers", asyncHandler(domain.listSuppliers));
+protectedRouter.get("/suppliers", requirePermission("Manage Suppliers"), asyncHandler(domain.listSuppliers));
 protectedRouter.post(
   "/suppliers",
+  requirePermission("Manage Suppliers"),
   validate(supplierSchema),
   asyncHandler(domain.createSupplier),
 );
 protectedRouter.get(
   "/suppliers/:id",
+  requirePermission("Manage Suppliers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.getSupplier),
 );
 protectedRouter.patch(
   "/suppliers/:id",
+  requirePermission("Manage Suppliers"),
   validate(idParamSchema, "params"),
   validate(supplierSchema),
   asyncHandler(domain.updateSupplier),
 );
 protectedRouter.delete(
   "/suppliers/:id",
+  requirePermission("Manage Suppliers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.deleteSupplier),
 );
@@ -236,7 +267,7 @@ protectedRouter.patch(
 );
 
 // Users — /agents must come BEFORE /:id to avoid route collision
-protectedRouter.get("/users/agents", asyncHandler(domain.listAgents));
+protectedRouter.get("/users/agents", requirePermission("Manage Users"), asyncHandler(domain.listAgents));
 protectedRouter.get(
   "/users",
   requirePermission("Manage Users"),
@@ -329,27 +360,37 @@ protectedRouter.delete(
 // Supplier Payments
 protectedRouter.post(
   "/suppliers/:id/payments",
+  requirePermission("Manage Suppliers"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.recordSupplierPayment),
 );
+protectedRouter.get(
+  "/suppliers/:id/statement",
+  requirePermission("Manage Suppliers"),
+  validate(idParamSchema, "params"),
+  asyncHandler(domain.getSupplierStatement),
+);
 
 // Receipts (Customer Payments)
-protectedRouter.get("/receipts", asyncHandler(domain.listReceipts));
-protectedRouter.post("/receipts", asyncHandler(domain.createReceipt));
+protectedRouter.get("/receipts", requirePermission("Manage Finances"), asyncHandler(domain.listReceipts));
+protectedRouter.post("/receipts", requirePermission("Manage Finances"), asyncHandler(domain.createReceipt));
 
 // Booking Documents
 protectedRouter.get(
   "/bookings/:id/documents",
+  requirePermission("Manage Bookings"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.listBookingDocuments),
 );
 protectedRouter.post(
   "/bookings/:id/documents",
+  requirePermission("Manage Bookings"),
   validate(idParamSchema, "params"),
   asyncHandler(domain.createBookingDocument),
 );
 protectedRouter.delete(
   "/bookings/documents/:docId",
+  requirePermission("Manage Bookings"),
   asyncHandler(domain.deleteBookingDocument),
 );
 
@@ -358,5 +399,8 @@ router.use(protectedRouter);
 // Quotations
 protectedRouter.use("/quotations", quotationsRouter);
 protectedRouter.use("/templates", templateRouter);
+protectedRouter.use("/settings", settingsRouter);
+protectedRouter.use("/notifications", notificationsRouter);
+protectedRouter.use("/invoices", invoicesRouter);
 
 export default router;

@@ -3,11 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { ApiError } from "../utils/ApiError";
 import * as authService from "../services/auth.service";
 import { env } from "../config/env";
-import type { IUser } from "../models/User.model";
 
-type AuthenticatedRequest = Request & {
-  user?: IUser;
-};
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -59,14 +55,14 @@ export async function refreshToken(req: Request, res: Response) {
   }
 }
 
-export async function logout(req: AuthenticatedRequest, res: Response) {
-  const userId = req.user ? String(req.user._id) : "";
-  await authService.logout(userId);
+export async function logout(req: Request, res: Response) {
+  const token = req.cookies?.tf_access_token as string | undefined;
+  await authService.logout(token);
   clearAuthCookies(res);
   ApiResponse.success(res, null, "Logged out successfully");
 }
 
-export async function me(req: AuthenticatedRequest, res: Response) {
+export async function me(req: Request, res: Response) {
   if (!req.user) throw ApiError.unauthorized();
   const user = await authService.getMe(String(req.user._id));
   ApiResponse.success(res, user);

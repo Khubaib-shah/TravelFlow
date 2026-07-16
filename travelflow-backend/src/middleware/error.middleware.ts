@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ZodError } from "zod";
 import { ApiError } from "../utils/ApiError";
 
 export function errorMiddleware(
@@ -7,6 +8,24 @@ export function errorMiddleware(
   res: Response,
   _next: NextFunction
 ) {
+  // Zod validation errors → 400 with field-level details
+  if (err instanceof ZodError) {
+    const errors: Record<string, string[]> = {};
+    for (const issue of err.issues) {
+      const key = issue.path.join(".") || "root";
+      if (!errors[key]) errors[key] = [];
+      errors[key].push(issue.message);
+    }
+    res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      code: "BAD_REQUEST",
+      errors,
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
   if (err instanceof ApiError) {
     res.status(err.statusCode).json({
       success: false,

@@ -96,6 +96,15 @@ const notifyInvalidation = () => {
 let _isRefreshing = false;
 let _pendingRefresh: Promise<void> | null = null;
 
+export class ApiError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function request<T>(
   method: string,
   path: string,
@@ -158,15 +167,15 @@ async function request<T>(
     json = await res.json();
   } catch (e) {
     if (!res.ok) {
-      throw new Error(`Server Error: ${res.status} ${res.statusText}`);
+      throw new ApiError(`Server Error: ${res.status} ${res.statusText}`, res.status);
     }
-    throw new Error("Received invalid JSON from server");
+    throw new ApiError("Received invalid JSON from server");
   }
 
   if (!res.ok) {
     const message =
       (json as { message?: string }).message ?? `HTTP ${res.status}`;
-    throw new Error(message);
+    throw new ApiError(message, res.status);
   }
 
   return (json as { data: T }).data;
@@ -194,8 +203,12 @@ function reviveItem<T>(item: unknown): T {
   return reviveDates(item as Record<string, unknown>) as T;
 }
 
-function reviveList<T>(items: unknown[]): T[] {
-  return items.map((i) => reviveItem<T>(i));
+function reviveList<T>(items: unknown): T[] {
+  // Backwards compatibility for paginated responses { data: T[], total: ... }
+  const arr = (items && typeof items === 'object' && 'data' in items && Array.isArray((items as any).data))
+    ? (items as any).data
+    : Array.isArray(items) ? items : [];
+  return arr.map((i: any) => reviveItem<T>(i));
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -543,4 +556,26 @@ export const ApiClient = {
   login,
   logout: logoutApi,
   getMe,
+
+  // ── Settings ──
+  getSettings: () => get<unknown>("/settings").then(reviveItem<any>),
+  updateSettings: (data: any) => patch<unknown>("/settings", data).then(reviveItem<any>),
+
+  // ── Notifications ──
+  getNotifications: (page = 1, limit = 20) => get<any>(`/notifications?page=${page}&limit=${limit}`).then(res => ({
+    ...res, data: reviveList<any>(res.data || res)
+  })),
+  markNotificationRead: (id: string) => patch<any>(`/notifications/${id}/read`, {}),
+  markAllNotificationsRead: () => patch<any>("/notifications/read-all", {}),
+  deleteNotification: (id: string) => del<any>(`/notifications/${id}`),
+
+  // ── Reports & Ledger ──
+  getCustomerLedger: (id: string) => get<any>(`/customers/${id}/ledger`),
+  getSupplierStatement: (id: string) => get<any>(`/suppliers/${id}/statement`),
+
+  // ── Invoices ──
+  getInvoices: () => get<any>("/invoices").then(res => reviveList<any>(res.data || res)),
+  getInvoice: (id: string) => get<any>(`/invoices/${id}`),
+  generateInvoiceFromBooking: (bookingId: string) => post<any>(`/invoices/from-booking/${bookingId}`, {}),
+  markInvoicePaid: (id: string) => post<any>(`/invoices/${id}/mark-paid`, {}),
 };

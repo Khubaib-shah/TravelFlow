@@ -19,6 +19,7 @@ import { ApiError } from "../utils/ApiError";
 import { generateRef } from "../utils/refGenerator";
 import { buildIdOrRefFilter, toJSON, toJSONList } from "../utils/serialize";
 import { countryForCity, normalizePhone, userDisplayName } from "../utils/helpers";
+import * as notificationService from "./notification.service";
 import type { z } from "zod";
 import type {
   leadSchema,
@@ -43,23 +44,49 @@ type UserInput = z.infer<typeof userSchema>;
 import type { branchSchema } from "../validators/schemas";
 type BranchInput = z.infer<typeof branchSchema>;
 
+export interface PaginationOptions {
+  page: number;
+  limit: number;
+}
+
 export interface TenantContext {
   agencyId: string;
   branchId?: string;
   userRole?: string;
   userBranchId?: string;
+  /** ID of the calling user — used for self-deletion and audit checks */
+  callerId?: string;
+  /** Role of the calling user — used for privilege escalation checks */
+  callerRole?: string;
 }
 
+/**
+ * Build a Mongoose filter that enforces tenant + branch isolation.
+ *
+ * Branch scoping rules:
+ * - `admin` role: sees all branches by default. If `ctx.branchId` is set (explicit filter), it is applied.
+ * - All other roles: scoped to their own branch (`ctx.userBranchId`). If the user has no branch assigned, throw.
+ */
 export function tenant(ctx: string | TenantContext) {
   if (typeof ctx === "string") {
     return { agencyId: ctx, isDeleted: false };
   }
   const filter: Record<string, unknown> = { agencyId: ctx.agencyId, isDeleted: false };
-  if (ctx.userRole === "agent" || ctx.userRole === "accountant" || ctx.userRole === "manager") {
-    filter.branchId = ctx.userBranchId;
-  } else if (ctx.branchId && ctx.branchId !== "all") {
-    filter.branchId = ctx.branchId;
+
+  if (ctx.userRole === "admin") {
+    // Admin can optionally filter by a specific branch
+    if (ctx.branchId && ctx.branchId !== "all") {
+      filter.branchId = ctx.branchId;
+    }
+  } else {
+    // ALL non-admin roles are scoped to their own branch
+    if (ctx.userBranchId) {
+      filter.branchId = ctx.userBranchId;
+    }
+    // If userBranchId is missing for a non-admin, we still scope by agencyId only
+    // (the user simply hasn't been assigned to a branch yet — admin needs to fix this)
   }
+
   return filter;
 }
 
@@ -78,6 +105,29 @@ async function enrichLead(doc: unknown) {
   return { ...json, activities: toJSONList(activities.map((a) => a.toObject())) };
 }
 
+async function enrichLeadsBatch(docs: any[]) {
+  const jsons = docs.map((doc) => toJSON(doc)!);
+  const leadIds = jsons.map((j) => String(j.id));
+  
+  const activities = await LeadActivity.find({ leadId: { $in: leadIds } }).sort({ createdAt: -1 });
+  
+  const activitiesMap = new Map();
+  for (const act of activities) {
+    const leadId = String(act.leadId);
+    if (!activitiesMap.has(leadId)) {
+      activitiesMap.set(leadId, []);
+    }
+    activitiesMap.get(leadId).push(act.toObject());
+  }
+  
+  return jsons.map((json) => {
+    return {
+      ...json,
+      activities: toJSONList(activitiesMap.get(json.id) || []),
+    };
+  });
+}
+
 async function enrichCustomer(doc: unknown, ctx: string | TenantContext) {
   const json = toJSON(doc)!;
   const customerId = json.id;
@@ -91,26 +141,66 @@ async function enrichCustomer(doc: unknown, ctx: string | TenantContext) {
   };
 }
 
+async function enrichCustomersBatch(docs: any[], ctx: string | TenantContext) {
+  const jsons = docs.map((doc) => toJSON(doc)!);
+  const customerIds = jsons.map((j) => new mongoose.Types.ObjectId(j.id as string));
+  
+  const stats = await Booking.aggregate([
+    { $match: { ...tenant(ctx), customerId: { $in: customerIds } } },
+    { $group: { _id: "$customerId", totalBookings: { $sum: 1 }, totalSpent: { $sum: "$salePrice" } } }
+  ]);
+  
+  const statsMap = new Map();
+  for (const stat of stats) {
+    statsMap.set(String(stat._id), stat);
+  }
+  
+  return jsons.map((json) => {
+    const stat = statsMap.get(String(json.id)) || { totalBookings: 0, totalSpent: 0 };
+    return {
+      ...json,
+      totalBookings: stat.totalBookings,
+      totalSpent: stat.totalSpent,
+      country: (json.country as string) ?? "Pakistan",
+    };
+  });
+}
+
 async function enrichBooking(doc: unknown, ctx: string | TenantContext) {
   const json = toJSON(doc)!;
-  const customer = json.customerId
-    ? await Customer.findOne({ _id: json.customerId, ...tenant(ctx) })
-    : null;
-  const supplier = json.supplierId
-    ? await Supplier.findOne({ _id: json.supplierId, ...tenant(ctx) })
-    : null;
-  const agent = json.agentId
-    ? await User.findOne({ _id: json.agentId, ...tenant(ctx) })
-    : null;
-  const branch = json.branchId
-    ? await Branch.findOne({ _id: json.branchId, ...tenant(ctx) })
-    : null;
+  const [customer, supplier, agent, branch] = await Promise.all([
+    json.customerId ? Customer.findOne({ _id: json.customerId, ...tenant(ctx) }) : Promise.resolve(null),
+    json.supplierId ? Supplier.findOne({ _id: json.supplierId, ...tenant(ctx) }) : Promise.resolve(null),
+    json.agentId ? User.findOne({ _id: json.agentId, ...tenant(ctx) }) : Promise.resolve(null),
+    json.branchId ? Branch.findOne({ _id: json.branchId, ...tenant(ctx) }) : Promise.resolve(null),
+  ]);
+  
   return {
     ...json,
     customer: customer ? toJSON(customer.toObject()) : undefined,
     supplier: supplier ? toJSON(supplier.toObject()) : undefined,
     agent: agent ? { id: agent._id.toString(), name: userDisplayName(agent) } : undefined,
     branch: branch ? { id: branch._id.toString(), name: branch.name } : undefined,
+  };
+}
+
+function formatPopulatedBooking(doc: any) {
+  const json = toJSON(doc)!;
+  const c = doc.customerId;
+  const s = doc.supplierId;
+  const a = doc.agentId;
+  const b = doc.branchId;
+  
+  return {
+    ...json,
+    customerId: c ? c._id.toString() : undefined,
+    supplierId: s ? s._id.toString() : undefined,
+    agentId: a ? a._id.toString() : undefined,
+    branchId: b ? b._id.toString() : undefined,
+    customer: c ? toJSON(c.toObject ? c.toObject() : c) : undefined,
+    supplier: s ? toJSON(s.toObject ? s.toObject() : s) : undefined,
+    agent: a ? { id: a._id.toString(), name: userDisplayName(a) } : undefined,
+    branch: b ? { id: b._id.toString(), name: b.name } : undefined,
   };
 }
 
@@ -121,13 +211,67 @@ export async function getDashboardStats(ctx: TenantContext) {
   const now = new Date();
   const month = now.getMonth();
   const year = now.getFullYear();
-  const [leads, customers, bookings, expenses, activities] = await Promise.all([
+
+  // Build date ranges for current and previous month
+  const prevMonthStart = new Date(year, month - 1, 1);
+  const prevMonthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+
+  // Build sparkline range: last 7 months
+  const sparklineStart = new Date(year, month - 6, 1);
+
+  const [
+    leads,
+    customers,
+    bookings,
+    expenses,
+    activities,
+    prevMonthBookings,
+    prevMonthExpenses,
+    prevMonthLeads,
+    prevMonthCustomers,
+    monthlyBookingAgg,
+    monthlyLeadAgg,
+    monthlyCustomerAgg,
+    monthlyExpenseAgg,
+    branches,
+  ] = await Promise.all([
     Lead.countDocuments(base),
     Customer.countDocuments(base),
     Booking.find(base),
     Expense.find(base),
-    RecentActivity.find({ agencyId: base.agencyId }).sort({ createdAt: -1 }).limit(20),
+    RecentActivity.find({ agencyId: base.agencyId, ...(base.branchId ? { branchId: base.branchId } : {}) })
+      .sort({ createdAt: -1 })
+      .limit(20),
+    // Previous month data for trends
+    Booking.find({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
+    Expense.find({ ...base, date: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
+    Lead.countDocuments({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
+    Customer.countDocuments({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
+    // Sparkline aggregations — last 7 months
+    Booking.aggregate([
+      { $match: { ...base, createdAt: { $gte: sparklineStart } } },
+      { $group: { _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } }, revenue: { $sum: "$salePrice" }, profit: { $sum: "$profit" }, count: { $sum: 1 } } },
+      { $sort: { "_id.y": 1, "_id.m": 1 } },
+    ]),
+    Lead.aggregate([
+      { $match: { ...base, createdAt: { $gte: sparklineStart } } },
+      { $group: { _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { "_id.y": 1, "_id.m": 1 } },
+    ]),
+    Customer.aggregate([
+      { $match: { ...base, createdAt: { $gte: sparklineStart } } },
+      { $group: { _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { "_id.y": 1, "_id.m": 1 } },
+    ]),
+    Expense.aggregate([
+      { $match: { ...base, date: { $gte: sparklineStart } } },
+      { $group: { _id: { y: { $year: "$date" }, m: { $month: "$date" } }, total: { $sum: "$amount" } } },
+      { $sort: { "_id.y": 1, "_id.m": 1 } },
+    ]),
+    Branch.find(base),
   ]);
+
+  // Current month calculations
   const thisMonthBookings = bookings.filter((b) => {
     const d = b.createdAt;
     return d.getMonth() === month && d.getFullYear() === year;
@@ -136,22 +280,85 @@ export async function getDashboardStats(ctx: TenantContext) {
     const d = e.date;
     return d.getMonth() === month && d.getFullYear() === year;
   });
+
+  const curRevenue = thisMonthBookings.reduce((s, b) => s + b.salePrice, 0);
+  const curProfit = thisMonthBookings.reduce((s, b) => s + b.profit, 0);
+  const curExpenses = thisMonthExpenses.reduce((s, e) => s + e.amount, 0);
+  const curBookingCount = thisMonthBookings.length;
+
+  // Previous month calculations for trend %
+  const prevRevenue = prevMonthBookings.reduce((s, b) => s + b.salePrice, 0);
+  const prevProfit = prevMonthBookings.reduce((s, b) => s + b.profit, 0);
+  const prevExpensesTotal = prevMonthExpenses.reduce((s, e) => s + e.amount, 0);
+  const prevBookingCount = prevMonthBookings.length;
+
+  function trendPct(cur: number, prev: number): number {
+    if (prev === 0) return cur > 0 ? 100 : 0;
+    return Number((((cur - prev) / prev) * 100).toFixed(1));
+  }
+
+  // Build sparkline arrays — fill in 0 for missing months
+  function buildSparkline(agg: Array<{ _id: { y: number; m: number }; count?: number; revenue?: number; profit?: number; total?: number }>, field: string): number[] {
+    const map = new Map<string, number>();
+    for (const row of agg) {
+      map.set(`${row._id.y}-${row._id.m}`, (row as Record<string, unknown>)[field] as number ?? 0);
+    }
+    const result: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(year, month - i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+      result.push(map.get(key) ?? 0);
+    }
+    return result;
+  }
+
+  // Branch Performance
+  const branchPerformance = branches.map((branch) => {
+    const branchId = String(branch._id);
+    const branchBookings = thisMonthBookings.filter(b => String(b.branchId) === branchId);
+    const branchPrevBookings = prevMonthBookings.filter(b => String(b.branchId) === branchId);
+    const branchExpenses = thisMonthExpenses.filter(e => String(e.branchId) === branchId);
+
+    const revenue = branchBookings.reduce((s, b) => s + b.salePrice, 0);
+    const profit = branchBookings.reduce((s, b) => s + b.profit, 0);
+    const prevRevenue = branchPrevBookings.reduce((s, b) => s + b.salePrice, 0);
+    const expensesTotal = branchExpenses.reduce((s, e) => s + e.amount, 0);
+    
+    return {
+      name: branch.name,
+      code: branch.code,
+      revenue,
+      profit,
+      expenses: expensesTotal,
+      staff: 0, // Simplified for now, or could aggregate User model
+      growth: trendPct(revenue, prevRevenue),
+    };
+  }).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+
   return {
     totalLeads: leads,
     totalCustomers: customers,
-    monthlyRevenue: thisMonthBookings.reduce((s, b) => s + b.salePrice, 0),
-    monthlyProfit: thisMonthBookings.reduce((s, b) => s + b.profit, 0),
-    totalExpenses: thisMonthExpenses.reduce((s, e) => s + e.amount, 0),
+    monthlyRevenue: curRevenue,
+    monthlyProfit: curProfit,
+    totalExpenses: curExpenses,
     activeBookings: bookings.filter((b) => b.bookingStatus === "confirmed").length,
-    trends: { leads: 12.5, customers: 8.2, revenue: 15.4, profit: 10.1, expenses: -2.4, bookings: 5.0 },
-    sparklines: {
-      leads: [10, 25, 15, 30, 28, 40, leads || 35],
-      customers: [20, 22, 25, 24, 30, 32, customers || 35],
-      revenue: [30, 25, 40, 35, 50, 45, 60],
-      profit: [15, 18, 16, 20, 25, 22, 28],
-      expenses: [40, 35, 38, 30, 32, 28, 25],
-      bookings: [12, 15, 14, 18, 16, 20, bookings.length || 22],
+    trends: {
+      leads: trendPct(leads, prevMonthLeads),
+      customers: trendPct(customers, prevMonthCustomers),
+      revenue: trendPct(curRevenue, prevRevenue),
+      profit: trendPct(curProfit, prevProfit),
+      expenses: trendPct(curExpenses, prevExpensesTotal),
+      bookings: trendPct(curBookingCount, prevBookingCount),
     },
+    sparklines: {
+      leads: buildSparkline(monthlyLeadAgg, "count"),
+      customers: buildSparkline(monthlyCustomerAgg, "count"),
+      revenue: buildSparkline(monthlyBookingAgg, "revenue"),
+      profit: buildSparkline(monthlyBookingAgg, "profit"),
+      expenses: buildSparkline(monthlyExpenseAgg, "total"),
+      bookings: buildSparkline(monthlyBookingAgg, "count"),
+    },
+    branchPerformance,
     recentActivities: activities.map((a) => ({
       id: a._id.toString(),
       type: a.type,
@@ -246,9 +453,29 @@ export async function getAnalyticsStats(ctx: TenantContext, timeRange: string) {
 
 // --- Leads ---
 
-export async function listLeads(ctx: TenantContext) {
-  const leads = await Lead.find(tenant(ctx)).sort({ createdAt: -1 });
-  return Promise.all(leads.map((l) => enrichLead(l.toObject())));
+export async function listLeads(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Lead.find(filter)
+    .populate("assignedAgentId", "name email")
+    .sort({ createdAt: -1 });
+
+  if (!pagination) {
+    const leads = await query.exec();
+    const data = await enrichLeadsBatch(leads);
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [leads, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Lead.countDocuments(filter),
+  ]);
+
+  const data = await enrichLeadsBatch(leads);
+
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getLead(ctx: TenantContext, idOrRef: string) {
@@ -297,10 +524,27 @@ export async function createLead(ctx: TenantContext, values: LeadInput, actor: s
       createdBy: actor,
     });
   }
+
+  // Notify assignee if assigned
+  if (values.assignedAgentId) {
+    try {
+      await notificationService.createNotification(ctx, {
+        recipientId: values.assignedAgentId,
+        title: "New Lead Assigned",
+        body: `You have been assigned a new lead: ${values.name}`,
+        entityType: "lead",
+        entityId: lead._id.toString(),
+        type: "info",
+      });
+    } catch (e) {
+      console.error("Failed to send notification", e);
+    }
+  }
+
   return enrichLead(lead.toObject());
 }
 
-export async function updateLead(ctx: TenantContext, idOrRef: string, values: Partial<LeadInput>) {
+export async function updateLead(ctx: TenantContext, idOrRef: string, values: Partial<LeadInput>, actor?: string) {
   const lead = await Lead.findOneAndUpdate(
     { ...tenant(ctx), ...buildIdOrRefFilter(idOrRef, "leadRef") },
     {
@@ -337,7 +581,7 @@ export async function updateLead(ctx: TenantContext, idOrRef: string, values: Pa
       leadId: lead._id,
       type: "note",
       description: values.notes,
-      createdBy: "System", // Or ideally pass actor from updateLead
+      createdBy: actor || "System",
     });
   }
   
@@ -487,8 +731,6 @@ async function findOrCreateCustomerFromLeadDoc(
         email: lead.email,
         phone: lead.phone,
         whatsapp: lead.whatsapp,
-        city: "Karachi",
-        country: "Pakistan",
       },
     ],
     { session }
@@ -503,9 +745,26 @@ export async function findOrCreateCustomerFromLead(ctx: TenantContext, idOrRef: 
   return enrichCustomer(customer.toObject(), ctx);
 }
 
-export async function listCustomers(ctx: TenantContext) {
-  const customers = await Customer.find(tenant(ctx)).sort({ createdAt: -1 });
-  return Promise.all(customers.map((c) => enrichCustomer(c.toObject(), ctx)));
+export async function listCustomers(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Customer.find(filter).sort({ createdAt: -1 });
+
+  if (!pagination) {
+    const customers = await query.exec();
+    const data = await enrichCustomersBatch(customers, ctx);
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [customers, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Customer.countDocuments(filter),
+  ]);
+
+  const data = await enrichCustomersBatch(customers, ctx);
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getCustomer(ctx: TenantContext, idOrRef: string) {
@@ -634,9 +893,31 @@ export async function deleteCustomerDocument(ctx: TenantContext, docId: string) 
 
 // --- Bookings ---
 
-export async function listBookings(ctx: TenantContext) {
-  const bookings = await Booking.find(tenant(ctx)).sort({ createdAt: -1 });
-  return Promise.all(bookings.map((b) => enrichBooking(b.toObject(), ctx)));
+export async function listBookings(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Booking.find(filter)
+    .populate("customerId")
+    .populate("supplierId")
+    .populate("agentId")
+    .populate("branchId")
+    .sort({ createdAt: -1 });
+
+  if (!pagination) {
+    const bookings = await query.exec();
+    const data = bookings.map((b) => formatPopulatedBooking(b));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [bookings, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Booking.countDocuments(filter),
+  ]);
+
+  const data = bookings.map((b) => formatPopulatedBooking(b));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getBooking(ctx: TenantContext, idOrRef: string) {
@@ -696,6 +977,27 @@ export async function createBooking(
       createdBy: actor,
     });
   }
+
+  // Notify manager or admin about new booking
+  try {
+    const manager = await User.findOne({ agencyId, branchId, role: "manager", isDeleted: false });
+    const admin = await User.findOne({ agencyId, role: "admin", isDeleted: false });
+    const recipientId = manager ? manager._id : (admin ? admin._id : null);
+    
+    if (recipientId) {
+      await notificationService.createNotification(ctx, {
+        recipientId: String(recipientId),
+        title: "New Booking Created",
+        body: `A new booking (${bookingRef}) has been created by ${actor}`,
+        entityType: "booking",
+        entityId: booking._id.toString(),
+        type: "success",
+      });
+    }
+  } catch (e) {
+    console.error("Failed to send notification for booking", e);
+  }
+
   return enrichBooking(booking.toObject(), ctx);
 }
 
@@ -732,9 +1034,26 @@ export async function updateBooking(ctx: TenantContext, idOrRef: string, values:
 
 // --- Suppliers ---
 
-export async function listSuppliers(ctx: TenantContext) {
-  const suppliers = await Supplier.find(tenant(ctx)).sort({ name: 1 });
-  return toJSONList(suppliers.map((s) => s.toObject()));
+export async function listSuppliers(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Supplier.find(filter).sort({ createdAt: -1 });
+
+  if (!pagination) {
+    const suppliers = await query.exec();
+    const data = toJSONList(suppliers.map((s) => s.toObject()));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [suppliers, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Supplier.countDocuments(filter),
+  ]);
+
+  const data = toJSONList(suppliers.map((s) => s.toObject()));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getSupplier(ctx: TenantContext, id: string) {
@@ -776,9 +1095,26 @@ export async function updateSupplier(ctx: TenantContext, id: string, values: Sup
 
 // --- Branches ---
 
-export async function listBranches(ctx: TenantContext) {
-  const branches = await Branch.find(tenant(ctx)).sort({ name: 1 });
-  return toJSONList(branches.map((b) => b.toObject()));
+export async function listBranches(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = { agencyId: ctx.agencyId, isDeleted: false };
+  const query = Branch.find(filter).sort({ name: 1 });
+
+  if (!pagination) {
+    const branches = await query.exec();
+    const data = toJSONList(branches.map((b) => b.toObject()));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [branches, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Branch.countDocuments(filter),
+  ]);
+
+  const data = toJSONList(branches.map((b) => b.toObject()));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getBranch(ctx: TenantContext, id: string) {
@@ -821,9 +1157,26 @@ export async function updateBranch(ctx: TenantContext, id: string, values: Branc
 
 // --- Users ---
 
-export async function listUsers(ctx: TenantContext) {
-  const users = await User.find(tenant(ctx)).sort({ firstName: 1 });
-  return toJSONList(users.map((u) => u.toObject()));
+export async function listUsers(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = { agencyId: ctx.agencyId };
+  const query = User.find(filter).sort({ createdAt: -1 }).select("-password");
+
+  if (!pagination) {
+    const users = await query.exec();
+    const data = toJSONList(users.map((u) => u.toObject()));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    User.countDocuments(filter),
+  ]);
+
+  const data = toJSONList(users.map((u) => u.toObject()));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getUser(ctx: TenantContext, id: string) {
@@ -871,6 +1224,15 @@ function generateTempPassword(): string {
 }
 
 export async function updateUser(ctx: TenantContext, id: string, values: UserInput) {
+  // P0-8: Prevent privilege escalation — only admin can promote to admin
+  if (values.role === "admin" && ctx.callerRole !== "admin") {
+    throw ApiError.forbidden("Only an admin can assign the admin role");
+  }
+  // Prevent users from changing their own role
+  if (ctx.callerId === id && values.role && ctx.callerRole !== values.role) {
+    throw ApiError.forbidden("You cannot change your own role");
+  }
+
   const user = await User.findOneAndUpdate(
     { _id: id, ...tenant(ctx) },
     {
@@ -889,9 +1251,28 @@ export async function updateUser(ctx: TenantContext, id: string, values: UserInp
 
 // --- Expenses ---
 
-export async function listExpenses(ctx: TenantContext) {
-  const expenses = await Expense.find(tenant(ctx)).sort({ date: -1 });
-  return toJSONList(expenses.map((e) => e.toObject()));
+export async function listExpenses(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Expense.find(filter)
+    .populate("recordedBy", "name email")
+    .sort({ date: -1 });
+
+  if (!pagination) {
+    const expenses = await query.exec();
+    const data = toJSONList(expenses.map((e) => e.toObject()));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [expenses, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Expense.countDocuments(filter),
+  ]);
+
+  const data = toJSONList(expenses.map((e) => e.toObject()));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function getExpense(ctx: TenantContext, idOrRef: string) {
@@ -1023,6 +1404,9 @@ export async function deleteExpense(ctx: TenantContext, idOrRef: string) {
 }
 
 export async function deleteUser(ctx: TenantContext, id: string) {
+  if (ctx.callerId === id) {
+    throw ApiError.forbidden("You cannot delete your own account");
+  }
   const result = await User.findOneAndUpdate(
     { _id: id, ...tenant(ctx) },
     { isDeleted: true, deletedAt: deletedAt() },
@@ -1059,9 +1443,29 @@ export async function recordSupplierPayment(
 
 // --- Receipts (Customer Payments) ---
 
-export async function listReceipts(ctx: TenantContext) {
-  const receipts = await Receipt.find({ agencyId: ctx.agencyId, isDeleted: false }).sort({ createdAt: -1 });
-  return toJSONList(receipts.map((r) => r.toObject()));
+export async function listReceipts(ctx: TenantContext, pagination?: PaginationOptions) {
+  const filter = tenant(ctx);
+  const query = Receipt.find(filter)
+    .populate("customerId", "name")
+    .populate("bookingId", "bookingRef")
+    .sort({ createdAt: -1 });
+
+  if (!pagination) {
+    const receipts = await query.exec();
+    const data = toJSONList(receipts.map((r) => r.toObject()));
+    return { data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  }
+
+  const { page, limit } = pagination;
+  const skip = (page - 1) * limit;
+
+  const [receipts, total] = await Promise.all([
+    query.skip(skip).limit(limit).exec(),
+    Receipt.countDocuments(filter),
+  ]);
+
+  const data = toJSONList(receipts.map((r) => r.toObject()));
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
 }
 
 export async function createReceipt(
@@ -1100,6 +1504,22 @@ export async function createReceipt(
     booking.paymentStatus = "partial";
   }
   await booking.save();
+
+  // Notify booking agent
+  if (booking.agentId) {
+    try {
+      await notificationService.createNotification(ctx, {
+        recipientId: String(booking.agentId),
+        title: "Payment Received",
+        body: `Receipt ${receiptRef} generated for Booking ${booking.bookingRef} (Amount: ${data.amount})`,
+        entityType: "receipt",
+        entityId: receipt._id.toString(),
+        type: "success",
+      });
+    } catch (e) {
+      console.error("Failed to send notification for receipt", e);
+    }
+  }
 
   // Log to RecentActivity
   const customer = await Customer.findById(data.customerId);
@@ -1143,6 +1563,126 @@ export async function createBookingDocument(
 export async function deleteBookingDocument(ctx: TenantContext, docId: string) {
   const result = await BookingDocument.deleteOne({ _id: docId, agencyId: ctx.agencyId });
   return result.deletedCount > 0;
+}
+
+// --- Ledger and Statements ---
+
+export async function getCustomerLedger(ctx: TenantContext, customerId: string) {
+  const filter = { agencyId: ctx.agencyId, customerId };
+  const [customer, bookings, receipts] = await Promise.all([
+    Customer.findOne(filter),
+    Booking.find(filter).sort({ createdAt: 1 }),
+    Receipt.find(filter).sort({ date: 1 }),
+  ]);
+
+  if (!customer) throw ApiError.notFound("Customer");
+
+  const ledger = [];
+  let runningBalance = 0;
+
+  for (const b of bookings) {
+    runningBalance += b.salePrice;
+    ledger.push({
+      date: b.createdAt,
+      type: "booking",
+      reference: b.bookingRef,
+      description: `Booking - ${b.airline} (${b.departureCity} to ${b.arrivalCity})`,
+      debit: b.salePrice,
+      credit: 0,
+      balance: runningBalance,
+    });
+  }
+
+  for (const r of receipts) {
+    runningBalance -= r.amount;
+    ledger.push({
+      date: r.date,
+      type: "receipt",
+      reference: r.receiptRef,
+      description: `Payment Received - ${r.paymentMethod}`,
+      debit: 0,
+      credit: r.amount,
+      balance: runningBalance,
+    });
+  }
+
+  ledger.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Recalculate balance chronologically
+  runningBalance = 0;
+  for (const entry of ledger) {
+    runningBalance += entry.debit;
+    runningBalance -= entry.credit;
+    entry.balance = runningBalance;
+  }
+
+  return {
+    customer: toJSON(customer.toObject()),
+    entries: ledger,
+    finalBalance: runningBalance,
+  };
+}
+
+export async function getSupplierStatement(ctx: TenantContext, supplierId: string) {
+  const filter = { agencyId: ctx.agencyId, supplierId };
+  // Note: For suppliers, bookings are credits (we owe them), payments are debits (we paid them)
+  const [supplier, bookings] = await Promise.all([
+    Supplier.findOne({ _id: supplierId, agencyId: ctx.agencyId }),
+    Booking.find(filter).sort({ createdAt: 1 }),
+  ]);
+
+  if (!supplier) throw ApiError.notFound("Supplier");
+
+  const payments = await RecentActivity.find({
+    agencyId: ctx.agencyId,
+    type: "payment",
+    title: `Payment to ${supplier.name}`,
+  }).sort({ createdAt: 1 });
+
+  const statement = [];
+  let runningBalance = 0;
+
+  // Bookings (we owe supplier -> Credit)
+  for (const b of bookings) {
+    statement.push({
+      date: b.createdAt,
+      type: "booking",
+      reference: b.bookingRef,
+      description: `Booking - ${b.airline} (${b.departureCity} to ${b.arrivalCity})`,
+      debit: 0,
+      credit: b.costPrice,
+    });
+  }
+
+  // Payments (we paid supplier -> Debit)
+  for (const p of payments) {
+    // detail is like: "PKR 1,500 via cash (Ref: 123)"
+    // We can extract amount from detail if we really want, but for now we just parse it
+    const amountStr = p.detail.split(" ")[1];
+    const amount = parseInt(amountStr.replace(/,/g, ""), 10) || 0;
+    statement.push({
+      date: p.createdAt,
+      type: "payment",
+      reference: "N/A",
+      description: p.detail,
+      debit: amount,
+      credit: 0,
+    });
+  }
+
+  statement.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  for (const entry of statement as any) {
+    runningBalance += entry.credit;
+    runningBalance -= entry.debit;
+    entry.balance = runningBalance;
+  }
+
+  return {
+    supplier: toJSON(supplier.toObject()),
+    entries: statement,
+    finalBalance: runningBalance,
+  };
 }
 
 export { userDisplayName };

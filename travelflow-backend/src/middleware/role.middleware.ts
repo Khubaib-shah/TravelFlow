@@ -1,15 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError";
-import type { IUser, UserRole } from "../models/User.model";
+import type { UserRole } from "../models/User.model";
 import { Role } from "../models/Role.model";
 
-type AuthenticatedRequest = Request & {
-  user?: IUser;
-  agencyId?: string;
-};
-
 export function requireRole(allowedRoles: UserRole[]) {
-  return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(ApiError.unauthorized());
     }
@@ -21,7 +16,7 @@ export function requireRole(allowedRoles: UserRole[]) {
 }
 
 export function requirePermission(requiredPermission: string) {
-  return async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       if (!req.user || !req.agencyId) {
         return next(ApiError.unauthorized());

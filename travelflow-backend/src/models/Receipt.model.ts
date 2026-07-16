@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IReceipt extends Document {
   agencyId: Types.ObjectId;
+  branchId?: Types.ObjectId;
   receiptRef: string;
   bookingId: Types.ObjectId;
   customerId: Types.ObjectId;
@@ -17,6 +18,7 @@ export interface IReceipt extends Document {
 const ReceiptSchema = new Schema<IReceipt>(
   {
     agencyId: { type: Schema.Types.ObjectId, ref: "Agency", required: true, index: true },
+    branchId: { type: Schema.Types.ObjectId, ref: "Branch" },
     receiptRef: { type: String, required: true },
     bookingId: { type: Schema.Types.ObjectId, ref: "Booking", required: true },
     customerId: { type: Schema.Types.ObjectId, ref: "Customer", required: true },
@@ -29,4 +31,9 @@ const ReceiptSchema = new Schema<IReceipt>(
   { timestamps: true }
 );
 
+ReceiptSchema.index({ agencyId: 1, bookingId: 1 });
+ReceiptSchema.index({ agencyId: 1, customerId: 1 });
+ReceiptSchema.index({ agencyId: 1, branchId: 1 });
+
 export const Receipt = mongoose.model<IReceipt>("Receipt", ReceiptSchema);
+

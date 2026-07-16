@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Building2, Bell, Palette, Save, Upload } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings, Building2, Bell, Palette, Save, Upload, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,19 +10,91 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { TemplatesSettings } from "@/components/settings/TemplatesSettings";
-import { FileText } from "lucide-react";
+import { ApiClient as API } from "@/lib/api-client";
 
 export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSave = () => {
+  // Settings State
+  const [company, setCompany] = useState({
+    name: "",
+    registrationNo: "",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+  });
+
+  const [branding, setBranding] = useState({
+    logoUrl: "",
+    primaryColor: "#2563eb",
+  });
+
+  const [notifications, setNotifications] = useState({
+    emailAlerts: true,
+    smsAlerts: false,
+    dailyReports: true,
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await API.getSettings();
+        if (data) {
+          setCompany({
+            name: data.name || "",
+            registrationNo: data.registrationNo || "",
+            contactEmail: data.contactEmail || "",
+            contactPhone: data.contactPhone || "",
+            address: data.address || "",
+          });
+          setBranding({
+            logoUrl: data.logoUrl || "",
+            primaryColor: data.primaryColor || "#2563eb",
+          });
+          setNotifications({
+            emailAlerts: data.notifications?.emailAlerts ?? true,
+            smsAlerts: data.notifications?.smsAlerts ?? false,
+            dailyReports: data.notifications?.dailyReports ?? true,
+          });
+        }
+      } catch (error: any) {
+        toast.error("Failed to load settings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await API.updateSettings({
+        ...company,
+        ...branding,
+        notifications,
+      });
       toast.success("Settings saved successfully");
-    }, 1000);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const PRESET_COLORS = [
+    "#2563eb",
+    "#16a34a",
+    "#dc2626",
+    "#9333ea",
+    "#ea580c",
+    "#0f172a",
+  ];
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-tf-text-secondary">Loading settings...</div>;
+  }
 
   return (
     <div className="space-y-6 pb-12">
@@ -89,69 +161,49 @@ export default function SettingsPage() {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="agencyName"
-                    className="text-tf-text-primary font-medium"
-                  >
-                    Agency Name
-                  </Label>
+                  <Label htmlFor="agencyName" className="text-tf-text-primary font-medium">Agency Name</Label>
                   <Input
                     id="agencyName"
-                    defaultValue="Prestige Travel"
+                    value={company.name}
+                    onChange={(e) => setCompany({ ...company, name: e.target.value })}
                     className="bg-[var(--tf-bg)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="registrationNo"
-                    className="text-tf-text-primary font-medium"
-                  >
-                    Registration No. (Optional)
-                  </Label>
+                  <Label htmlFor="registrationNo" className="text-tf-text-primary font-medium">Registration No. (Optional)</Label>
                   <Input
                     id="registrationNo"
-                    defaultValue="TRV-2023-0891"
+                    value={company.registrationNo}
+                    onChange={(e) => setCompany({ ...company, registrationNo: e.target.value })}
                     className="bg-[var(--tf-bg)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="text-tf-text-primary font-medium"
-                  >
-                    Support Email
-                  </Label>
+                  <Label htmlFor="email" className="text-tf-text-primary font-medium">Support Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    defaultValue="support@prestigetravel.com"
+                    value={company.contactEmail}
+                    onChange={(e) => setCompany({ ...company, contactEmail: e.target.value })}
                     className="bg-[var(--tf-bg)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="phone"
-                    className="text-tf-text-primary font-medium"
-                  >
-                    Phone Number
-                  </Label>
+                  <Label htmlFor="phone" className="text-tf-text-primary font-medium">Phone Number</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    defaultValue="+92 21 111 222 333"
+                    value={company.contactPhone}
+                    onChange={(e) => setCompany({ ...company, contactPhone: e.target.value })}
                     className="bg-[var(--tf-bg)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label
-                    htmlFor="address"
-                    className="text-tf-text-primary font-medium"
-                  >
-                    Headquarters Address
-                  </Label>
+                  <Label htmlFor="address" className="text-tf-text-primary font-medium">Headquarters Address</Label>
                   <Input
                     id="address"
-                    defaultValue="Suite 400, Business Avenue, Main Boulevard, Karachi"
+                    value={company.address}
+                    onChange={(e) => setCompany({ ...company, address: e.target.value })}
                     className="bg-[var(--tf-bg)] border-tf-border focus-visible:ring-[var(--tf-primary)]"
                   />
                 </div>
@@ -163,35 +215,32 @@ export default function SettingsPage() {
         <TabsContent value="branding" className="space-y-6 mt-0">
           <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
             <div className="p-6 border-b border-tf-border bg-violet-50/30">
-              <h2 className="tf-h3 text-tf-text-primary">
-                Branding & Appearance
-              </h2>
-              <p className="tf-body-sm text-tf-text-secondary mt-1">
-                Customize how your dashboard looks.
-              </p>
+              <h2 className="tf-h3 text-tf-text-primary">Branding & Appearance</h2>
+              <p className="tf-body-sm text-tf-text-secondary mt-1">Customize how your dashboard looks.</p>
             </div>
             <div className="p-6 space-y-8">
               <div>
-                <Label className="text-tf-text-primary font-medium block mb-4">
-                  Agency Logo
-                </Label>
+                <Label className="text-tf-text-primary font-medium block mb-4">Agency Logo</Label>
                 <div className="flex items-start gap-6">
                   <div className="w-24 h-24 rounded-lg bg-[var(--tf-surface-2)] border border-tf-border flex items-center justify-center overflow-hidden">
-                    <span className="text-3xl font-bold text-tf-primary">
-                      PT
-                    </span>
+                    {branding.logoUrl ? (
+                      <img src={branding.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-bold text-tf-primary">
+                        {company.name ? company.name.substring(0, 2).toUpperCase() : "PT"}
+                      </span>
+                    )}
                   </div>
                   <div className="space-y-3">
-                    <Button
-                      variant="outline"
-                      className="border-tf-border text-tf-text-primary hover:bg-[var(--tf-surface-2)]"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Logo
-                    </Button>
-                    <p className="text-xs text-tf-text-muted">
-                      Recommended size: 256x256px. Max 2MB.
-                    </p>
+                    <div className="flex items-center gap-2">
+                       <Input
+                        placeholder="Image URL (e.g., https://example.com/logo.png)"
+                        value={branding.logoUrl}
+                        onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
+                        className="bg-[var(--tf-bg)] border-tf-border w-64"
+                      />
+                    </div>
+                    <p className="text-xs text-tf-text-muted">Recommended size: 256x256px. Max 2MB.</p>
                   </div>
                 </div>
               </div>
@@ -199,21 +248,13 @@ export default function SettingsPage() {
               <Separator className="bg-[var(--tf-border)]" />
 
               <div>
-                <Label className="text-tf-text-primary font-medium block mb-4">
-                  Brand Color
-                </Label>
+                <Label className="text-tf-text-primary font-medium block mb-4">Brand Color</Label>
                 <div className="flex gap-4">
-                  {[
-                    "#2563eb",
-                    "#16a34a",
-                    "#dc2626",
-                    "#9333ea",
-                    "#ea580c",
-                    "#0f172a",
-                  ].map((color, i) => (
+                  {PRESET_COLORS.map((color) => (
                     <button
                       key={color}
-                      className={`w-10 h-10 rounded-full border-2 ${i === 0 ? "border-[var(--tf-text-primary)]" : "border-transparent"}`}
+                      onClick={() => setBranding({ ...branding, primaryColor: color })}
+                      className={`w-10 h-10 rounded-full border-2 ${branding.primaryColor === color ? "border-[var(--tf-text-primary)]" : "border-transparent"}`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
@@ -226,46 +267,39 @@ export default function SettingsPage() {
         <TabsContent value="notifications" className="space-y-6 mt-0">
           <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden">
             <div className="p-6 border-b border-tf-border bg-amber-50/30">
-              <h2 className="tf-h3 text-tf-text-primary">
-                Notification Preferences
-              </h2>
-              <p className="tf-body-sm text-tf-text-secondary mt-1">
-                Choose what alerts you want to receive.
-              </p>
+              <h2 className="tf-h3 text-tf-text-primary">Notification Preferences</h2>
+              <p className="tf-body-sm text-tf-text-secondary mt-1">Choose what alerts you want to receive.</p>
             </div>
             <div className="p-0">
               <div className="p-6 border-b border-tf-border flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-tf-text-primary">
-                    New Lead Alerts
-                  </h4>
-                  <p className="text-sm text-tf-text-secondary">
-                    Get notified when a new lead is assigned to you.
-                  </p>
+                  <h4 className="font-medium text-tf-text-primary">New Lead Alerts</h4>
+                  <p className="text-sm text-tf-text-secondary">Get notified when a new lead is assigned to you.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={notifications.emailAlerts}
+                  onCheckedChange={(c) => setNotifications({ ...notifications, emailAlerts: c })}
+                />
               </div>
               <div className="p-6 border-b border-tf-border flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-tf-text-primary">
-                    Booking Confirmations
-                  </h4>
-                  <p className="text-sm text-tf-text-secondary">
-                    Receive emails when a booking status changes to confirmed.
-                  </p>
+                  <h4 className="font-medium text-tf-text-primary">Booking Confirmations</h4>
+                  <p className="text-sm text-tf-text-secondary">Receive emails when a booking status changes to confirmed.</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch
+                  checked={notifications.smsAlerts}
+                  onCheckedChange={(c) => setNotifications({ ...notifications, smsAlerts: c })}
+                />
               </div>
               <div className="p-6 flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-tf-text-primary">
-                    Daily Summary
-                  </h4>
-                  <p className="text-sm text-tf-text-secondary">
-                    A daily email summarizing new leads and bookings.
-                  </p>
+                  <h4 className="font-medium text-tf-text-primary">Daily Summary</h4>
+                  <p className="text-sm text-tf-text-secondary">A daily email summarizing new leads and bookings.</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={notifications.dailyReports}
+                  onCheckedChange={(c) => setNotifications({ ...notifications, dailyReports: c })}
+                />
               </div>
             </div>
           </div>
@@ -277,11 +311,7 @@ export default function SettingsPage() {
       </Tabs>
 
       <div className="sm:hidden flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="bg-tf-primary text-white w-full"
-        >
+        <Button onClick={handleSave} disabled={isSaving} className="bg-tf-primary text-white w-full">
           <Save className="w-4 h-4 mr-2" />
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>

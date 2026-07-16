@@ -23,4 +23,8 @@ const RoleSchema = new Schema<IRole>(
   { timestamps: true }
 );
 
+// Unique role name per agency (only among non-deleted roles)
+RoleSchema.index({ agencyId: 1, name: 1 }, { unique: true, partialFilterExpression: { isDeleted: false } });
+
 export const Role = mongoose.model<IRole>("Role", RoleSchema);
+

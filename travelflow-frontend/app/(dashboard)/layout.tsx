@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { useSidebarStore } from "@/store/sidebar.store";
 import { useAuthStore } from "@/store/auth.store";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 // Pages that are restricted by role
 const ROLE_RESTRICTIONS: Record<string, string[]> = {
@@ -54,8 +55,17 @@ export default function DashboardLayout({
     }
   }, [isAuthenticated, user, pathname, router]);
 
-  // Don't render layout until auth is confirmed
-  if (!isAuthenticated || !user) return null;
+  // Don't render layout until auth is confirmed, but show a spinner instead of blank page
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[var(--tf-bg)]">
+        <div className="text-tf-text-secondary flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-tf-primary border-t-transparent"></div>
+          <p>Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Check if current page is allowed for this user
   const requiredRoles = getRequiredRoles(pathname);
@@ -73,7 +83,9 @@ export default function DashboardLayout({
       >
         <Topbar />
         <main className="flex-1 overflow-y-auto bg-[var(--tf-bg)] p-6">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

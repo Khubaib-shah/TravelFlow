@@ -7,6 +7,7 @@ This project uses shadcn/ui as the design system.
 1. NEVER create custom Button, Input, Select, Dialog, Sheet, Card, Table, Tabs, DropdownMenu, Form, Checkbox, RadioGroup, Popover, Command, Calendar, Badge, Avatar, Alert, Accordion, Breadcrumb, Pagination, Skeleton, Separator, Tooltip, ScrollArea, or any other UI primitives if an equivalent shadcn/ui component exists.
 
 2. ALWAYS import and use components from:
+
 ```tsx
 @/components/ui/*
 ```
@@ -46,7 +47,14 @@ This project uses shadcn/ui as the design system.
 * Do not create custom UI libraries.
 * Follow shadcn/ui patterns consistently.
 
+## Component Extraction Rule
+
+If the same UI pattern appears **more than 3 times** across the codebase, extract it into a reusable component under `/components` (not `/components/ui`). Compose it from shadcn primitives — do not rebuild UI from scratch.
+
+Examples: icon buttons, filter selects, table entity links, empty states.
+
 ## ERP Project Requirement
+
 This ERP must maintain a single, consistent design system.
 Whenever generating code:
 * Reuse existing shadcn components.

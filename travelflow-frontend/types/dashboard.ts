@@ -31,4 +31,14 @@ export interface DashboardStats {
     detail: string;
     time: string | Date;
   }[];
+
+  branchPerformance?: {
+    name: string;
+    code: string;
+    revenue: number;
+    profit: number;
+    expenses: number;
+    staff: number;
+    growth: number;
+  }[];
 }

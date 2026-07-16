@@ -99,6 +99,11 @@ const BookingSchema = new Schema<IBooking>(
 );
 
 BookingSchema.index({ agencyId: 1, bookingRef: 1 }, { unique: true });
+BookingSchema.index({ agencyId: 1, customerId: 1 });
+BookingSchema.index({ agencyId: 1, branchId: 1 });
+BookingSchema.index({ agencyId: 1, bookingStatus: 1 });
+BookingSchema.index({ agencyId: 1, paymentStatus: 1 });
+BookingSchema.index({ agencyId: 1, agentId: 1 });
 
 BookingSchema.pre("save", function (next) {
   this.profit = this.salePrice - this.costPrice;

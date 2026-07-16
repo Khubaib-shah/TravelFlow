@@ -46,17 +46,21 @@ export default function ReportsPage() {
   const branchId = useWatch({ control: form.control, name: "branchId" });
 
   const [data, setData] = useState<AnalyticsResponse | null>(null);
+  const [branches, setBranches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
       try {
-        const response = (await ApiClient.getAnalytics({
-          timeRange,
-          branchId,
-        })) as AnalyticsResponse;
-        setData(response);
+        const [analyticsRes, settingsRes] = await Promise.all([
+          ApiClient.getAnalytics({ timeRange, branchId }),
+          isAdmin ? ApiClient.getSettings() : Promise.resolve(null)
+        ]);
+        setData(analyticsRes as AnalyticsResponse);
+        if (settingsRes && settingsRes.branches) {
+          setBranches(settingsRes.branches);
+        }
       } catch (error) {
         console.error("Failed to load analytics", error);
       } finally {
@@ -64,7 +68,7 @@ export default function ReportsPage() {
       }
     }
     loadData();
-  }, [timeRange, branchId]);
+  }, [timeRange, branchId, isAdmin]);
 
   // Loading Skeleton
   if (loading || !data) {
@@ -115,7 +119,7 @@ export default function ReportsPage() {
                   name="branchId"
                   options={[
                     { label: "All Branches", value: "all" },
-                    // In a full implementation, you would dynamically fetch the branch list here
+                    ...branches.map(b => ({ label: b.name, value: b._id }))
                   ]}
                 />
               </div>

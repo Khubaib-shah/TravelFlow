@@ -7,9 +7,29 @@ import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 import { env } from "./config/env";
 import routes from "./routes";
 import { errorMiddleware, notFoundMiddleware } from "./middleware/error.middleware";
+
+/** 5 login attempts per 15 minutes per IP */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests, please try again later.", code: "RATE_LIMITED" },
+  skipSuccessfulRequests: false,
+});
+
+/** 300 general requests per 15 minutes per IP */
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests, please try again later.", code: "RATE_LIMITED" },
+});
 
 export function createApp() {
   const app = express();
@@ -32,9 +52,18 @@ export function createApp() {
     app.use(morgan("dev"));
   }
 
-  app.use(`/api/${env.apiVersion}`, routes);
+  // Apply strict limiter on auth mutation routes
+  const apiPrefix = `/api/${env.apiVersion}`;
+  app.use(`${apiPrefix}/auth/login`, authLimiter);
+  app.use(`${apiPrefix}/auth/refresh-token`, authLimiter);
+
+  // Apply general limiter to all API routes
+  app.use(apiPrefix, generalLimiter);
+
+  app.use(apiPrefix, routes);
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
 
   return app;
 }
+

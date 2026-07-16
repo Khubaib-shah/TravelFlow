@@ -10,6 +10,14 @@ export interface IAgency extends Document {
   city: string;
   country: string;
   currency: string;
+  registrationNo?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  notifications?: {
+    emailAlerts: boolean;
+    smsAlerts: boolean;
+    dailyReports: boolean;
+  };
   status: "active" | "suspended" | "inactive";
   isDeleted: boolean;
   deletedAt?: Date;
@@ -26,6 +34,14 @@ const AgencySchema = new Schema<IAgency>(
     city: { type: String, required: true },
     country: { type: String, default: "Pakistan" },
     currency: { type: String, default: "PKR" },
+    registrationNo: String,
+    logoUrl: String,
+    primaryColor: { type: String, default: "#000000" },
+    notifications: {
+      emailAlerts: { type: Boolean, default: true },
+      smsAlerts: { type: Boolean, default: false },
+      dailyReports: { type: Boolean, default: true },
+    },
     status: { type: String, enum: ["active", "suspended", "inactive"], default: "active" },
     isDeleted: { type: Boolean, default: false },
     deletedAt: Date,
@@ -62,6 +78,6 @@ const BranchSchema = new Schema<IBranch>(
   { timestamps: true }
 );
 
-BranchSchema.index({ agencyId: 1, code: 1 });
+BranchSchema.index({ agencyId: 1, code: 1 }, { unique: true });
 
 export const Branch = mongoose.model<IBranch>("Branch", BranchSchema);

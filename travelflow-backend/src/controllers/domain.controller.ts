@@ -2,68 +2,84 @@ import { Request, Response } from "express";
 import { ApiResponse } from "../utils/ApiResponse";
 import { ApiError } from "../utils/ApiError";
 import * as domain from "../services/domain.service";
-import type { IUser } from "../models/User.model";
 
-type AuthenticatedRequest = Request & {
-  user?: IUser;
-  agencyId?: string;
-};
 
-function buildContext(req: AuthenticatedRequest): domain.TenantContext {
+function buildContext(req: Request): domain.TenantContext {
+  const branchIdQuery = req.query.branchId as string | undefined;
+
+  // Prevent branchId injection (P0-5): Only admin can query branches other than their own
+  if (branchIdQuery && branchIdQuery !== "all" && req.user?.role !== "admin") {
+    if (branchIdQuery !== String(req.user?.branchId)) {
+      throw ApiError.forbidden("You can only query data for your own branch");
+    }
+  }
+
   return {
     agencyId: req.agencyId!,
-    branchId: req.query.branchId as string | undefined,
+    branchId: branchIdQuery,
     userRole: req.user?.role,
     userBranchId: req.user?.branchId ? String(req.user.branchId) : undefined,
+    callerId: req.user?._id ? String(req.user._id) : undefined,
+    callerRole: req.user?.role,
   };
 }
 
-function actor(req: AuthenticatedRequest) {
+function actor(req: Request) {
   return domain.userDisplayName(req.user);
 }
 
-function userId(req: AuthenticatedRequest) {
+function userId(req: Request) {
   return String(req.user!._id);
 }
 
-export async function dashboardStats(req: AuthenticatedRequest, res: Response) {
+function getPagination(req: Request): domain.PaginationOptions | undefined {
+  const page = parseInt(req.query.page as string, 10);
+  const limit = parseInt(req.query.limit as string, 10);
+  if (!isNaN(page) && !isNaN(limit)) {
+    return { page, limit };
+  }
+  return undefined;
+}
+
+export async function dashboardStats(req: Request, res: Response) {
   const stats = await domain.getDashboardStats(buildContext(req));
   ApiResponse.success(res, stats);
 }
 
-export async function analyticsStats(req: AuthenticatedRequest, res: Response) {
+export async function analyticsStats(req: Request, res: Response) {
   const timeRange = (req.query.timeRange as string) || "6m";
   const stats = await domain.getAnalyticsStats(buildContext(req), timeRange);
   ApiResponse.success(res, stats);
 }
 
-export async function listLeads(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listLeads(buildContext(req)));
+export async function listLeads(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listLeads(buildContext(req), getPagination(req)));
 }
 
-export async function getLead(req: AuthenticatedRequest, res: Response) {
+export async function getLead(req: Request, res: Response) {
   const lead = await domain.getLead(buildContext(req), req.params.id);
   if (!lead) throw ApiError.notFound("Lead");
   ApiResponse.success(res, lead);
 }
 
-export async function createLead(req: AuthenticatedRequest, res: Response) {
+export async function createLead(req: Request, res: Response) {
   const lead = await domain.createLead(buildContext(req), req.body, actor(req));
   ApiResponse.created(res, lead);
 }
 
-export async function updateLead(req: AuthenticatedRequest, res: Response) {
+export async function updateLead(req: Request, res: Response) {
   const lead = await domain.updateLead(
     buildContext(req),
     req.params.id,
     req.body,
+    actor(req)
   );
   if (!lead) throw ApiError.notFound("Lead");
   ApiResponse.success(res, lead);
 }
 
 export async function addLeadActivity(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const activity = await domain.addLeadActivity(
@@ -75,7 +91,7 @@ export async function addLeadActivity(
   ApiResponse.created(res, activity);
 }
 
-export async function convertLead(req: AuthenticatedRequest, res: Response) {
+export async function convertLead(req: Request, res: Response) {
   const booking = await domain.convertLead(
     buildContext(req),
     req.params.id,
@@ -87,7 +103,7 @@ export async function convertLead(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function findOrCreateCustomerFromLead(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const customer = await domain.findOrCreateCustomerFromLead(
@@ -97,24 +113,24 @@ export async function findOrCreateCustomerFromLead(
   ApiResponse.success(res, customer);
 }
 
-export async function listCustomers(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listCustomers(buildContext(req)));
+export async function listCustomers(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listCustomers(buildContext(req), getPagination(req)));
 }
 
-export async function getCustomer(req: AuthenticatedRequest, res: Response) {
+export async function getCustomer(req: Request, res: Response) {
   const customer = await domain.getCustomer(buildContext(req), req.params.id);
   if (!customer) throw ApiError.notFound("Customer");
   ApiResponse.success(res, customer);
 }
 
-export async function createCustomer(req: AuthenticatedRequest, res: Response) {
+export async function createCustomer(req: Request, res: Response) {
   ApiResponse.created(
     res,
     await domain.createCustomer(buildContext(req), req.body),
   );
 }
 
-export async function updateCustomer(req: AuthenticatedRequest, res: Response) {
+export async function updateCustomer(req: Request, res: Response) {
   const customer = await domain.updateCustomer(
     buildContext(req),
     req.params.id,
@@ -125,7 +141,7 @@ export async function updateCustomer(req: AuthenticatedRequest, res: Response) {
 }
 
 export async function listCustomerNotes(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   ApiResponse.success(
@@ -135,7 +151,7 @@ export async function listCustomerNotes(
 }
 
 export async function createCustomerNote(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   ApiResponse.created(
@@ -150,7 +166,7 @@ export async function createCustomerNote(
 }
 
 export async function deleteCustomerNote(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const deleted = await domain.deleteCustomerNote(
@@ -162,7 +178,7 @@ export async function deleteCustomerNote(
 }
 
 export async function listCustomerDocuments(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   ApiResponse.success(
@@ -172,7 +188,7 @@ export async function listCustomerDocuments(
 }
 
 export async function createCustomerDocument(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   ApiResponse.created(
@@ -186,29 +202,27 @@ export async function createCustomerDocument(
   );
 }
 
-export async function deleteCustomerDocument(
-  req: AuthenticatedRequest,
-  res: Response,
-) {
-  const deleted = await domain.deleteCustomerDocument(
-    buildContext(req),
-    req.params.docId,
-  );
-  if (!deleted) throw ApiError.notFound("Document");
-  ApiResponse.success(res, { deleted: true });
+export async function deleteCustomerDocument(req: Request, res: Response) {
+  const success = await domain.deleteCustomerDocument(buildContext(req), req.params.docId);
+  ApiResponse.success(res, { deleted: success });
 }
 
-export async function listBookings(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listBookings(buildContext(req)));
+export async function getCustomerLedger(req: Request, res: Response) {
+  const data = await domain.getCustomerLedger(buildContext(req), req.params.id);
+  ApiResponse.success(res, data);
 }
 
-export async function getBooking(req: AuthenticatedRequest, res: Response) {
+export async function listBookings(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listBookings(buildContext(req), getPagination(req)));
+}
+
+export async function getBooking(req: Request, res: Response) {
   const booking = await domain.getBooking(buildContext(req), req.params.id);
   if (!booking) throw ApiError.notFound("Booking");
   ApiResponse.success(res, booking);
 }
 
-export async function createBooking(req: AuthenticatedRequest, res: Response) {
+export async function createBooking(req: Request, res: Response) {
   ApiResponse.created(
     res,
     await domain.createBooking(
@@ -220,7 +234,7 @@ export async function createBooking(req: AuthenticatedRequest, res: Response) {
   );
 }
 
-export async function updateBooking(req: AuthenticatedRequest, res: Response) {
+export async function updateBooking(req: Request, res: Response) {
   const booking = await domain.updateBooking(
     buildContext(req),
     req.params.id,
@@ -230,24 +244,24 @@ export async function updateBooking(req: AuthenticatedRequest, res: Response) {
   ApiResponse.success(res, booking);
 }
 
-export async function listSuppliers(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listSuppliers(buildContext(req)));
+export async function listSuppliers(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listSuppliers(buildContext(req), getPagination(req)));
 }
 
-export async function getSupplier(req: AuthenticatedRequest, res: Response) {
+export async function getSupplier(req: Request, res: Response) {
   const supplier = await domain.getSupplier(buildContext(req), req.params.id);
   if (!supplier) throw ApiError.notFound("Supplier");
   ApiResponse.success(res, supplier);
 }
 
-export async function createSupplier(req: AuthenticatedRequest, res: Response) {
+export async function createSupplier(req: Request, res: Response) {
   ApiResponse.created(
     res,
     await domain.createSupplier(buildContext(req), req.body),
   );
 }
 
-export async function updateSupplier(req: AuthenticatedRequest, res: Response) {
+export async function updateSupplier(req: Request, res: Response) {
   const supplier = await domain.updateSupplier(
     buildContext(req),
     req.params.id,
@@ -257,24 +271,24 @@ export async function updateSupplier(req: AuthenticatedRequest, res: Response) {
   ApiResponse.success(res, supplier);
 }
 
-export async function listBranches(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listBranches(buildContext(req)));
+export async function listBranches(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listBranches(buildContext(req), getPagination(req)));
 }
 
-export async function getBranch(req: AuthenticatedRequest, res: Response) {
+export async function getBranch(req: Request, res: Response) {
   const branch = await domain.getBranch(buildContext(req), req.params.id);
   if (!branch) throw ApiError.notFound("Branch");
   ApiResponse.success(res, branch);
 }
 
-export async function createBranch(req: AuthenticatedRequest, res: Response) {
+export async function createBranch(req: Request, res: Response) {
   ApiResponse.created(
     res,
     await domain.createBranch(buildContext(req), req.body),
   );
 }
 
-export async function updateBranch(req: AuthenticatedRequest, res: Response) {
+export async function updateBranch(req: Request, res: Response) {
   const branch = await domain.updateBranch(
     buildContext(req),
     req.params.id,
@@ -284,28 +298,28 @@ export async function updateBranch(req: AuthenticatedRequest, res: Response) {
   ApiResponse.success(res, branch);
 }
 
-export async function listUsers(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listUsers(buildContext(req)));
+export async function listUsers(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listUsers(buildContext(req), getPagination(req)));
 }
 
-export async function listAgents(req: AuthenticatedRequest, res: Response) {
+export async function listAgents(req: Request, res: Response) {
   ApiResponse.success(res, await domain.listAgents(buildContext(req)));
 }
 
-export async function getUser(req: AuthenticatedRequest, res: Response) {
+export async function getUser(req: Request, res: Response) {
   const user = await domain.getUser(buildContext(req), req.params.id);
   if (!user) throw ApiError.notFound("User");
   ApiResponse.success(res, user);
 }
 
-export async function createUser(req: AuthenticatedRequest, res: Response) {
+export async function createUser(req: Request, res: Response) {
   ApiResponse.created(
     res,
     await domain.createUser(buildContext(req), req.body),
   );
 }
 
-export async function updateUser(req: AuthenticatedRequest, res: Response) {
+export async function updateUser(req: Request, res: Response) {
   const user = await domain.updateUser(
     buildContext(req),
     req.params.id,
@@ -315,8 +329,8 @@ export async function updateUser(req: AuthenticatedRequest, res: Response) {
   ApiResponse.success(res, user);
 }
 
-export async function listExpenses(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listExpenses(buildContext(req)));
+export async function listExpenses(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listExpenses(buildContext(req), getPagination(req)));
 }
 
 export async function getExpense(req: Request, res: Response) {
@@ -388,9 +402,13 @@ export async function deleteBooking(req: Request, res: Response) {
 }
 
 export async function deleteSupplier(req: Request, res: Response) {
-  const ok = await domain.deleteSupplier(buildContext(req), req.params.id);
-  if (!ok) throw ApiError.notFound("Supplier");
-  ApiResponse.success(res, { deleted: true });
+  const success = await domain.deleteSupplier(buildContext(req), req.params.id);
+  ApiResponse.success(res, { deleted: success });
+}
+
+export async function getSupplierStatement(req: Request, res: Response) {
+  const data = await domain.getSupplierStatement(buildContext(req), req.params.id);
+  ApiResponse.success(res, data);
 }
 
 export async function deleteExpense(req: Request, res: Response) {
@@ -408,7 +426,7 @@ export async function deleteUser(req: Request, res: Response) {
 // ─── Supplier Payments ────────────────────────────────────────────────────────
 
 export async function recordSupplierPayment(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const supplier = await domain.recordSupplierPayment(
@@ -421,11 +439,11 @@ export async function recordSupplierPayment(
 
 // ─── Receipts ─────────────────────────────────────────────────────────────────
 
-export async function listReceipts(req: AuthenticatedRequest, res: Response) {
-  ApiResponse.success(res, await domain.listReceipts(buildContext(req)));
+export async function listReceipts(req: Request, res: Response) {
+  ApiResponse.success(res, await domain.listReceipts(buildContext(req), getPagination(req)));
 }
 
-export async function createReceipt(req: AuthenticatedRequest, res: Response) {
+export async function createReceipt(req: Request, res: Response) {
   const receipt = await domain.createReceipt(
     buildContext(req),
     req.body,
@@ -437,7 +455,7 @@ export async function createReceipt(req: AuthenticatedRequest, res: Response) {
 // ─── Booking Documents ────────────────────────────────────────────────────────
 
 export async function listBookingDocuments(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   ApiResponse.success(
@@ -447,7 +465,7 @@ export async function listBookingDocuments(
 }
 
 export async function createBookingDocument(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const doc = await domain.createBookingDocument(
@@ -460,7 +478,7 @@ export async function createBookingDocument(
 }
 
 export async function deleteBookingDocument(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
 ) {
   const ok = await domain.deleteBookingDocument(

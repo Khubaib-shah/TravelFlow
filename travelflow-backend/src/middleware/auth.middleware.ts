@@ -1,21 +1,20 @@
 import { Request, Response, NextFunction } from "express";
-import { User } from "../models";
-import type { IUser } from "../models/User.model";
+import { User, TokenBlacklist } from "../models";
 import { ApiError } from "../utils/ApiError";
 import { verifyToken } from "../utils/jwt";
 
-type AuthenticatedRequest = Request & {
-  user?: IUser;
-  agencyId?: string;
-};
-
-export async function authMiddleware(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
+export async function authMiddleware(req: Request, _res: Response, next: NextFunction) {
   try {
     // Read access token from HttpOnly cookie
     const token = req.cookies?.tf_access_token as string | undefined;
 
     if (!token) {
       throw ApiError.unauthorized("Authentication required");
+    }
+
+    const isBlacklisted = await TokenBlacklist.exists({ token });
+    if (isBlacklisted) {
+      throw ApiError.unauthorized("Token has been revoked");
     }
 
     const payload = verifyToken(token);
