@@ -50,7 +50,7 @@ export default function SupplierStatementPrintPage() {
   }
 
   return (
-    <div className="w-full h-screen m-0 p-0 overflow-hidden bg-black">
+    <div className="flex-1 w-full h-screen m-0 p-0 overflow-hidden bg-black">
       <SupplierStatementPDFViewer data={data} />
     </div>
   );

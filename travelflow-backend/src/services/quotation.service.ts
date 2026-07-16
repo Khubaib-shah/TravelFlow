@@ -36,6 +36,7 @@ export type QuotationServiceQuotationInput = {
   customerNotes?: string;
   internalNotes?: string;
   termsTemplateId?: string;
+  terms?: string;
   authorizedSignature?: string;
 
   items?: Array<{
@@ -198,6 +199,7 @@ export async function getQuotation(agencyId: string, quotationId: string) {
   q.terms = q.terms;
   if (quotationDoc.customerId) {
     q.customer = toJSON(quotationDoc.customerId);
+    q.customerId = quotationDoc.customerId._id ? String(quotationDoc.customerId._id) : String(quotationDoc.customerId);
   }
 
   const mappedItems = toJSONList(items).map((it: any) => ({
@@ -288,6 +290,7 @@ export async function createQuotation({
     customerNotes: input.customerNotes,
     internalNotes: input.internalNotes,
     termsTemplateId: input.termsTemplateId,
+    terms: input.terms,
     authorizedSignature: input.authorizedSignature,
     isDeleted: false,
   });
@@ -446,6 +449,7 @@ export async function updateQuotation({
     customerNotes: input.customerNotes ?? quotation.customerNotes,
     internalNotes: input.internalNotes ?? quotation.internalNotes,
     termsTemplateId: input.termsTemplateId ?? quotation.termsTemplateId,
+    terms: input.terms ?? quotation.terms,
     authorizedSignature:
       input.authorizedSignature ?? quotation.authorizedSignature,
   });

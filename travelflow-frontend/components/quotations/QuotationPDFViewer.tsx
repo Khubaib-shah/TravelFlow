@@ -356,10 +356,10 @@ export default function QuotationPDFViewer({ data }: { data: any }) {
           <View style={styles.totalsContainer}>
             {/* Terms and Notes (Left) */}
             <View style={styles.termsSection}>
-              {data.termsAndConditions && (
+              {(data.terms || data.termsAndConditions) && (
                 <View style={{ marginBottom: 15 }}>
                   <Text style={styles.termsTitle}>Terms and Conditions</Text>
-                  <Text style={styles.termsText}>{data.termsAndConditions}</Text>
+                  <Text style={styles.termsText}>{data.terms || data.termsAndConditions}</Text>
                 </View>
               )}
               

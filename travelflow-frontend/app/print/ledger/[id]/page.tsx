@@ -50,7 +50,7 @@ export default function LedgerPrintPage() {
   }
 
   return (
-    <div className="w-full h-screen m-0 p-0 overflow-hidden bg-black">
+    <div className="flex-1 w-full h-screen m-0 p-0 overflow-hidden bg-black">
       <LedgerPDFViewer data={data} />
     </div>
   );
