@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { z } from "zod";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormTextArea } from "@/components/forms/FormField";
 import { FormSelect } from "@/components/forms/FormField";
@@ -46,7 +46,7 @@ export function FollowUpDrawer({ lead, isOpen, onClose, onSaved }: FollowUpDrawe
       createdBy: "Ahmad Khan",
       createdAt: new Date(values.datetime),
     });
-    toast.success("Follow-up added");
+    showSuccess("Follow-up added");
     form.reset({
       type: "call",
       datetime: new Date().toISOString().slice(0, 16),

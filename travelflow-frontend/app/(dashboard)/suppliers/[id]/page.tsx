@@ -13,7 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API } from "@/lib/data-source";
@@ -84,12 +84,12 @@ export default function SupplierDetailPage() {
   const onEditSubmit = async (values: SupplierFormValues) => {
     try {
       await API.updateSupplier(id, values);
-      toast.success("Supplier updated successfully");
+      showSuccess("Supplier updated successfully");
       setIsEditDrawerOpen(false);
       await loadData();
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err.message || "Failed to update supplier");
+      showError(err.message || "Failed to update supplier");
     }
   };
 

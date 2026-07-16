@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CustomerDocument } from "@/types";
 import { API } from "@/lib/data-source";
-import { toast } from "sonner";
+import { showSuccess, showError, showWarning } from "@/lib/toast-utils";
 import { Download, FileText, Trash2, Upload } from "lucide-react";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FilterSelect } from "@/components/shared/FilterSelect";
@@ -31,11 +31,11 @@ export function CustomerDocumentsPanel({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File must be under 5MB");
+      showError("File must be under 5MB");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.warning("Large file — may affect performance");
+      showWarning("Large file — may affect performance");
     }
 
     setUploading(true);
@@ -50,7 +50,7 @@ export function CustomerDocumentsPanel({
         base64Data: base64,
         notes: notes || undefined,
       });
-      toast.success("Document uploaded");
+      showSuccess("Document uploaded");
       setUploadOpen(false);
       setNotes("");
       setUploading(false);
@@ -61,7 +61,7 @@ export function CustomerDocumentsPanel({
 
   const handleDelete = async (id: string) => {
     await API.deleteCustomerDocument(id);
-    toast.success("Document deleted");
+    showSuccess("Document deleted");
     onUpdate();
   };
 

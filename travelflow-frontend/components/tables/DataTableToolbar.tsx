@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FilterSelect } from "@/components/shared/FilterSelect";
 import { DataTableViewOptions } from "./DataTableViewOptions";
-import { toast } from "sonner";
+import { showSuccess, showError, showInfo } from "@/lib/toast-utils";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -31,7 +31,7 @@ export function DataTableToolbar<TData>({
     try {
       const rows = table.getFilteredRowModel().rows;
       if (rows.length === 0) {
-        toast.info("No data to export");
+        showInfo("No data to export");
         return;
       }
 
@@ -60,9 +60,9 @@ export function DataTableToolbar<TData>({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast.success("Export successful");
+      showSuccess("Export successful");
     } catch (e) {
-      toast.error("Failed to export data");
+      showError("Failed to export data");
     }
   };
 

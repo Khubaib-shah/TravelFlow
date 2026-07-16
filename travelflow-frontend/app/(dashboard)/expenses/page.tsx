@@ -5,7 +5,7 @@ import { Plus, CreditCard } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Expense } from "@/types";
@@ -39,9 +39,14 @@ export default function ExpensesPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const expenses = await API.getExpenses();
-    setData(expenses);
-    setIsLoading(false);
+    try {
+      const expenses = await API.getExpenses();
+      setData(expenses);
+    } catch (error: unknown) {
+      showError(error, { context: "Loading expenses" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -59,16 +64,20 @@ export default function ExpensesPage() {
   };
 
   const onSubmit = async (values: ExpenseFormValues) => {
-    if (isEditing && editingId) {
-      await API.updateExpense(editingId, values);
-      toast.success("Expense updated successfully");
-    } else {
-      await API.createExpense(values);
-      toast.success("Expense logged successfully");
+    try {
+      if (isEditing && editingId) {
+        await API.updateExpense(editingId, values);
+        showSuccess("Expense updated successfully");
+      } else {
+        await API.createExpense(values);
+        showSuccess("Expense logged successfully");
+      }
+      close();
+      form.reset(expenseDefaultValues);
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating expense" : "Creating expense" });
     }
-    close();
-    form.reset(expenseDefaultValues);
-    await loadData();
   };
 
   const columns: ColumnDef<Expense>[] = [

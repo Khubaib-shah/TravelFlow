@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +50,7 @@ export function TemplatesSettings() {
       const data = await API.getTemplates();
       setTemplates(data);
     } catch (error) {
-      toast.error("Failed to load templates");
+      showError("Failed to load templates");
     } finally {
       setLoading(false);
     }
@@ -74,21 +74,21 @@ export function TemplatesSettings() {
 
   const handleSave = async () => {
     if (!formData.name || !formData.type || !formData.content) {
-      toast.error("Please fill all required fields");
+      showError("Please fill all required fields");
       return;
     }
     try {
       if (editingTemplate) {
         await API.updateTemplate(editingTemplate.id, formData);
-        toast.success("Template updated");
+        showSuccess("Template updated");
       } else {
         await API.createTemplate(formData);
-        toast.success("Template created");
+        showSuccess("Template created");
       }
       setIsDrawerOpen(false);
       fetchTemplates();
     } catch (error) {
-      toast.error("Failed to save template");
+      showError("Failed to save template");
     }
   };
 
@@ -96,10 +96,10 @@ export function TemplatesSettings() {
     if (!deleteId) return;
     try {
       await API.deleteTemplate(deleteId);
-      toast.success("Template deleted");
+      showSuccess("Template deleted");
       fetchTemplates();
     } catch (error) {
-      toast.error("Failed to delete template");
+      showError("Failed to delete template");
     } finally {
       setDeleteId(null);
     }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { API } from "@/lib/data-source";
 import { Booking } from "@/types";
 import { DataTable } from "@/components/tables/DataTable";
@@ -13,25 +13,30 @@ import { formatCurrencyPKR } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { TableEntityLink } from "@/components/shared/TableEntityLink";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { parseApiError } from "@/lib/error-parser";
+import { useInvalidationStore } from "@/store/invalidation.store";
 
 export function RecentBookingsTable({
-  isLoading: initialLoading,
+  isLoading: parentLoading,
 }: {
   isLoading: boolean;
 }) {
-  const [data, setData] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(initialLoading);
   const router = useRouter();
+  const lastUpdated = useInvalidationStore((state) => state.lastUpdated);
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const bookings = await API.getBookings();
-      setData(bookings);
-      setLoading(false);
-    }
-    loadData();
-  }, []);
+  const {
+    data = [],
+    isLoading: queryLoading,
+    error,
+    refetch,
+  } = useQuery<Booking[]>({
+    queryKey: ["bookings", "recent", lastUpdated],
+    queryFn: () => API.getBookings(),
+    staleTime: 30_000,
+  });
+
+  const isLoading = parentLoading || queryLoading;
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -131,11 +136,19 @@ export function RecentBookingsTable({
         </Link>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data}
-        isLoading={loading || initialLoading}
-      />
+      {error && !isLoading ? (
+        <ErrorState
+          error={parseApiError(error)}
+          onRetry={() => refetch()}
+          variant="section"
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={data}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { use } from "react";
 import { ArrowLeft, Printer, Send, FileText, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
 
@@ -42,14 +42,14 @@ export default function InvoiceDetailPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => toast.success("Invoice emailed successfully")}
+            onClick={() => showSuccess("Invoice emailed successfully")}
             className="bg-tf-surface text-tf-text-primary print:hidden"
           >
             <Send className="w-4 h-4 mr-2" /> Email
           </Button>
           <Button
             onClick={() => {
-              toast.success("Generating PDF...");
+              showSuccess("Generating PDF...");
               window.print();
             }}
             className="bg-tf-primary text-white hover:bg-tf-primary-hover print:hidden"

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { z } from "zod";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FormField, FormSelect } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
@@ -106,11 +106,11 @@ export function ConvertToBookingDrawer({
         adults: lead.adults,
         children: lead.children,
       });
-      toast.success(`Booking created successfully · ${booking.bookingRef}`);
+      showSuccess(`Booking created successfully · ${booking.bookingRef}`);
       onClose();
       router.push(`/bookings/${booking.id}`);
     } catch (err: any) {
-      toast.error(err.message || "Failed to convert lead to booking");
+      showError(err.message || "Failed to convert lead to booking");
     }
   };
 

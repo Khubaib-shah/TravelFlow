@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, FileText, Share2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
@@ -51,7 +51,7 @@ export default function QuotationsPage() {
       setViewingQuotationId(id);
       setIsViewMode(true);
     } catch (e: any) {
-      toast.error(e.message || "Failed to load quotation");
+      showError(e.message || "Failed to load quotation");
     }
   };
 
@@ -61,7 +61,7 @@ export default function QuotationsPage() {
       setViewInitialValues(mapQuotationToForm(q));
       openEdit(id);
     } catch (e: any) {
-      toast.error(e.message || "Failed to load quotation");
+      showError(e.message || "Failed to load quotation");
     }
   };
 
@@ -88,7 +88,7 @@ export default function QuotationsPage() {
         setBranches([]);
       }
     } catch (e: any) {
-      toast.error(e.message || "Failed to load quotations");
+      showError(e.message || "Failed to load quotations");
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +166,7 @@ export default function QuotationsPage() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  toast.success("Sharing option will be available soon!");
+                  showSuccess("Sharing option will be available soon!");
                 }}
                 className="text-tf-text-secondary focus:bg-tf-surface-2 cursor-pointer"
               >

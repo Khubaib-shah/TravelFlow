@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
+import { showSuccess, showError, showInfo } from "@/lib/toast-utils";
 import { useAuthStore } from "@/store/auth.store";
 
 const loginSchema = z.object({
@@ -43,11 +43,11 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(values.email, values.password);
-      toast.success("Successfully logged in");
+      showSuccess("Successfully logged in");
       router.push("/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
-      toast.error(message);
+      showError(message);
     } finally {
       setSubmitting(false);
     }
@@ -57,11 +57,11 @@ export default function LoginPage() {
     if (role === "admin") {
       form.setValue("email", "admin@triptrails.com");
       form.setValue("password", "password123");
-      toast.info("Admin credentials filled");
+      showInfo("Admin credentials filled");
     } else {
       form.setValue("email", "agent@triptrails.com");
       form.setValue("password", "agent123");
-      toast.info("Agent credentials filled");
+      showInfo("Agent credentials filled");
     }
   };
 

@@ -43,9 +43,31 @@ export function DrawerForm({
   size = "md",
   submitLabel = "Save Changes",
 }: DrawerFormProps) {
-  const preventCloseOnSelect = (e: Event) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('[data-slot="select-content"]')) {
+  const isSelectOpenRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const handlePointerDown = () => {
+      // Check if any Select or Popover is currently mounted
+      // We do this in the capture phase before Radix has a chance to unmount them
+      const isSelectOpen = !!(
+        document.querySelector('[data-slot="select-content"]') ||
+        document.querySelector('[data-slot="popover-content"]') ||
+        document.querySelector('[data-radix-select-content]') ||
+        document.querySelector('[data-radix-popper-content-wrapper]')
+      );
+      isSelectOpenRef.current = isSelectOpen;
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, { capture: true });
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, { capture: true });
+    };
+  }, []);
+
+  const preventCloseOnSelect = (e: any) => {
+    // If a Select or Popover was open when the pointer went down,
+    // we prevent the Drawer from closing so that ONLY the Select/Popover closes.
+    if (isSelectOpenRef.current) {
       e.preventDefault();
     }
   };

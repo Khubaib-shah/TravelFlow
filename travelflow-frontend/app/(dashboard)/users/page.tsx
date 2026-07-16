@@ -5,7 +5,7 @@ import { Plus, UserCog, Copy, CheckCheck } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { User, Branch, Role } from "@/types";
@@ -62,15 +62,20 @@ export default function UsersPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const [users, branchList, roleList] = await Promise.all([
-      API.getUsers(),
-      API.getBranches(),
-      API.getRoles(),
-    ]);
-    setData(users);
-    setBranches(branchList);
-    setRoles(roleList);
-    setIsLoading(false);
+    try {
+      const [users, branchList, roleList] = await Promise.all([
+        API.getUsers(),
+        API.getBranches(),
+        API.getRoles(),
+      ]);
+      setData(users);
+      setBranches(branchList);
+      setRoles(roleList);
+    } catch (error: unknown) {
+      showError(error, { context: "Loading users" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -88,27 +93,31 @@ export default function UsersPage() {
   };
 
   const onSubmit = async (values: UserFormValues) => {
-    if (isEditing && editingId) {
-      await API.updateUser(editingId, values);
-      toast.success("User updated successfully");
-      close();
-      form.reset(userDefaultValues);
-    } else {
-      const result = await API.createUser(values);
-      close();
-      form.reset(userDefaultValues);
-      // Show temp password dialog if the backend generated one
-      if (result.tempPassword) {
-        setTempPasswordData({
-          name: `${values.firstName} ${values.lastName}`,
-          email: values.email,
-          password: result.tempPassword,
-        });
+    try {
+      if (isEditing && editingId) {
+        await API.updateUser(editingId, values);
+        showSuccess("User updated successfully");
+        close();
+        form.reset(userDefaultValues);
       } else {
-        toast.success("User created successfully");
+        const result = await API.createUser(values);
+        close();
+        form.reset(userDefaultValues);
+        // Show temp password dialog if the backend generated one
+        if (result.tempPassword) {
+          setTempPasswordData({
+            name: `${values.firstName} ${values.lastName}`,
+            email: values.email,
+            password: result.tempPassword,
+          });
+        } else {
+          showSuccess("User created successfully");
+        }
       }
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating user" : "Creating user" });
     }
-    await loadData();
   };
 
   const handleCopyPassword = () => {

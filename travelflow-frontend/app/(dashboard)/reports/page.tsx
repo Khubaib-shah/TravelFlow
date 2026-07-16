@@ -71,7 +71,7 @@ export default function ReportsPage() {
   }, [timeRange, branchId, isAdmin]);
 
   // Loading Skeleton
-  if (loading || !data) {
+  if (loading && !data) {
     return (
       <div className="space-y-6 pb-12 animate-pulse">
         <div className="bg-tf-surface-2 h-24 rounded-xl border border-tf-border w-full"></div>
@@ -91,6 +91,8 @@ export default function ReportsPage() {
       </div>
     );
   }
+
+  if (!data) return null;
 
   const { kpis, revenueData, leadSourceData, branchData } = data;
 
@@ -141,6 +143,7 @@ export default function ReportsPage() {
         </Form>
       </div>
 
+      <div className={`space-y-6 transition-opacity duration-200 ${loading ? "opacity-50 pointer-events-none" : ""}`}>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-tf-surface rounded-xl border border-tf-border p-6 shadow-sm">
@@ -228,13 +231,13 @@ export default function ReportsPage() {
                   data={leadSourceData}
                   height={300}
                   centerValue={leadSourceData
-                    .reduce((s, d) => s + d.value, 0)
+                    .reduce((s: number, d) => s + d.value, 0)
                     .toString()}
                   centerLabel="Total Leads"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 mt-2">
-                {leadSourceData.map((s) => (
+                {leadSourceData.map((s: { name: string; value: number; color: string }) => (
                   <div key={s.name} className="flex items-center gap-2">
                     <span
                       className="w-3 h-3 rounded-full"
@@ -281,6 +284,7 @@ export default function ReportsPage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

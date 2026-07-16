@@ -6,7 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { Booking, Customer, Supplier } from "@/types";
 import { API } from "@/lib/data-source";
@@ -36,6 +36,7 @@ import {
 } from "@/features/bookings/utils/mapBookingToForm";
 import { usePermissions } from "@/hooks/use-permissions";
 
+
 export default function BookingsPage() {
   const router = useRouter();
   const [data, setData] = useState<Booking[]>([]);
@@ -57,8 +58,8 @@ export default function BookingsPage() {
       setData(bookings);
       setCustomers(customerList);
       setSuppliers(supplierList);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to load bookings data");
+    } catch (error: unknown) {
+      showError(error, { context: "Loading bookings" });
     } finally {
       setIsLoading(false);
     }
@@ -87,18 +88,18 @@ export default function BookingsPage() {
     try {
       if (isEditing && editingId) {
         await API.updateBooking(editingId, values);
-        toast.success("Booking updated successfully");
+        showSuccess("Booking updated successfully");
       } else {
         const booking = await API.createBookingFromForm(values);
-        toast.success("Booking created successfully", {
+        showSuccess("Booking created successfully", {
           description: `Reference: ${booking.bookingRef}`,
         });
       }
       close();
       form.reset(bookingDefaultValues);
       await loadData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save booking");
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating booking" : "Creating booking" });
     }
   };
 
@@ -174,6 +175,14 @@ export default function BookingsPage() {
     {
       accessorKey: "bookingStatus",
       header: "Status",
+      filterFn: (row, id, value) => {
+        const rawRowValue = row.getValue(id) as any;
+        const rowValue = typeof rawRowValue === 'object' && rawRowValue !== null 
+          ? (rawRowValue.id || rawRowValue.value || rawRowValue.name || String(rawRowValue))
+          : (rawRowValue || "");
+        const filterValue = (value as string) || "";
+        return String(rowValue).toLowerCase().replace(/[-_ ]/g, '') === filterValue.toLowerCase().replace(/[-_ ]/g, '');
+      },
       cell: ({ row }) => (
         <StatusBadge status={row.original.bookingStatus as any} />
       ),
@@ -181,6 +190,14 @@ export default function BookingsPage() {
     {
       accessorKey: "paymentStatus",
       header: "Payment",
+      filterFn: (row, id, value) => {
+        const rawRowValue = row.getValue(id) as any;
+        const rowValue = typeof rawRowValue === 'object' && rawRowValue !== null 
+          ? (rawRowValue.id || rawRowValue.value || rawRowValue.name || String(rawRowValue))
+          : (rawRowValue || "");
+        const filterValue = (value as string) || "";
+        return String(rowValue).toLowerCase().replace(/[-_ ]/g, '') === filterValue.toLowerCase().replace(/[-_ ]/g, '');
+      },
       cell: ({ row }) => (
         <StatusBadge status={row.original.paymentStatus as any} />
       ),
@@ -199,10 +216,10 @@ export default function BookingsPage() {
             if (!confirm(`Delete booking "${r.original.bookingRef}"?`)) return;
             try {
               await API.deleteBooking(r.original.id);
-              toast.success("Booking deleted");
+              showSuccess("Booking deleted");
               await loadData();
             } catch (e: any) {
-              toast.error(e.message || "Failed to delete booking");
+              showError(e.message || "Failed to delete booking");
             }
           } : undefined}
         />
@@ -251,8 +268,10 @@ export default function BookingsPage() {
                 options: [
                   { label: "Confirmed", value: "confirmed" },
                   { label: "Pending", value: "pending" },
-                  { label: "Cancelled", value: "cancelled" },
+                  { label: "Visa Processing", value: "visa_processing" },
                   { label: "Completed", value: "completed" },
+                  { label: "Refunded", value: "refunded" },
+                  { label: "Cancelled", value: "cancelled" },
                 ],
               },
             ]}

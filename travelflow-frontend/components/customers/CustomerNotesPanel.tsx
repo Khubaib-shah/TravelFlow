@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomerNote } from "@/types";
 import { API } from "@/lib/data-source";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { formatTimeAgo } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 
@@ -26,12 +26,12 @@ export function CustomerNotesPanel({
 
   const handleSubmit = async () => {
     if (text.trim().length < 10) {
-      toast.error("Note must be at least 10 characters");
+      showError("Note must be at least 10 characters");
       return;
     }
     setSaving(true);
     await API.createCustomerNote(customerId, text.trim());
-    toast.success("Note added");
+    showSuccess("Note added");
     setText("");
     setShowForm(false);
     setSaving(false);
@@ -40,7 +40,7 @@ export function CustomerNotesPanel({
 
   const handleDelete = async (id: string) => {
     await API.deleteCustomerNote(id);
-    toast.success("Note deleted");
+    showSuccess("Note deleted");
     onUpdate();
   };
 

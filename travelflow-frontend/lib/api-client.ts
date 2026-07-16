@@ -37,6 +37,7 @@ import {
   TemplateType,
 } from "@/types/template";
 import type { QuotationFormValues } from "@/features/quotations/schemas/quotation.schema";
+import { ApiError } from "./api-error";
 
 export interface CreateBookingInput {
   customerId: string;
@@ -86,6 +87,11 @@ import { useInvalidationStore } from "@/store/invalidation.store";
 // All fetches are same-origin, so HttpOnly cookies are sent automatically.
 const BASE = "/api/v1";
 
+// ─── Request Timeout ──────────────────────────────────────────────────────────
+// Maximum time (ms) before a request is automatically aborted.
+// The error parser will convert AbortError into a friendly "Request timed out" message.
+const REQUEST_TIMEOUT_MS = 20_000;
+
 const notifyInvalidation = () => {
   if (typeof window !== "undefined") {
     useInvalidationStore.getState().invalidate();
@@ -95,15 +101,6 @@ const notifyInvalidation = () => {
 // ─── Core fetch wrapper ───────────────────────────────────────────────────────
 let _isRefreshing = false;
 let _pendingRefresh: Promise<void> | null = null;
-
-export class ApiError extends Error {
-  status?: number;
-  constructor(message: string, status?: number) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
 
 async function request<T>(
   method: string,
@@ -131,12 +128,22 @@ async function request<T>(
     }
   }
 
-  const res = await fetch(`${BASE}${finalPath}`, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : {},
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: "include",
-  });
+  // Abort the request if it takes longer than REQUEST_TIMEOUT_MS
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${finalPath}`, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: "include",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   // Silent token refresh on 401
   if (
@@ -264,6 +271,7 @@ export const ApiClient = {
     const queryString = searchParams.toString();
     return get<unknown>(
       `/dashboard/analytics${queryString ? `?${queryString}` : ""}`,
+      { skipBranchScope: true }
     );
   },
 

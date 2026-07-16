@@ -5,7 +5,7 @@ import { Plus, Building2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Supplier } from "@/types";
@@ -37,9 +37,14 @@ export default function SuppliersPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const suppliers = await API.getSuppliers();
-    setData(suppliers);
-    setIsLoading(false);
+    try {
+      const suppliers = await API.getSuppliers();
+      setData(suppliers);
+    } catch (error: unknown) {
+      showError(error, { context: "Loading suppliers" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -57,16 +62,20 @@ export default function SuppliersPage() {
   };
 
   const onSubmit = async (values: SupplierFormValues) => {
-    if (isEditing && editingId) {
-      await API.updateSupplier(editingId, values);
-      toast.success("Supplier updated successfully");
-    } else {
-      await API.createSupplier(values);
-      toast.success("Supplier added successfully");
+    try {
+      if (isEditing && editingId) {
+        await API.updateSupplier(editingId, values);
+        showSuccess("Supplier updated successfully");
+      } else {
+        await API.createSupplier(values);
+        showSuccess("Supplier created successfully");
+      }
+      close();
+      form.reset(supplierDefaultValues);
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating supplier" : "Creating supplier" });
     }
-    close();
-    form.reset(supplierDefaultValues);
-    await loadData();
   };
 
   const columns: ColumnDef<Supplier>[] = [

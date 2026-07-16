@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { QuotationDrawer } from "@/components/quotations/QuotationDrawer";
@@ -25,7 +25,7 @@ export default function QuotationDetailPage() {
       const q = await API.getQuotation(id);
       setQuotation(q);
     } catch (e: any) {
-      toast.error(e.message || "Failed to load quotation");
+      showError(e.message || "Failed to load quotation");
     } finally {
       setIsLoading(false);
     }

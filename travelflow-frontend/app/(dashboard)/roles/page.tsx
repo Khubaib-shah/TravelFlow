@@ -5,7 +5,7 @@ import { ShieldCheck, Check, Pencil, Plus, Trash2, ChevronDown, ChevronRight } f
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { User } from "@/types";
 import { Role, ALL_PERMISSIONS, PERMISSION_GROUPS } from "@/types/role";
@@ -109,13 +109,18 @@ export default function RolesPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const [roleList, userList] = await Promise.all([
-      API.getRoles(),
-      API.getUsers(),
-    ]);
-    setRoles(roleList);
-    setUsers(userList);
-    setIsLoading(false);
+    try {
+      const [roleList, userList] = await Promise.all([
+        API.getRoles(),
+        API.getUsers(),
+      ]);
+      setRoles(roleList);
+      setUsers(userList);
+    } catch (error: unknown) {
+      showError(error, { context: "Loading roles" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -153,32 +158,42 @@ export default function RolesPage() {
   const handleSave = async () => {
     if (!editingRole) return;
     setIsSaving(true);
-    await API.updateRolePermissions(editingRole.id, selectedPermissions);
-    toast.success(`Permissions updated for ${editingRole.name}`);
-    setEditOpen(false);
-    setEditingRole(null);
-    setIsSaving(false);
-    await loadData();
+    try {
+      await API.updateRolePermissions(editingRole.id, selectedPermissions);
+      showSuccess(`Permissions updated for ${editingRole.name}`);
+      setEditOpen(false);
+      setEditingRole(null);
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: "Updating permissions" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCreateRole = async (values: RoleFormValues) => {
     setIsSaving(true);
-    await API.createRole({ ...values, permissions: selectedPermissions });
-    toast.success("Role created successfully");
-    setCreateOpen(false);
-    form.reset();
-    setSelectedPermissions([]);
-    setIsSaving(false);
-    await loadData();
+    try {
+      await API.createRole({ ...values, permissions: selectedPermissions });
+      showSuccess("Role created successfully");
+      setCreateOpen(false);
+      form.reset();
+      setSelectedPermissions([]);
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: "Creating role" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteRole = async (role: Role) => {
     try {
       await API.deleteRole(role.id);
-      toast.success("Role deleted");
+      showSuccess("Role deleted successfully");
       await loadData();
-    } catch (e: any) {
-      toast.error(e.message || "Failed to delete role");
+    } catch (error: unknown) {
+      showError(error, { context: "Deleting role" });
     } finally {
       setRoleToDelete(null);
     }

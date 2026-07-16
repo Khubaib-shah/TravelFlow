@@ -5,7 +5,7 @@ import { Plus, UserPlus } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Lead, Branch, User } from "@/types";
@@ -63,8 +63,8 @@ export default function LeadsPage() {
       } catch {
         setBranches([]);
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to load leads data");
+    } catch (error: unknown) {
+      showError(error, { context: "Loading leads" });
     } finally {
       setIsLoading(false);
     }
@@ -88,18 +88,18 @@ export default function LeadsPage() {
     try {
       if (isEditing && editingId) {
         await API.updateLead(editingId, values);
-        toast.success("Lead updated successfully");
+        showSuccess("Lead updated successfully");
       } else {
         const lead = await API.createLead(values);
-        toast.success("Lead created successfully", {
+        showSuccess("Lead created successfully", {
           description: `Reference: ${lead.leadRef}`,
         });
       }
       close();
       form.reset(leadDefaultValues);
       await loadData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save lead");
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating lead" : "Creating lead" });
     }
   };
 
@@ -147,6 +147,14 @@ export default function LeadsPage() {
     {
       accessorKey: "status",
       header: "Status",
+      filterFn: (row, id, value) => {
+        const rawRowValue = row.getValue(id) as any;
+        const rowValue = typeof rawRowValue === 'object' && rawRowValue !== null 
+          ? (rawRowValue.id || rawRowValue.value || rawRowValue.name || String(rawRowValue))
+          : (rawRowValue || "");
+        const filterValue = (value as string) || "";
+        return String(rowValue).toLowerCase().replace(/[-_ ]/g, '') === filterValue.toLowerCase().replace(/[-_ ]/g, '');
+      },
       cell: ({ row }) => <StatusBadge status={row.original.status as any} />,
     },
     {
@@ -163,10 +171,10 @@ export default function LeadsPage() {
             if (!confirm(`Delete lead "${r.original.name}"?`)) return;
             try {
               await API.deleteLead(r.original.id);
-              toast.success("Lead deleted");
+              showSuccess("Lead deleted");
               await loadData();
-            } catch (e: any) {
-              toast.error(e.message || "Failed to delete lead");
+            } catch (e: unknown) {
+              showError(e, { context: "Deleting lead" });
             }
           } : undefined}
         />
@@ -184,14 +192,6 @@ export default function LeadsPage() {
           </p>
         </div>
         <div className="flex gap-4">
-          {hasPermission("Quotations: Create") && (
-            <Button
-              onClick={handleOpenCreate}
-              className="bg-tf-primary text-white hover:bg-tf-primary-hover shadow-sm"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Create Quotation
-            </Button>
-          )}
           {hasPermission("Leads: Create") && (
             <Button
               onClick={handleOpenCreate}

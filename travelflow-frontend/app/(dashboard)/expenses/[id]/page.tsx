@@ -12,7 +12,7 @@ import {
   Download,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API } from "@/lib/data-source";
@@ -78,7 +78,7 @@ export default function ExpenseDetailPage() {
         <div className="flex items-center gap-2">
           {expense.status !== "approved" && (
             <Button
-              onClick={() => toast.success("Expense approved")}
+              onClick={() => showSuccess("Expense approved")}
               className="bg-[var(--tf-success)] text-white hover:bg-[var(--tf-success)]/90"
             >
               <CheckCircle className="w-4 h-4 mr-2" /> Approve
@@ -87,7 +87,7 @@ export default function ExpenseDetailPage() {
           <Button
             variant="outline"
             onClick={() => {
-              toast.success("Downloading receipt PDF...");
+              showSuccess("Downloading receipt PDF...");
               window.print();
             }}
             className="bg-tf-surface text-tf-text-primary print:hidden"
@@ -206,7 +206,7 @@ export default function ExpenseDetailPage() {
             </p>
             <Button
               variant="outline"
-              onClick={() => toast.success("File upload dialog opened")}
+              onClick={() => showSuccess("File upload dialog opened")}
               className="mt-4"
             >
               Upload Receipt

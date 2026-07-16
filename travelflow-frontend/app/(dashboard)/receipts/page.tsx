@@ -44,11 +44,18 @@ export default function ReceiptsPage() {
     {
       accessorKey: "customerId",
       header: "Customer",
-      cell: ({ row }) => (
-        <span className="font-medium text-tf-text-primary">
-          {row.original.customerId || "—"}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const customer = row.original.customerId;
+        const customerName = typeof customer === 'object' && customer !== null
+          ? customer.name
+          : customer;
+
+        return (
+          <span className="font-medium text-tf-text-primary">
+            {customerName || "—"}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "date",

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import {
   Select,
   SelectContent,
@@ -42,7 +42,7 @@ export function SettleBalanceDrawer({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || Number(amount) <= 0) {
-      toast.error("Please enter a valid amount");
+      showError("Please enter a valid amount");
       return;
     }
 
@@ -53,14 +53,14 @@ export function SettleBalanceDrawer({
         method: paymentMethod,
         reference,
       });
-      toast.success(
+      showSuccess(
         `Successfully recorded payment of Rs ${Number(amount).toLocaleString()} to ${supplier.name}`,
       );
       onSuccess?.();
       onClose();
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err.message || "Failed to process payment");
+      showError(err.message || "Failed to process payment");
     } finally {
       setIsSubmitting(false);
     }

@@ -37,12 +37,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { isOpen } = useSidebarStore();
-  const { user, isAuthenticated, serverError } = useAuthStore();
+  const { user, isAuthenticated, isLoading, serverError } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (serverError) return;
+    if (isLoading) return; // Wait for initial auth check
 
     // Redirect unauthenticated users to login
     if (!isAuthenticated || !user) {
@@ -56,7 +57,7 @@ export default function DashboardLayout({
       // Redirect to leads page (agents' default landing page)
       router.replace("/leads");
     }
-  }, [isAuthenticated, user, pathname, router, serverError]);
+  }, [isAuthenticated, user, isLoading, pathname, router, serverError]);
 
   // Show server error state if backend is down
   if (serverError) {
@@ -79,7 +80,7 @@ export default function DashboardLayout({
   }
 
   // Don't render layout until auth is confirmed, but show a spinner instead of blank page
-  if (!isAuthenticated || !user) {
+  if (isLoading || !isAuthenticated || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[var(--tf-bg)]">
         <div className="text-tf-text-secondary flex flex-col items-center gap-4">

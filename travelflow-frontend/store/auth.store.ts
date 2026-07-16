@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "@/types";
-import { toast } from "sonner";
+import { parseApiError } from "@/lib/error-parser";
+import { showError } from "@/lib/toast-utils";
 
 interface AuthState {
   user: User | null;
@@ -22,9 +23,9 @@ interface AuthState {
 }
 
 // These will be injected by the api-client after it's initialised
-let _loginFn: (email: string, password: string) => Promise<User>;
-let _logoutFn: () => Promise<void>;
-let _getMeFn: () => Promise<User>;
+var _loginFn: (email: string, password: string) => Promise<User>;
+var _logoutFn: () => Promise<void>;
+var _getMeFn: () => Promise<User>;
 
 export function injectAuthActions(
   loginFn: typeof _loginFn,
@@ -41,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
-      isLoading: false,
+      isLoading: true, // Start loading as true to prevent premature redirects
       serverError: null,
 
       setUser: (user) => set({ user, isAuthenticated: true, serverError: null }),
@@ -76,19 +77,17 @@ export const useAuthStore = create<AuthState>()(
           const user = await _getMeFn();
           set({ user, isAuthenticated: true, serverError: null });
         } catch (err: any) {
-          const isUnauthorized = err?.status === 401 || err?.message?.includes("401") || err?.message?.toLowerCase().includes("authentication required");
+          const parsed = parseApiError(err);
 
-          if (isUnauthorized) {
+          if (parsed.code === "UNAUTHORIZED") {
+            // Session expired or no valid session — silently clear
             set({ user: null, isAuthenticated: false, serverError: null });
-          } else if (err?.message.includes("connect ECONNREFUSED")) {
-
-            set({ serverError: err?.message || "Unable to connect to the server." });
-            toast.error("Unable to connect to the server. Please check your connection or try again later.", {
-              description: err?.message,
-            });
-          } else {
-
+          } else if (parsed.code === "SERVER_UNAVAILABLE" || parsed.code === "OFFLINE") {
+            // Server is down or user is offline
+            set({ serverError: parsed.description });
+            showError(err, { context: "Checking authentication" });
           }
+          // Other errors are silently ignored during initial auth check
         } finally {
           set({ isLoading: false });
         }

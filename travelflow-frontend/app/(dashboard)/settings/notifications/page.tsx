@@ -4,14 +4,14 @@ import { ArrowLeft, Save, Bell, Mail, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 
 export default function NotificationsSettingsPage() {
   const router = useRouter();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Notification preferences updated");
+    showSuccess("Notification preferences updated");
   };
 
   return (

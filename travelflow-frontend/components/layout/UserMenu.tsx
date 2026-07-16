@@ -3,7 +3,7 @@
 import { User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ export function UserMenu() {
   const { logout, user } = useAuthStore();
 
   const handleLogout = async () => {
-    toast.success("Signing out...");
+    showSuccess("Signing out...");
     await logout();
     window.location.href = "/login";
   };

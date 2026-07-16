@@ -14,7 +14,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -77,7 +77,7 @@ export default function BranchDetailPage() {
 
   const handleAssignAgent = async () => {
     if (!assignUserId) {
-      toast.error("Please select a user to assign");
+      showError("Please select a user to assign");
       return;
     }
     setIsSubmitting(true);
@@ -92,7 +92,7 @@ export default function BranchDetailPage() {
         branchId: id,
         status: user.status,
       });
-      toast.success(`${user.firstName} assigned to ${branch?.name}`);
+      showSuccess(`${user.firstName} assigned to ${branch?.name}`);
     }
     setAddAgentOpen(false);
     setAssignUserId("");
@@ -107,7 +107,7 @@ export default function BranchDetailPage() {
       branchId: id,
       role: values.role || "agent",
     });
-    toast.success("Agent created and assigned to branch");
+    showSuccess("Agent created and assigned to branch");
     setAddAgentOpen(false);
     form.reset({ ...userDefaultValues, branchId: id, role: "agent" });
     setIsSubmitting(false);

@@ -8,7 +8,17 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size = 'md', className }: StatusBadgeProps) {
-  const style = STATUS_STYLES[status] || { bg: 'var(--tf-surface-2)', text: 'var(--tf-text-secondary)', label: status };
+  // Defensively extract status string if an object is passed (e.g. { id: '...' })
+  const statusStr = typeof status === 'object' && status !== null 
+    ? ((status as any).id || (status as any).value || (status as any).name || String(status))
+    : status;
+
+  const formattedLabel = String(statusStr)
+    .split(/[_ -]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+
+  const style = STATUS_STYLES[statusStr as StatusType] || { bg: 'var(--tf-surface-2)', text: 'var(--tf-text-secondary)', label: formattedLabel };
 
   return (
     <span

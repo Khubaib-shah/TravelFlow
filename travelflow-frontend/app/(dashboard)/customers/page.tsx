@@ -6,7 +6,7 @@ import { Plus, Users } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { Customer } from "@/types";
 import { API } from "@/lib/data-source";
@@ -47,8 +47,8 @@ export default function CustomersPage() {
     try {
       const customers = await API.getCustomers();
       setData(customers);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to load customers data");
+    } catch (error: unknown) {
+      showError(error, { context: "Loading customers" });
     } finally {
       setIsLoading(false);
     }
@@ -72,28 +72,29 @@ export default function CustomersPage() {
     try {
       if (isEditing && editingId) {
         await API.updateCustomer(editingId, values);
-        toast.success("Customer updated successfully");
+        showSuccess("Customer updated successfully");
       } else {
         const customer = await API.createCustomer(values);
-        toast.success("Customer added successfully", {
+        showSuccess("Customer created successfully", {
           description: `Reference: ${customer.customerRef}`,
         });
       }
       close();
       form.reset(customerDefaultValues);
       await loadData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save customer");
+    } catch (error: unknown) {
+      // Form stays open, user input is preserved
+      showError(error, { context: isEditing ? "Updating customer" : "Creating customer" });
     }
   };
 
   const handleDelete = async (row: any) => {
     try {
       await API.deleteCustomer(row.original.id);
-      toast.success("Customer deleted successfully");
+      showSuccess("Customer deleted successfully");
       await loadData();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete customer");
+    } catch (error: unknown) {
+      showError(error, { context: "Deleting customer" });
     }
   };
 

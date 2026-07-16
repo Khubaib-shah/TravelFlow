@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,12 +47,12 @@ export function RecordPaymentDrawer({
 
     const numAmount = Number(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
-      toast.error("Please enter a valid amount");
+      showError("Please enter a valid amount");
       return;
     }
 
     if (numAmount > booking.balance) {
-      toast.error(`Amount cannot exceed balance due (₨ ${booking.balance.toLocaleString()})`);
+      showError(`Amount cannot exceed balance due (₨ ${booking.balance.toLocaleString()})`);
       return;
     }
 
@@ -65,14 +65,14 @@ export function RecordPaymentDrawer({
         paymentMethod,
         notes,
       });
-      toast.success(
+      showSuccess(
         `Payment of ₨ ${numAmount.toLocaleString()} recorded successfully`
       );
       onSuccess?.();
       onClose();
     } catch (error: unknown) {
       const err = error as { message?: string };
-      toast.error(err.message || "Failed to record payment");
+      showError(err.message || "Failed to record payment");
     } finally {
       setIsSubmitting(false);
     }

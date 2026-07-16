@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { TemplatesSettings } from "@/components/settings/TemplatesSettings";
 import { ApiClient as API } from "@/lib/api-client";
 
@@ -58,8 +58,8 @@ export default function SettingsPage() {
             dailyReports: data.notifications?.dailyReports ?? true,
           });
         }
-      } catch (error: any) {
-        toast.error("Failed to load settings");
+      } catch (error: unknown) {
+        showError(error, { context: "Loading settings" });
       } finally {
         setIsLoading(false);
       }
@@ -75,9 +75,9 @@ export default function SettingsPage() {
         ...branding,
         notifications,
       });
-      toast.success("Settings saved successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to save settings");
+      showSuccess("Settings saved successfully");
+    } catch (error: unknown) {
+      showError(error, { context: "Saving settings" });
     } finally {
       setIsSaving(false);
     }

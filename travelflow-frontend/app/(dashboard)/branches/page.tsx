@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { GitBranch, Plus, Building2, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { formatCurrencyPKR } from "@/lib/utils";
 import { ApiClient, BranchFormValues } from "@/lib/api-client";
 import type { Branch } from "@/types";
@@ -36,6 +36,8 @@ export default function BranchesPage() {
     try {
       const data = await ApiClient.getBranches();
       setBranches(data);
+    } catch (error: unknown) {
+      showError(error, { context: "Loading branches" });
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,6 @@ export default function BranchesPage() {
   };
 
   const onSubmit = async (values: BranchFormValues) => {
-    console.log(values.isHeadOffice);
     const payload = {
       ...values,
       isHeadOffice:
@@ -62,16 +63,20 @@ export default function BranchesPage() {
           : values.isHeadOffice,
     };
 
-    if (isEditing && editingId) {
-      await ApiClient.updateBranch(editingId, payload);
-      toast.success("Branch updated");
-    } else {
-      await ApiClient.createBranch(payload);
-      toast.success("Branch created");
+    try {
+      if (isEditing && editingId) {
+        await ApiClient.updateBranch(editingId, payload);
+        showSuccess("Branch updated successfully");
+      } else {
+        await ApiClient.createBranch(payload);
+        showSuccess("Branch created successfully");
+      }
+      close();
+      form.reset(defaultValues);
+      await loadData();
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating branch" : "Creating branch" });
     }
-    close();
-    form.reset(defaultValues);
-    await loadData();
   };
 
   return (

@@ -4,14 +4,14 @@ import { ArrowLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 
 export default function CompanySettingsPage() {
   const router = useRouter();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Company settings saved successfully");
+    showSuccess("Company settings saved successfully");
   };
 
   return (

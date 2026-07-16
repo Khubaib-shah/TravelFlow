@@ -20,7 +20,7 @@ import { API } from "@/lib/data-source";
 import { Lead } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CurrencyDisplay } from "@/components/shared/CurrencyDisplay";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +59,7 @@ export default function LeadDetailPage() {
       description: `Status changed to ${newStatus.replace("_", " ")}`,
       createdBy: "Ahmad Khan",
     });
-    toast.success(`Status updated to ${newStatus.replace("_", " ")}`);
+    showSuccess(`Status updated to ${newStatus.replace("_", " ")}`);
     loadLead();
   };
 

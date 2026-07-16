@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { useAuthStore } from "@/store/auth.store";
 import { useBranchStore } from "@/store/branch.store";
 import { IconButton } from "@/components/shared/IconButton";
@@ -54,7 +54,7 @@ export function Sidebar() {
       .slice(0, 2);
 
   const handleLogout = async () => {
-    toast.success("Signing out...");
+    showSuccess("Signing out...");
     await logout();
     window.location.href = "/login";
   };

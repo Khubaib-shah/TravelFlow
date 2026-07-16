@@ -13,7 +13,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -422,7 +422,7 @@ export default function CustomerDetailPage() {
         onSubmit={form.handleSubmit(async (values) => {
           if (!customer) return;
           await API.updateCustomer(customer.id, values);
-          toast.success("Customer updated successfully");
+          showSuccess("Customer updated successfully");
           setEditOpen(false);
           loadAll();
         })}

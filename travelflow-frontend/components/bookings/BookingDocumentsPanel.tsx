@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BookingDocument } from "@/types";
 import { API } from "@/lib/data-source";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { Download, FileText, Trash2, Upload } from "lucide-react";
 import { DrawerForm } from "@/components/forms/DrawerForm";
 import { FilterSelect } from "@/components/shared/FilterSelect";
@@ -29,7 +29,7 @@ export function BookingDocumentsPanel({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File must be under 5MB");
+      showError("File must be under 5MB");
       return;
     }
 
@@ -43,11 +43,11 @@ export function BookingDocumentsPanel({
           url: dataUrl,
           type: docType,
         });
-        toast.success("Document uploaded");
+        showSuccess("Document uploaded");
         setUploadOpen(false);
         onUpdate();
       } catch (err: unknown) {
-        toast.error((err as Error).message || "Failed to upload document");
+        showError((err as Error).message || "Failed to upload document");
       } finally {
         setUploading(false);
       }
@@ -58,10 +58,10 @@ export function BookingDocumentsPanel({
   const handleDelete = async (id: string) => {
     try {
       await API.deleteBookingDocument(id);
-      toast.success("Document deleted");
+      showSuccess("Document deleted");
       onUpdate();
     } catch (err: unknown) {
-      toast.error((err as Error).message || "Failed to delete document");
+      showError((err as Error).message || "Failed to delete document");
     }
   };
 

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess, showError } from "@/lib/toast-utils";
 import { Plus, Trash2 } from "lucide-react";
 
 import { DrawerForm } from "@/components/forms/DrawerForm";
@@ -164,10 +164,10 @@ export function QuotationDrawer({
 
       if (editingId) {
         finalQuotation = await API.updateQuotation(editingId, payload);
-        toast.success("Quotation updated successfully");
+        showSuccess("Quotation updated successfully");
       } else {
         finalQuotation = await API.createQuotation(payload);
-        toast.success("Quotation created successfully", {
+        showSuccess("Quotation created successfully", {
           description: finalQuotation.quotationRef
             ? `Ref: ${finalQuotation.quotationRef}`
             : undefined,
@@ -177,7 +177,7 @@ export function QuotationDrawer({
       await onSaved(finalQuotation);
       onClose();
     } catch (e: any) {
-      toast.error(e.message || "Failed to save quotation");
+      showError(e.message || "Failed to save quotation");
     }
   };
 

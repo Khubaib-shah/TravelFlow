@@ -79,12 +79,12 @@ async function seed() {
   const [khiBranch, lhrBranch, isbBranch] = branches;
 
   console.log("Creating Roles...");
-  const defaultPermissions = ["leads:read", "leads:write", "customers:read", "customers:write"];
+  const defaultPermissions = ["Leads: View", "Leads: Create", "Customers: View", "Customers: Create"];
   await Role.insertMany([
-    { agencyId, name: "admin", permissions: ["all"], isSystem: true, color: "#1e293b", textColor: "#ffffff" },
-    { agencyId, name: "manager", permissions: [...defaultPermissions, "reports:read"], isSystem: true, color: "#3b82f6", textColor: "#ffffff" },
+    { agencyId, name: "admin", permissions: ["*"], isSystem: true, color: "#1e293b", textColor: "#ffffff" },
+    { agencyId, name: "manager", permissions: [...defaultPermissions, "Reports: View"], isSystem: true, color: "#3b82f6", textColor: "#ffffff" },
     { agencyId, name: "agent", permissions: defaultPermissions, isSystem: true, color: "#22c55e", textColor: "#ffffff" },
-    { agencyId, name: "accountant", permissions: ["expenses:read", "expenses:write"], isSystem: true, color: "#eab308", textColor: "#ffffff" },
+    { agencyId, name: "accountant", permissions: ["Expenses: View", "Expenses: Create", "Expenses: Edit"], isSystem: true, color: "#eab308", textColor: "#ffffff" },
   ]);
 
   console.log("Creating Users...");

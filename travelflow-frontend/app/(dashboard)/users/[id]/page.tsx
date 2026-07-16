@@ -14,7 +14,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast-utils";
 
 import { User, Branch, Role, Lead, Booking } from "@/types";
 import { API } from "@/lib/data-source";
@@ -85,7 +85,7 @@ export default function UserDetailPage() {
 
   const onSubmit = async (values: UserFormValues) => {
     await API.updateUser(id, values);
-    toast.success("User updated successfully");
+    showSuccess("User updated successfully");
     setEditOpen(false);
     await loadAll();
   };
