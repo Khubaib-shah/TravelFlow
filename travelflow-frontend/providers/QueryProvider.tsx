@@ -1,42 +1,67 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { useState, useEffect } from "react";
+import { getQueryClient } from "@/lib/query-client";
+import { get, set, del } from "idb-keyval";
+
+/**
+ * Custom storage persister using IndexedDB via idb-keyval
+ */
+const idbStorage = {
+  getItem: async (key: string) => {
+    const value = await get(key);
+    return value || null;
+  },
+  setItem: async (key: string, value: string) => {
+    await set(key, value);
+  },
+  removeItem: async (key: string) => {
+    await del(key);
+  },
+};
 
 /**
  * QueryProvider — Configures @tanstack/react-query with sensible defaults
- * for the TravelFlow application.
- *
- * Global defaults:
- *   - retry: 1 (retry once on failure, then show error state)
- *   - retryDelay: exponential backoff (1s, 2s, 4s …)
- *   - refetchOnWindowFocus: false (avoid unexpected background refetches)
- *   - staleTime: 30s (data stays fresh for 30s before becoming stale)
- *   - gcTime: 5 min (unused cache entries are garbage collected after 5 min)
+ * and offline/persistent caching for TravelFlow.
  */
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: 1,
-            retryDelay: (attemptIndex) =>
-              Math.min(1000 * 2 ** attemptIndex, 10_000),
-            refetchOnWindowFocus: false,
-            staleTime: 30_000,
-            gcTime: 5 * 60 * 1000,
-          },
-          mutations: {
-            retry: 0, // Mutations should not auto-retry — user action required
-          },
-        },
-      }),
-  );
+  const queryClient = getQueryClient();
+
+  const [persister, setPersister] = useState<any>(null);
+
+  useEffect(() => {
+    // Only configure persister on the client
+    const asyncPersister = createAsyncStoragePersister({
+      storage: typeof window !== "undefined" ? (idbStorage as any) : undefined,
+      key: "travelflow-query-cache",
+      throttleTime: 1000,
+    });
+    setPersister(asyncPersister);
+  }, []);
+
+  if (!persister) {
+    // Provide standard client during SSR / hydration before persister is ready
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => {
+            // Only persist queries that explicitly set `gcTime` high or belong to shared
+            return query.queryKey[0] === "shared" || query.queryKey[0] === "dashboard";
+          },
+        },
+      }}
+    >
       {children}
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

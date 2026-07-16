@@ -8,8 +8,8 @@ import { zodResolver } from "@/lib/zod-resolver";
 import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { User } from "@/types";
-import { Role, ALL_PERMISSIONS, PERMISSION_GROUPS } from "@/types/role";
-import { API } from "@/lib/data-source";
+import { Role, PERMISSION_GROUPS } from "@/types/role";
+import { useRoles, useCreateRole, useUpdateRolePermissions, useDeleteRole, useUsers } from "@/features/shared/hooks/queries";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -87,9 +87,14 @@ function PermissionGroupRow({ group, selectedPermissions, togglePermission, togg
 }
 
 export default function RolesPage() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: roles = [], isLoading: isRolesLoading } = useRoles();
+  const { data: users = [], isLoading: isUsersLoading } = useUsers();
+
+  const isLoading = isRolesLoading || isUsersLoading;
+
+  const createMutation = useCreateRole();
+  const updatePermissionsMutation = useUpdateRolePermissions();
+  const deleteMutation = useDeleteRole();
   const [editOpen, setEditOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -99,33 +104,8 @@ export default function RolesPage() {
 
   const form = useForm<RoleFormValues>({
     resolver: zodResolver(roleSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      color: "#3b82f6",
-      textColor: "#ffffff",
-    },
+    defaultValues: { name: "", description: "", color: "#e5e7eb", textColor: "#374151" },
   });
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [roleList, userList] = await Promise.all([
-        API.getRoles(),
-        API.getUsers(),
-      ]);
-      setRoles(roleList);
-      setUsers(userList);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading roles" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const getUserCount = (roleName: string) => {
     const roleKey = roleName.toLowerCase() as User["role"];
@@ -155,17 +135,15 @@ export default function RolesPage() {
     });
   };
 
-  const handleSave = async () => {
+  const handleSavePermissions = async () => {
     if (!editingRole) return;
     setIsSaving(true);
     try {
-      await API.updateRolePermissions(editingRole.id, selectedPermissions);
-      showSuccess(`Permissions updated for ${editingRole.name}`);
+      await updatePermissionsMutation.mutateAsync({ id: editingRole.id, permissions: selectedPermissions });
+      showSuccess("Permissions updated");
       setEditOpen(false);
-      setEditingRole(null);
-      await loadData();
-    } catch (error: unknown) {
-      showError(error, { context: "Updating permissions" });
+    } catch (e: any) {
+      showError(e.message || "Failed to update permissions");
     } finally {
       setIsSaving(false);
     }
@@ -174,28 +152,28 @@ export default function RolesPage() {
   const handleCreateRole = async (values: RoleFormValues) => {
     setIsSaving(true);
     try {
-      await API.createRole({ ...values, permissions: selectedPermissions });
-      showSuccess("Role created successfully");
+      await createMutation.mutateAsync(values);
+      showSuccess("Role created");
       setCreateOpen(false);
       form.reset();
-      setSelectedPermissions([]);
-      await loadData();
-    } catch (error: unknown) {
-      showError(error, { context: "Creating role" });
+    } catch (e: any) {
+      showError(e.message || "Failed to create role");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteRole = async (role: Role) => {
+  const handleDeleteRole = async () => {
+    if (!roleToDelete) return;
+    setIsSaving(true);
     try {
-      await API.deleteRole(role.id);
-      showSuccess("Role deleted successfully");
-      await loadData();
-    } catch (error: unknown) {
-      showError(error, { context: "Deleting role" });
-    } finally {
+      await deleteMutation.mutateAsync(roleToDelete.id);
+      showSuccess("Role deleted");
       setRoleToDelete(null);
+    } catch (e: any) {
+      showError(e.message || "Failed to delete role");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -314,7 +292,7 @@ export default function RolesPage() {
         onClose={() => setEditOpen(false)}
         onSubmit={(e) => {
           e.preventDefault();
-          handleSave();
+          handleSavePermissions();
         }}
         isSubmitting={isSaving}
         size="md"
@@ -401,7 +379,7 @@ export default function RolesPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => roleToDelete && handleDeleteRole(roleToDelete)}
+              onClick={() => handleDeleteRole()}
             >
               Delete
             </AlertDialogAction>

@@ -51,7 +51,7 @@ function getDateFilter(req: Request): domain.DateFilterOptions | undefined {
 }
 
 export async function dashboardStats(req: Request, res: Response) {
-  const stats = await domain.getDashboardStats(buildContext(req));
+  const stats = await domain.getDashboardStats(buildContext(req), getDateFilter(req));
   ApiResponse.success(res, stats);
 }
 

@@ -3,30 +3,34 @@
 import { useState, useEffect } from "react";
 import { Plus, Plane } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@/lib/zod-resolver";
 import { useRouter } from "next/navigation";
 import { showSuccess, showError } from "@/lib/toast-utils";
 
-import { Booking, Customer, Supplier } from "@/types";
-import { API } from "@/lib/data-source";
+import { Booking } from "@/types";
+import { 
+  useBookings, 
+  useCreateBooking, 
+  useUpdateBooking, 
+  useDeleteBooking 
+} from "@/features/bookings/hooks/queries";
+import { useCustomers } from "@/features/customers/hooks/queries";
+import { useSuppliers } from "@/features/suppliers/hooks/queries";
 import { DataTable } from "@/components/tables/DataTable";
-import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { DrawerForm } from "@/components/forms/DrawerForm";
-import {
-  FormField,
-  FormSelect,
-  FormTextArea,
-} from "@/components/forms/FormField";
+import { FormField, FormSelect, FormTextArea } from "@/components/forms/FormField";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Controller } from "react-hook-form";
 import {
   bookingSchema,
   BookingFormValues,
@@ -41,36 +45,20 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export default function BookingsPage() {
   const router = useRouter();
-  const [data, setData] = useState<Booking[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
   const { hasPermission } = usePermissions();
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [bookings, customerList, supplierList] = await Promise.all([
-        API.getBookings(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
-        API.getCustomers(),
-        API.getSuppliers(),
-      ]);
-      setData(bookings);
-      setCustomers(customerList);
-      setSuppliers(supplierList);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading bookings" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data = [], isLoading: isBookingsLoading } = useBookings(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  const { data: customers = [], isLoading: isCustomersLoading } = useCustomers();
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliers();
+  
+  const isLoading = isBookingsLoading || isCustomersLoading || isSuppliersLoading;
 
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
+  const createMutation = useCreateBooking();
+  const updateMutation = useUpdateBooking();
+  const deleteMutation = useDeleteBooking();
 
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
@@ -90,17 +78,16 @@ export default function BookingsPage() {
   const onSubmit = async (values: BookingFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateBooking(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("Booking updated successfully");
       } else {
-        const booking = await API.createBookingFromForm(values);
+        const booking = await createMutation.mutateAsync(values);
         showSuccess("Booking created successfully", {
           description: `Reference: ${booking.bookingRef}`,
         });
       }
       close();
       form.reset(bookingDefaultValues);
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating booking" : "Creating booking" });
     }
@@ -218,9 +205,8 @@ export default function BookingsPage() {
           onDelete={hasPermission("Bookings: Delete") ? async (r) => {
             if (!confirm(`Delete booking "${r.original.bookingRef}"?`)) return;
             try {
-              await API.deleteBooking(r.original.id);
+              await deleteMutation.mutateAsync(r.original.id);
               showSuccess("Booking deleted");
-              await loadData();
             } catch (e: any) {
               showError(e.message || "Failed to delete booking");
             }

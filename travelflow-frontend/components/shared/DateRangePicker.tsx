@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+// @ts-ignore
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { DateRange } from "react-day-picker";
@@ -102,7 +103,6 @@ export function DateRangePicker({
           </div>
           <div className="p-2">
             <Calendar
-              initialFocus
               mode="range"
               defaultMonth={date?.from}
               selected={date}

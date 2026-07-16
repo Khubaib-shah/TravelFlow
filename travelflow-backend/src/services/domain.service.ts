@@ -220,24 +220,38 @@ export function applyDateFilter(filter: any, dates?: DateFilterOptions, field: s
   }
 }
 
-export async function getDashboardStats(ctx: TenantContext) {
+export async function getDashboardStats(ctx: TenantContext, dates?: DateFilterOptions) {
   const base = tenant(ctx);
   const now = new Date();
-  const month = now.getMonth();
-  const year = now.getFullYear();
+  
+  let curStart: Date;
+  let curEnd: Date;
+  let prevStart: Date;
+  let prevEnd: Date;
 
-  // Build date ranges for current and previous month
-  const prevMonthStart = new Date(year, month - 1, 1);
-  const prevMonthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+  if (dates?.startDate && dates?.endDate) {
+    curStart = new Date(dates.startDate);
+    curEnd = new Date(dates.endDate);
+    const duration = curEnd.getTime() - curStart.getTime();
+    prevStart = new Date(curStart.getTime() - duration - 1);
+    prevEnd = new Date(curStart.getTime() - 1);
+  } else {
+    const month = now.getMonth();
+    const year = now.getFullYear();
+    curStart = new Date(year, month, 1);
+    curEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+    prevStart = new Date(year, month - 1, 1);
+    prevEnd = new Date(year, month, 0, 23, 59, 59, 999);
+  }
 
   // Build sparkline range: last 7 months
-  const sparklineStart = new Date(year, month - 6, 1);
+  const sparklineStart = new Date(now.getFullYear(), now.getMonth() - 6, 1);
 
   const [
     leads,
     customers,
-    bookings,
-    expenses,
+    currentBookings,
+    currentExpenses,
     activities,
     prevMonthBookings,
     prevMonthExpenses,
@@ -250,18 +264,18 @@ export async function getDashboardStats(ctx: TenantContext) {
     branches,
     branchUserCounts,
   ] = await Promise.all([
-    Lead.countDocuments(base),
-    Customer.countDocuments(base),
-    Booking.find(base),
-    Expense.find(base),
-    RecentActivity.find({ agencyId: base.agencyId, ...(base.branchId ? { branchId: base.branchId } : {}) })
+    Lead.countDocuments({ ...base, createdAt: { $gte: curStart, $lte: curEnd } }),
+    Customer.countDocuments({ ...base, createdAt: { $gte: curStart, $lte: curEnd } }),
+    Booking.find({ ...base, createdAt: { $gte: curStart, $lte: curEnd } }),
+    Expense.find({ ...base, date: { $gte: curStart, $lte: curEnd } }),
+    RecentActivity.find({ agencyId: base.agencyId, ...(base.branchId ? { branchId: base.branchId } : {}), createdAt: { $gte: curStart, $lte: curEnd } })
       .sort({ createdAt: -1 })
       .limit(20),
-    // Previous month data for trends
-    Booking.find({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
-    Expense.find({ ...base, date: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
-    Lead.countDocuments({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
-    Customer.countDocuments({ ...base, createdAt: { $gte: prevMonthStart, $lte: prevMonthEnd } }),
+    // Previous period data for trends
+    Booking.find({ ...base, createdAt: { $gte: prevStart, $lte: prevEnd } }),
+    Expense.find({ ...base, date: { $gte: prevStart, $lte: prevEnd } }),
+    Lead.countDocuments({ ...base, createdAt: { $gte: prevStart, $lte: prevEnd } }),
+    Customer.countDocuments({ ...base, createdAt: { $gte: prevStart, $lte: prevEnd } }),
     // Sparkline aggregations — last 7 months
     Booking.aggregate([
       { $match: { ...base, createdAt: { $gte: sparklineStart } } },
@@ -290,20 +304,10 @@ export async function getDashboardStats(ctx: TenantContext) {
     ]),
   ]);
 
-  // Current month calculations
-  const thisMonthBookings = bookings.filter((b) => {
-    const d = b.createdAt;
-    return d.getMonth() === month && d.getFullYear() === year;
-  });
-  const thisMonthExpenses = expenses.filter((e) => {
-    const d = e.date;
-    return d.getMonth() === month && d.getFullYear() === year;
-  });
-
-  const curRevenue = thisMonthBookings.reduce((s, b) => s + b.salePrice, 0);
-  const curProfit = thisMonthBookings.reduce((s, b) => s + b.profit, 0);
-  const curExpenses = thisMonthExpenses.reduce((s, e) => s + e.amount, 0);
-  const curBookingCount = thisMonthBookings.length;
+  const curRevenue = currentBookings.reduce((s, b) => s + b.salePrice, 0);
+  const curProfit = currentBookings.reduce((s, b) => s + b.profit, 0);
+  const curExpenses = currentExpenses.reduce((s, e) => s + e.amount, 0);
+  const curBookingCount = currentBookings.length;
 
   // Previous month calculations for trend %
   const prevRevenue = prevMonthBookings.reduce((s, b) => s + b.salePrice, 0);
@@ -324,7 +328,7 @@ export async function getDashboardStats(ctx: TenantContext) {
     }
     const result: number[] = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(year, month - i, 1);
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
       result.push(map.get(key) ?? 0);
     }
@@ -336,9 +340,9 @@ export async function getDashboardStats(ctx: TenantContext) {
   // Branch Performance
   const branchPerformance = branches.map((branch) => {
     const branchId = String(branch._id);
-    const branchBookings = thisMonthBookings.filter(b => String(b.branchId) === branchId);
+    const branchBookings = currentBookings.filter(b => String(b.branchId) === branchId);
     const branchPrevBookings = prevMonthBookings.filter(b => String(b.branchId) === branchId);
-    const branchExpenses = thisMonthExpenses.filter(e => String(e.branchId) === branchId);
+    const branchExpenses = currentExpenses.filter(e => String(e.branchId) === branchId);
 
     const revenue = branchBookings.reduce((s, b) => s + b.salePrice, 0);
     const profit = branchBookings.reduce((s, b) => s + b.profit, 0);
@@ -362,7 +366,7 @@ export async function getDashboardStats(ctx: TenantContext) {
     monthlyRevenue: curRevenue,
     monthlyProfit: curProfit,
     totalExpenses: curExpenses,
-    activeBookings: bookings.filter((b) => b.bookingStatus === "confirmed").length,
+    activeBookings: currentBookings.filter((b) => b.bookingStatus === "confirmed").length,
     trends: {
       leads: trendPct(leads, prevMonthLeads),
       customers: trendPct(customers, prevMonthCustomers),

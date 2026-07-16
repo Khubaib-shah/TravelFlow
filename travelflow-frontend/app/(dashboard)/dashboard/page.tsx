@@ -10,8 +10,13 @@ import { RecentBookingsTable } from "@/components/dashboard/RecentBookingsTable"
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { ErrorState } from "@/components/shared/ErrorState";
 
+import { DateRangePicker } from "@/components/shared/DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { useState } from "react";
+
 export default function DashboardPage() {
-  const { data, isLoading, isFetching, error, refetch } = useDashboardStats();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const { data, isLoading, isFetching, error, refetch } = useDashboardStats(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
 
   // If the entire dashboard stats request fails, show a recoverable error
   // but each widget is still wrapped in its own ErrorBoundary for render-crash isolation.
@@ -25,6 +30,14 @@ export default function DashboardPage() {
 
   return (
     <div className={`space-y-6 transition-opacity duration-200 ${isFetching && !isLoading ? "opacity-50 pointer-events-none" : ""}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-tf-surface p-6 rounded-xl border border-tf-border shadow-sm">
+        <div>
+          <h1 className="tf-h2 text-tf-text-primary">Dashboard</h1>
+          <p className="tf-body text-tf-text-secondary mt-1">Overview of your travel agency's performance.</p>
+        </div>
+        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+      </div>
+
       {/* Row 1: KPIs */}
       <ErrorBoundary>
         <KpiRow data={data} isLoading={isLoading} />

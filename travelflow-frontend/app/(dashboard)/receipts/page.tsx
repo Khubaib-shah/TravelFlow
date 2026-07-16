@@ -13,28 +13,13 @@ import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { DateRange } from "react-day-picker";
-import { API } from "@/lib/data-source";
+import { useReceipts } from "@/features/finance/hooks/queries";
 
 export default function ReceiptsPage() {
   const router = useRouter();
-  const [data, setData] = useState<any[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      try {
-        const receipts = await API.getReceipts(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
-        setData(receipts);
-      } catch {
-        // ignore
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, [dateRange]);
+  const { data = [], isLoading } = useReceipts(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
 
   const columns: ColumnDef<any>[] = [
     {

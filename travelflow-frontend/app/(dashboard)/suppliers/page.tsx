@@ -9,7 +9,7 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Supplier } from "@/types";
-import { API } from "@/lib/data-source";
+import { useSuppliers, useCreateSupplier, useUpdateSupplier } from "@/features/suppliers/hooks/queries";
 import { DataTable } from "@/components/tables/DataTable";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { DateRange } from "react-day-picker";
@@ -32,27 +32,14 @@ import {
 
 export default function SuppliersPage() {
   const router = useRouter();
-  const [data, setData] = useState<Supplier[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const suppliers = await API.getSuppliers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
-      setData(suppliers);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading suppliers" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
+  const { data = [], isLoading } = useSuppliers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  
+  const createMutation = useCreateSupplier();
+  const updateMutation = useUpdateSupplier();
 
   const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierSchema),
@@ -67,15 +54,14 @@ export default function SuppliersPage() {
   const onSubmit = async (values: SupplierFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateSupplier(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("Supplier updated successfully");
       } else {
-        await API.createSupplier(values);
+        await createMutation.mutateAsync(values);
         showSuccess("Supplier created successfully");
       }
       close();
       form.reset(supplierDefaultValues);
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating supplier" : "Creating supplier" });
     }

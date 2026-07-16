@@ -6,6 +6,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { showSuccess, showError } from "@/lib/toast-utils";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { useQuotations, useCreateQuotation, useUpdateQuotation } from "@/features/quotations/hooks/queries";
+import { useCustomers } from "@/features/customers/hooks/queries";
+import { useSuppliers } from "@/features/suppliers/hooks/queries";
+import { useAgents, useBranches } from "@/features/shared/hooks/queries";
+import { queryKeys } from "@/lib/query-keys";
 import { API } from "@/lib/data-source";
 import { DataTable } from "@/components/tables/DataTable";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
@@ -26,13 +32,19 @@ import type { Quotation, Customer, Supplier, Branch, User } from "@/types";
 
 export default function QuotationsPage() {
   const router = useRouter();
-  const [data, setData] = useState<Quotation[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [agents, setAgents] = useState<User[]>([]);
+  const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { data = [], isLoading: isQuotationsLoading } = useQuotations(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  const { data: customers = [], isLoading: isCustomersLoading } = useCustomers();
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useSuppliers();
+  const { data: branches = [], isLoading: isBranchesLoading } = useBranches();
+  const { data: agents = [], isLoading: isAgentsLoading } = useAgents();
+
+  const isLoading = isQuotationsLoading || isCustomersLoading || isSuppliersLoading || isBranchesLoading || isAgentsLoading;
+
+  const createMutation = useCreateQuotation();
+  const updateMutation = useUpdateQuotation();
 
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
@@ -47,9 +59,31 @@ export default function QuotationsPage() {
 
   const [previewQuotation, setPreviewQuotation] = useState<Quotation | null>(null);
 
+  const onSubmit = async (values: QuotationFormValues) => {
+    try {
+      if (isEditing && editingId) {
+        await updateMutation.mutateAsync({ id: editingId, data: values });
+        showSuccess("Quotation updated successfully");
+      } else {
+        const quotation = await createMutation.mutateAsync(values);
+        showSuccess("Quotation created successfully", {
+          description: `Reference: ${quotation.quotationRef}`,
+        });
+      }
+      close();
+    } catch (error: unknown) {
+      showError(error, { context: isEditing ? "Updating quotation" : "Creating quotation" });
+    }
+  };
+
+
+
   const openView = async (id: string) => {
     try {
-      const q = await API.getQuotation(id);
+      const q = await queryClient.fetchQuery({
+        queryKey: queryKeys.quotations.detail(id),
+        queryFn: () => API.getQuotation(id),
+      });
       setViewInitialValues(mapQuotationToForm(q));
       setViewingQuotationId(id);
       setIsViewMode(true);
@@ -60,46 +94,16 @@ export default function QuotationsPage() {
 
   const handleOpenEdit = async (id: string) => {
     try {
-      const q = await API.getQuotation(id);
+      const q = await queryClient.fetchQuery({
+        queryKey: queryKeys.quotations.detail(id),
+        queryFn: () => API.getQuotation(id),
+      });
       setViewInitialValues(mapQuotationToForm(q));
       openEdit(id);
     } catch (e: any) {
       showError(e.message || "Failed to load quotation");
     }
   };
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [quotations, customerList, supplierList, agentList] =
-        await Promise.all([
-          API.getQuotations(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
-          API.getCustomers(),
-          API.getSuppliers(),
-          API.getAgents(),
-        ]);
-      setData(quotations);
-      setCustomers(customerList);
-      setSuppliers(supplierList);
-      setAgents(agentList);
-
-      try {
-        const b = await API.getBranches();
-        console.log(b);
-        setBranches(b);
-      } catch {
-        setBranches([]);
-      }
-    } catch (e: any) {
-      showError(e.message || "Failed to load quotations");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
 
   const initialValues = {
     customerId: customers[0]?.id ?? "",
@@ -251,7 +255,6 @@ export default function QuotationsPage() {
         agents={agents}
         initialValues={isViewMode || isEditing ? viewInitialValues : initialValues}
         onSaved={async (q) => {
-          await loadData();
           if (!isEditing && !isViewMode) {
             setPreviewQuotation(q);
           }

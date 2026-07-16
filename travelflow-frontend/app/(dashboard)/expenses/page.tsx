@@ -9,7 +9,7 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Expense } from "@/types";
-import { API } from "@/lib/data-source";
+import { useExpenses, useCreateExpense, useUpdateExpense } from "@/features/finance/hooks/queries";
 import { DataTable } from "@/components/tables/DataTable";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { DateRange } from "react-day-picker";
@@ -34,27 +34,14 @@ import {
 
 export default function ExpensesPage() {
   const router = useRouter();
-  const [data, setData] = useState<Expense[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const expenses = await API.getExpenses(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
-      setData(expenses);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading expenses" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
+  const { data = [], isLoading } = useExpenses(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  
+  const createMutation = useCreateExpense();
+  const updateMutation = useUpdateExpense();
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseSchema),
@@ -69,15 +56,14 @@ export default function ExpensesPage() {
   const onSubmit = async (values: ExpenseFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateExpense(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("Expense updated successfully");
       } else {
-        await API.createExpense(values);
+        await createMutation.mutateAsync(values);
         showSuccess("Expense logged successfully");
       }
       close();
       form.reset(expenseDefaultValues);
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating expense" : "Creating expense" });
     }

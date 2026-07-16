@@ -9,7 +9,7 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { User, Branch, Role } from "@/types";
-import { API } from "@/lib/data-source";
+import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, useBranches, useRoles } from "@/features/shared/hooks/queries";
 import { DataTable } from "@/components/tables/DataTable";
 import { DataTableColumnHeader } from "@/components/tables/DataTableColumnHeader";
 import { DataTableRowActions } from "@/components/tables/DataTableRowActions";
@@ -45,12 +45,7 @@ const roleColors: Record<string, { bg: string; text: string }> = {
 
 export default function UsersPage() {
   const router = useRouter();
-  const [data, setData] = useState<User[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
-    useEntityDrawer();
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
 
   // Temp password dialog state
   const [tempPasswordData, setTempPasswordData] = useState<{
@@ -60,27 +55,15 @@ export default function UsersPage() {
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [users, branchList, roleList] = await Promise.all([
-        API.getUsers(),
-        API.getBranches(),
-        API.getRoles(),
-      ]);
-      setData(users);
-      setBranches(branchList);
-      setRoles(roleList);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading users" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data = [], isLoading: isUsersLoading } = useUsers();
+  const { data: branches = [], isLoading: isBranchesLoading } = useBranches();
+  const { data: roles = [], isLoading: isRolesLoading } = useRoles();
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const isLoading = isUsersLoading || isBranchesLoading || isRolesLoading;
+
+  const createMutation = useCreateUser();
+  const updateMutation = useUpdateUser();
+  const deleteMutation = useDeleteUser();
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
@@ -95,28 +78,35 @@ export default function UsersPage() {
   const onSubmit = async (values: UserFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateUser(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("User updated successfully");
         close();
         form.reset(userDefaultValues);
       } else {
-        const result = await API.createUser(values);
+        const result = await createMutation.mutateAsync(values);
+        showSuccess("User created successfully");
         close();
         form.reset(userDefaultValues);
-        // Show temp password dialog if the backend generated one
+
         if (result.tempPassword) {
           setTempPasswordData({
-            name: `${values.firstName} ${values.lastName}`,
-            email: values.email,
+            name: `${result.firstName} ${result.lastName}`,
+            email: result.email,
             password: result.tempPassword,
           });
-        } else {
-          showSuccess("User created successfully");
         }
       }
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating user" : "Creating user" });
+    }
+  };
+
+  const handleDelete = async (row: any) => {
+    try {
+      await deleteMutation.mutateAsync(row.original.id);
+      showSuccess("User deleted successfully");
+    } catch (error: unknown) {
+      showError(error, { context: "Deleting user" });
     }
   };
 
@@ -236,24 +226,23 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={UserCog}
-          title="No users yet"
-          description="Add team members and assign roles to manage access across branches."
-          action={{ label: "Add User", onClick: handleOpenCreate }}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden p-6">
+        <DataTable
+          columns={columns}
+          data={data}
+          searchKey="firstName"
+          searchPlaceholder="Search users..."
+          isLoading={isLoading}
+          emptyState={
+            <EmptyState
+              icon={UserCog}
+              title="No users yet"
+              description="Add team members and assign roles to manage access across branches."
+              action={{ label: "Add User", onClick: handleOpenCreate }}
+            />
+          }
         />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm overflow-hidden p-6">
-          <DataTable
-            columns={columns}
-            data={data}
-            searchKey="firstName"
-            searchPlaceholder="Search users..."
-            isLoading={isLoading}
-          />
-        </div>
-      )}
+      </div>
 
       {/* Create/Edit User Drawer */}
       <DrawerForm

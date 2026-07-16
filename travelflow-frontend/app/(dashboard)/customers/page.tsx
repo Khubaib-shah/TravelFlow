@@ -9,7 +9,7 @@ import { zodResolver } from "@/lib/zod-resolver";
 import { showSuccess, showError } from "@/lib/toast-utils";
 
 import { Customer } from "@/types";
-import { API } from "@/lib/data-source";
+import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from "@/features/customers/hooks/queries";
 import { DataTable } from "@/components/tables/DataTable";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
 import { DateRange } from "react-day-picker";
@@ -38,28 +38,16 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export default function CustomersPage() {
   const router = useRouter();
-  const [data, setData] = useState<Customer[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
   const { hasPermission } = usePermissions();
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const customers = await API.getCustomers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
-      setData(customers);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading customers" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
+  const { data = [], isLoading } = useCustomers(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  
+  const createMutation = useCreateCustomer();
+  const updateMutation = useUpdateCustomer();
+  const deleteMutation = useDeleteCustomer();
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -74,17 +62,16 @@ export default function CustomersPage() {
   const onSubmit = async (values: CustomerFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateCustomer(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("Customer updated successfully");
       } else {
-        const customer = await API.createCustomer(values);
+        const customer = await createMutation.mutateAsync(values);
         showSuccess("Customer created successfully", {
           description: `Reference: ${customer.customerRef}`,
         });
       }
       close();
       form.reset(customerDefaultValues);
-      await loadData();
     } catch (error: unknown) {
       // Form stays open, user input is preserved
       showError(error, { context: isEditing ? "Updating customer" : "Creating customer" });
@@ -93,9 +80,8 @@ export default function CustomersPage() {
 
   const handleDelete = async (row: any) => {
     try {
-      await API.deleteCustomer(row.original.id);
+      await deleteMutation.mutateAsync(row.original.id);
       showSuccess("Customer deleted successfully");
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: "Deleting customer" });
     }

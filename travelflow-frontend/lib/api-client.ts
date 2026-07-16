@@ -274,7 +274,7 @@ injectAuthActions(login, logoutApi, getMe);
 // ─── Public ApiClient object — same interface as MockAPI ──────────────────────
 export const ApiClient = {
   // ── Dashboard ──
-  getDashboardStats: () => get<DashboardStats>("/dashboard/stats"),
+  getDashboardStats: (dates?: { from?: Date; to?: Date }) => get<DashboardStats>(buildDateQuery("/dashboard/stats", dates)),
   getAnalytics: (params?: { timeRange?: string; branchId?: string }) => {
     const searchParams = new URLSearchParams();
     if (params?.timeRange) searchParams.set("timeRange", params.timeRange);

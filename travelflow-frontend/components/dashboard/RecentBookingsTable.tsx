@@ -16,6 +16,7 @@ import { TableEntityLink } from "@/components/shared/TableEntityLink";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { parseApiError } from "@/lib/error-parser";
 import { useInvalidationStore } from "@/store/invalidation.store";
+import { useBranchStore } from "@/store/branch.store";
 
 export function RecentBookingsTable({
   isLoading: parentLoading,
@@ -24,6 +25,7 @@ export function RecentBookingsTable({
 }) {
   const router = useRouter();
   const lastUpdated = useInvalidationStore((state) => state.lastUpdated);
+  const activeBranchId = useBranchStore((state) => state.activeBranchId);
 
   const {
     data = [],
@@ -31,7 +33,7 @@ export function RecentBookingsTable({
     error,
     refetch,
   } = useQuery<Booking[]>({
-    queryKey: ["bookings", "recent", lastUpdated],
+    queryKey: ["bookings", "recent", activeBranchId, lastUpdated],
     queryFn: () => API.getBookings(),
     staleTime: 30_000,
   });

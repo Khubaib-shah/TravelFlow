@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { showSuccess, showError } from "@/lib/toast-utils";
 import { formatCurrencyPKR } from "@/lib/utils";
-import { ApiClient, BranchFormValues } from "@/lib/api-client";
+import { BranchFormValues } from "@/lib/api-client";
+import { useBranches, useCreateBranch, useUpdateBranch } from "@/features/shared/hooks/queries";
 import type { Branch } from "@/types";
 import { Button } from "@/components/ui/button";
 import { DrawerForm } from "@/components/forms/DrawerForm";
@@ -26,26 +27,12 @@ const defaultValues: BranchFormValues = {
 
 export default function BranchesPage() {
   const router = useRouter();
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
-    useEntityDrawer();
+  const { data: branches = [], isLoading: loading } = useBranches();
+  
+  const createMutation = useCreateBranch();
+  const updateMutation = useUpdateBranch();
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await ApiClient.getBranches();
-      setBranches(data);
-    } catch (error: unknown) {
-      showError(error, { context: "Loading branches" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } = useEntityDrawer();
 
   const form = useForm<BranchFormValues>({ defaultValues });
 
@@ -65,15 +52,14 @@ export default function BranchesPage() {
 
     try {
       if (isEditing && editingId) {
-        await ApiClient.updateBranch(editingId, payload);
+        await updateMutation.mutateAsync({ id: editingId, data: payload });
         showSuccess("Branch updated successfully");
       } else {
-        await ApiClient.createBranch(payload);
+        await createMutation.mutateAsync(payload);
         showSuccess("Branch created successfully");
       }
       close();
       form.reset(defaultValues);
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating branch" : "Creating branch" });
     }

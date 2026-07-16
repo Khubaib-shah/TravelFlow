@@ -113,7 +113,7 @@ export function SearchCommand() {
       icon: FileText,
       action: () => navigate("/quotations"),
       group: "Navigate",
-      keywords: ["quotes", "proposals"],
+      keywords: ["quotes", "proposals", "quotation", "quotaion"],
     },
     {
       id: "nav-suppliers",

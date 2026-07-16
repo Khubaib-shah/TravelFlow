@@ -152,7 +152,7 @@ export function QuotationDrawer({
     try {
       console.log("[QuotationDrawer] Submitting validated payload:", values);
 
-      let finalCustomerId = values.customerId;
+      let finalCustomerId: string | undefined = values.customerId;
       let customerName: string | undefined;
       let customerPhone: string | undefined;
       let customerEmail: string | undefined;
@@ -175,10 +175,10 @@ export function QuotationDrawer({
       let finalQuotation: any = null;
 
       if (editingId) {
-        finalQuotation = await API.updateQuotation(editingId, payload);
+        finalQuotation = await API.updateQuotation(editingId, payload as any);
         showSuccess("Quotation updated successfully");
       } else {
-        finalQuotation = await API.createQuotation(payload);
+        finalQuotation = await API.createQuotation(payload as any);
         showSuccess("Quotation created successfully", {
           description: finalQuotation.quotationRef
             ? `Ref: ${finalQuotation.quotationRef}`

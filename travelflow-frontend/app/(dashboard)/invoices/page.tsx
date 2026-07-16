@@ -156,38 +156,37 @@ export default function InvoicesPage() {
         </Button>
       </div>
 
-      {!isLoading && data.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="No invoices generated"
-          description="You haven't created any invoices yet. Generate an invoice from a confirmed booking."
-          action={{
-            label: "Generate Invoice",
-            onClick: () => router.push("/bookings/new"),
-          }}
+      <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
+        <DataTable
+          columns={columns}
+          data={data}
+          searchKey="bookingRef"
+          searchPlaceholder="Search invoices..."
+          isLoading={isLoading}
+          filters={[
+            {
+              column: "paymentStatus",
+              title: "Payment",
+              options: [
+                { label: "Paid", value: "paid" },
+                { label: "Partial", value: "partial" },
+                { label: "Unpaid", value: "unpaid" },
+              ],
+            },
+          ]}
+          emptyState={
+            <EmptyState
+              icon={FileText}
+              title="No invoices generated"
+              description="You haven't created any invoices yet. Generate an invoice from a confirmed booking."
+              action={{
+                label: "Generate Invoice",
+                onClick: () => router.push("/bookings/new"),
+              }}
+            />
+          }
         />
-      ) : (
-        <div className="bg-tf-surface rounded-xl border border-tf-border shadow-sm p-6">
-          <DataTable
-            columns={columns}
-            data={data}
-            searchKey="bookingRef"
-            searchPlaceholder="Search invoices..."
-            isLoading={isLoading}
-            filters={[
-              {
-                column: "paymentStatus",
-                title: "Payment",
-                options: [
-                  { label: "Unpaid", value: "unpaid" },
-                  { label: "Partial", value: "partial" },
-                  { label: "Paid", value: "paid" },
-                ],
-              },
-            ]}
-          />
-        </div>
-      )}
+      </div>
 
       <RecordPaymentDrawer
         isOpen={!!paymentBooking}

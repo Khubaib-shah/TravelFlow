@@ -9,7 +9,8 @@ import { showSuccess, showError } from "@/lib/toast-utils";
 import { useRouter } from "next/navigation";
 
 import { Lead, Branch, User } from "@/types";
-import { API } from "@/lib/data-source";
+import { useLeads, useCreateLead, useUpdateLead, useDeleteLead } from "@/features/leads/hooks/queries";
+import { useAgents, useBranches } from "@/features/shared/hooks/queries";
 import { useAuthStore } from "@/store/auth.store";
 import { DataTable } from "@/components/tables/DataTable";
 import { DateRangePicker } from "@/components/shared/DateRangePicker";
@@ -41,41 +42,20 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 export default function LeadsPage() {
   const router = useRouter();
-  const [data, setData] = useState<Lead[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [agents, setAgents] = useState<User[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
   const { isDrawerOpen, editingId, isEditing, openCreate, openEdit, close } =
     useEntityDrawer();
   const { hasPermission } = usePermissions();
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [leads, agentList] = await Promise.all([
-        API.getLeads(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined),
-        API.getAgents(),
-      ]);
-      setData(leads);
-      setAgents(agentList);
-      // Branches are admin/manager only — silently skip for agents
-      try {
-        const branchList = await API.getBranches();
-        setBranches(branchList);
-      } catch {
-        setBranches([]);
-      }
-    } catch (error: unknown) {
-      showError(error, { context: "Loading leads" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data = [], isLoading: isLeadsLoading } = useLeads(dateRange ? { from: dateRange.from, to: dateRange.to } : undefined);
+  const { data: agents = [], isLoading: isAgentsLoading } = useAgents();
+  const { data: branches = [], isLoading: isBranchesLoading } = useBranches();
+  
+  const isLoading = isLeadsLoading || isAgentsLoading || isBranchesLoading;
 
-  useEffect(() => {
-    loadData();
-  }, [dateRange]);
+  const createMutation = useCreateLead();
+  const updateMutation = useUpdateLead();
+  const deleteMutation = useDeleteLead();
 
   const form = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
@@ -90,19 +70,27 @@ export default function LeadsPage() {
   const onSubmit = async (values: LeadFormValues) => {
     try {
       if (isEditing && editingId) {
-        await API.updateLead(editingId, values);
+        await updateMutation.mutateAsync({ id: editingId, data: values });
         showSuccess("Lead updated successfully");
       } else {
-        const lead = await API.createLead(values);
+        const lead = await createMutation.mutateAsync(values);
         showSuccess("Lead created successfully", {
           description: `Reference: ${lead.leadRef}`,
         });
       }
       close();
       form.reset(leadDefaultValues);
-      await loadData();
     } catch (error: unknown) {
       showError(error, { context: isEditing ? "Updating lead" : "Creating lead" });
+    }
+  };
+
+  const handleDelete = async (row: any) => {
+    try {
+      await deleteMutation.mutateAsync(row.original.id);
+      showSuccess("Lead deleted successfully");
+    } catch (error: unknown) {
+      showError(error, { context: "Deleting lead" });
     }
   };
 
@@ -173,9 +161,8 @@ export default function LeadsPage() {
           onDelete={hasPermission("Leads: Delete") ? async (r) => {
             if (!confirm(`Delete lead "${r.original.name}"?`)) return;
             try {
-              await API.deleteLead(r.original.id);
+              await deleteMutation.mutateAsync(r.original.id);
               showSuccess("Lead deleted");
-              await loadData();
             } catch (e: unknown) {
               showError(e, { context: "Deleting lead" });
             }
