@@ -55,12 +55,12 @@ export default function LoginPage() {
 
   const fillDummyCredentials = (role: "admin" | "agent") => {
     if (role === "admin") {
-      form.setValue("email", "admin@triptrails.com");
-      form.setValue("password", "password123");
-      showInfo("Admin credentials filled");
+      form.setValue("email", "owner@triptrails.pk");
+      form.setValue("password", "Password123!");
+      showInfo("Owner credentials filled");
     } else {
-      form.setValue("email", "agent@triptrails.com");
-      form.setValue("password", "agent123");
+      form.setValue("email", "agent1@triptrails.pk");
+      form.setValue("password", "Password123!");
       showInfo("Agent credentials filled");
     }
   };
